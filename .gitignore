@@ -1,22 +1,38 @@
-# Vivado logs
-*.log
-*.jou
-*.pb
+# Vivado project folders
+SoC_Design/SoC_Design.cache/
+SoC_Design/SoC_Design.sim/
+SoC_Design/*.runs/
+SoC_Design/*.hw/
+SoC_Design/*.ip_user_files/
+SoC_Design/*.gen/
+SoC_Design/*.Xil/
 
-# Simulation
-.sim/
-.cache/
-xsim/
+# Vivado logs
+SoC_Design/*.log
+SoC_Design/*.jou
+SoC_Design/*.str
+SoC_Design/*.pb
+
+# Simulation / xsim
 *.wdb
 *.wcfg
+*.sdb
+*.dbg
+*.mem
+*.reloc
+*.rlx
+*.rtti
+*.xdbg
 
-# Build files
+# Build
 *.obj
 *.exe
+*.dll
 
 # Backup
 *.backup.*
+*.bak
 *~
 
-# Temp
-*.tmp
+# Office temp
+~$*
