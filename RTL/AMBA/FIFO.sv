@@ -27,22 +27,22 @@ module async_fifo #(
     
     always @ (posedge push_clk or negedge push_rst_n) begin
         if (~push_rst_n) begin
-            r_wptr_b <= {PRT_SIZE{1'b0}};
+            r_wptr_b <= {PTR_SIZE{1'b0}};
         end
         else begin
             if (i_pushen) begin
-                r_wptr_b <= r_wptr_b + {{(PRT_SIZE - 1){1'b0}}, 1'b1};
+                r_wptr_b <= r_wptr_b + {{(PTR_SIZE - 1){1'b0}}, 1'b1};
             end
         end
     end
 
     always @ (posedge pop_clk or negedge pop_rst_n) begin
         if (~pop_rst_n) begin
-            r_rptr_b <= {PRT_SIZE{1'b0}};
+            r_rptr_b <= {PTR_SIZE{1'b0}};
         end
         else begin
             if (i_popen) begin
-                r_rptr_b <= r_rptr_b + {{(PRT_SIZE - 1){1'b0}}, 1'b1};
+                r_rptr_b <= r_rptr_b + {{(PTR_SIZE - 1){1'b0}}, 1'b1};
             end
         end
     end
@@ -98,7 +98,7 @@ module async_fifo #(
         end
     end
 
-    always @ (posdege pop_clk or negedge pop_rst_n) begin
+    always @ (posedge pop_clk or negedge pop_rst_n) begin
         if (~pop_rst_n) begin
             r_popdata <= {DATA_SIZE{1'b0}};
         end

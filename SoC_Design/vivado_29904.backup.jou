@@ -1,0 +1,25 @@
+#-----------------------------------------------------------
+# Vivado v2023.2 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Thu Apr 30 19:33:20 2026
+# Process ID: 29904
+# Current directory: V:/SoC_Design/SoC_Design
+# Command line: vivado.exe -gui_launcher_event rodinguilauncherevent21036 V:\SoC_Design\SoC_Design\SoC_Design.xpr
+# Log file: V:/SoC_Design/SoC_Design/vivado.log
+# Journal file: V:/SoC_Design/SoC_Design\vivado.jou
+# Running On: LAPTOP-3K39264L, OS: Windows, CPU Frequency: 2419 MHz, CPU Physical cores: 4, Host memory: 8299 MB
+#-----------------------------------------------------------
+start_gui
+open_project V:/SoC_Design/SoC_Design/SoC_Design.xpr
+update_compile_order -fileset sources_1
+launch_simulation
+open_wave_config V:/SoC_Design/SoC_Design/CPU_TOP_tb_behav.wcfg
+source tb_top_cpu.tcl
+relaunch_sim
+restart
+run 10 us
+relaunch_sim
+save_wave_config {V:/SoC_Design/SoC_Design/CPU_TOP_tb_behav.wcfg}
+close_sim

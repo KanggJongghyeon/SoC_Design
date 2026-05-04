@@ -7,7 +7,7 @@ Association = 2-way = 256 Set
 `timescale 1ns/1ps
 module CACHE #(
     parameter   ADDR_SIZE   = 8,
-    parameter   DATA_SIZE   = 512,
+    parameter   DATA_SIZE   = 512
     )(
     input   wire                        clk,
     input   wire                        rst_n,

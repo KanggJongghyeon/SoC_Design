@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "sfr_table.sv"
+`include "sfr_table.svh"
 module cmu #(
     parameter ADDR_BIT = 8,
     parameter DATA_BIT = 32

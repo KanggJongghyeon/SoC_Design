@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
-//`include "C:/new/computer_architecture/new/RTL/peripheral/sfr_table.sv"
-`include "../sfr_table.sv"
+`include "../sfr_table.svh"
 module clk_sfr_ctrl #(
     parameter ADDR_BIT = 8,
     parameter DATA_BIT = 32

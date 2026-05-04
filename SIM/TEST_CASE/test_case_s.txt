@@ -1,0 +1,39 @@
+addiu $t0, $zero, 1
+addiu $t1, $zero, 10
+addiu $t2, $zero, 20
+addiu $t3, $zero, 30
+addiu $t4, $zero, 40
+addiu $t5, $zero, 50
+addiu $t6, $zero, 60
+addiu $t7, $zero, 70
+add $s0, $zero, $t0
+add $s1, $zero, $t1
+add $s2, $zero, $t2
+add $s3, $zero, $t3
+add $s4, $zero, $t4
+add $s5, $zero, $t5
+add $s6, $zero, $t6
+add $s7, $zero, $t7
+sw $s0, 0($zero)
+sw $s1, 4($zero)
+sw $s2, 8($zero)
+sw $s3, 12($zero)
+sw $s4, 16($zero)
+sw $s5, 20($zero)
+sw $s6, 24($zero)
+sw $s7, 28($zero)
+nop
+nop
+nop
+lw $t0, 28($zero)
+lw $t1, 24($zero)
+lw $t2, 20($zero)
+lw $t3, 16($zero)
+lw $t4, 12($zero)
+lw $t5, 8($zero)
+lw $t6, 4($zero)
+lw $t7, 0($zero)
+nop
+nop
+nop
+nop

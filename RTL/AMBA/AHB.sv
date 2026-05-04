@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "sfr_table.sv"
+`include "..\peripheral\sfr_table.svh"
 module ahb3 #(
     parameter DATA_SIZE = 32,
     parameter NUM_SLAVE = 32 

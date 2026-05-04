@@ -1,10 +1,8 @@
 `timescale 1ns / 1ps
-`include "opcodes.sv"
+`include "instruction.svh"
 module alu #(
     parameter DATA_BIT = 16
     )(
-    input  wire                  clk,
-    input  wire                  rst_n,   
     input  wire [DATA_BIT - 1:0] i_in0,
     input  wire [DATA_BIT - 1:0] i_in1,
     input  wire                  i_carry,
@@ -20,166 +18,85 @@ module alu #(
 
     always @ (*) begin
         case (i_aluop)
-        /*
-            ALU_OP_ADD  : begin
-                w_temp  = {1'b0, i_in0} + {1'b0, i_in1} + {16'h0000, i_carry};
-                o_out   = w_temp[15:0];
-                o_carry = w_temp[16];
-            end
-            ALU_OP_SUB  : begin
-                w_temp  = {1'b0, i_in0} - {1'b0, i_in1} - {16'h0000, i_carry};
-                o_out   = w_temp[15:0];
-                o_carry = w_temp[16];
-            end
-            ALU_OP_ID   : begin // output ?넀 input1
-                w_temp  = 17'b00000000000000000;
-                o_out   = i_in0;
-                o_carry = 1'b0; 
-            end  
-            ALU_OP_NAND : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = ~(i_in0 & i_in1);
-                o_carry = 1'b0;
-            end
-            ALU_OP_NOR  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = ~(i_in0 | i_in1);
-                o_carry = 1'b0;
-            end
-            ALU_OP_XNOR : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = ~(i_in0 ^ i_in1);
-                o_carry = 1'b0;
-            end
-            ALU_OP_NOT  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = ~i_in0;
-                o_carry = 1'b0;
-            end
-            ALU_OP_AND  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = i_in0 & i_in1;
-                o_carry = 1'b0;
-            end
-            ALU_OP_OR   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = i_in0 | i_in1;
-                o_carry = 1'b0;
-            end
-            ALU_OP_XOR  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = i_in0 ^ i_in1;
-                o_carry = 1'b0;
-            end
-            ALU_OP_LRS  : begin // Shift Right
-                w_temp  = 17'b00000000000000000;
-                o_out   = {1'b0, i_in0[15:1]}; // i_in0 >> 1
-                o_carry = i_in0[0];
-            end
-            ALU_OP_ARS  : begin // Arithmetic Right
-                w_temp  = 17'b00000000000000000;
-                o_out   = {i_in0[15], i_in0[15:1]}; // i_in0 >>> 1
-                o_carry = i_in0[0];
-            end
-            ALU_OP_RR   : begin // Rotate Right
-                w_temp  = 17'b00000000000000000;
-                o_out   = {i_in0[0], i_in0[15:1]};
-                o_carry = 1'b0;
-            end
-            ALU_OP_LLS  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = {i_in0[14:0], 1'b0}; // i_in0 << 1
-                o_carry = i_in0[15];
-            end
-            ALU_OP_ALS  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = {i_in0[14:0], 1'b0}; // i_in0 <<< 1
-                o_carry = i_in0[15]; 
-            end
-            ALU_OP_RL   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = {i_in0[14:0], i_in0[15]};
-                o_carry = 1'b0;
-            end
-            ALU_OP_TCP  : begin // output ?넀 ~input1 +1
-                w_temp  = {1'b0, ~i_in0} + 17'b00000000000000001;
-                o_out   = w_temp[15:0];
-                o_carry = w_temp[16];
-            end
-            ALU_OP_SHL  : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = i_in1 << 8;
-                o_carry = 1'b0;
-            end
-            ALU_OP_NE   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = o_out;
-                o_carry = o_carry;
-            end
-            ALU_OP_EQ   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = o_out;
-                o_carry = o_carry;
-            end
-            ALU_OP_GZ   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = o_out;
-                o_carry = o_carry;
-            end
-            ALU_OP_LZ   : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = o_out;
-                o_carry = o_carry;
-            end
-            default     : begin
-                w_temp  = 17'b00000000000000000;
-                o_out   = 16'h0000;
-                o_carry = 1'b0;
-            end
-            */
-            (`ALU_CTR_AND) : begin
+             (`ALU_CTR_AND) : begin // 4'd0
                 r_temp  = {(DATA_BIT + 1){1'b0}};
                 r_out   = i_in0 & i_in1;
                 r_carry = 1'b0;
                 r_zero  = 1'b0;
             end
-            (`ALU_CTR_OR)  : begin
+            (`ALU_CTR_OR)   : begin // 4'd1
                 r_temp  = {(DATA_BIT + 1){1'b0}};
                 r_out   = i_in0 | i_in1;
                 r_carry = 1'b0;
                 r_zero  = 1'b0;
             end
-            (`ALU_CTR_NOR) : begin
-                r_temp  = {(DATA_BIT + 1){1'b0}};
-                r_out   = ~(i_in0 | i_in1);
-                r_carry = 1'b0;
-                r_zero  = 1'b0;
-            end
-            (`ALU_CTR_ADD) : begin
+            (`ALU_CTR_ADD)  : begin // 4'd2
                 r_temp  = {1'b0, i_in0} + {1'b0, i_in1} + {{(DATA_BIT){1'b0}}, i_carry};
                 r_out   = r_temp[DATA_BIT - 1:0];
                 r_carry = r_temp[DATA_BIT];
                 r_zero  = 1'b0;
             end
-            (`ALU_CTR_SUB) : begin
-                r_temp  = {1'b0, i_in0} - {1'b0, i_in1} - {{(DATA_BIT){1'b0}}, i_carry};
-                r_out   = r_temp[DATA_BIT - 1:0];
-                r_carry = r_temp[DATA_BIT];
-                r_zero  = 1'b1;
-            end
-            (`ALU_CTR_SLT) : begin
-                r_temp  = {1'b0, i_in0} - {1'b0, i_in1} - {{(DATA_BIT){1'b0}}, i_carry};
-                r_out   = (r_temp < {(DATA_BIT + 1){1'b0}}) ? 1'b1 : 1'b0;
+            (`ALU_CTR_XOR)  : begin // 4'd3
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = i_in0 ^ i_in1;
                 r_carry = 1'b0;
                 r_zero  = 1'b0;
             end
-            (`ALU_CTR_LUI) : begin
+            (`ALU_CTR_LUI)  : begin // 4'd4
                 r_temp  = {(DATA_BIT + 1){1'b0}};
                 r_out   = /*{i_in1, (DATA_BIT / 2){1'b0}}*/ i_in1 << (DATA_BIT / 2);
                 r_carry = 1'b0;
                 r_zero  = 1'b0;
             end
-            default        : begin
+            (`ALU_CTR_SUB)  : begin // 4'd6
+                r_temp  = {1'b0, i_in0} - {1'b0, i_in1} - {{(DATA_BIT){1'b0}}, i_carry};
+                r_out   = r_temp[DATA_BIT - 1:0];
+                r_carry = r_temp[DATA_BIT];
+                if (r_out == {DATA_BIT{1'b0}}) begin    // BEQ or BNE
+                    r_zero  = 1'b1;
+                end
+                else begin
+                    r_zero  = 1'b0;
+                end
+            end
+            (`ALU_CTR_SLT)  : begin // 4'd7
+                r_temp                  = {1'b0, i_in0} - {1'b0, i_in1} - {{(DATA_BIT){1'b0}}, i_carry};
+                r_out[DATA_BIT - 1 : 1] = {(DATA_BIT - 1){1'b0}};
+                r_out[0]                = (r_temp < {(DATA_BIT + 1){1'b0}}) ? 1'b1 : 1'b0;
+                r_carry                 = 1'b0;
+                r_zero                  = 1'b0;
+            end
+            (`ALU_CTR_SLL)  : begin // 4'd9
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = i_in0 << i_in1;
+                r_carry = 1'b0;
+                r_zero  = 1'b0;
+            end
+            (`ALU_CTR_SRL)  : begin // 4'd10
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = i_in0 >>> i_in1;  // unsinged
+                r_carry = 1'b0;
+                r_zero  = 1'b0;
+            end
+             (`ALU_CTR_SRA) : begin // 4'd11
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = i_in0 >> i_in1;   // signed
+                r_carry = 1'b0;
+                r_zero  = 1'b0;
+            end           
+            (`ALU_CTR_NOR)  : begin // 4'd12
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = ~(i_in0 | i_in1);
+                r_carry = 1'b0;
+                r_zero  = 1'b0;
+            end
+            (`ALU_CTR_XXX)  : begin // 4'd15
+                r_temp  = {(DATA_BIT + 1){1'b0}};
+                r_out   = {DATA_BIT{1'b0}};
+                r_carry = 1'b0;
+                r_zero  = 1'b0;
+            end
+            default         : begin
                 r_temp  = {(DATA_BIT + 1){1'b0}};
                 r_out   = {DATA_BIT{1'b0}};
                 r_carry = 1'b0;
