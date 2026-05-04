@@ -1,0 +1,22 @@
+# Vivado logs
+*.log
+*.jou
+*.pb
+
+# Simulation
+.sim/
+.cache/
+xsim/
+*.wdb
+*.wcfg
+
+# Build files
+*.obj
+*.exe
+
+# Backup
+*.backup.*
+*~
+
+# Temp
+*.tmp
