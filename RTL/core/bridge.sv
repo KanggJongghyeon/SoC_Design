@@ -44,6 +44,7 @@ module id_ex #(
     input   wire                        clk,
     input   wire                        rst_n,
     input   wire    [ADDR_BIT - 1:0]    i_pc_add4_addr, // from IF-ID Bridge
+    input   wire    [REG_BIT - 1:0]     i_rs,           // from  I-Decoder
     input   wire    [REG_BIT - 1:0]     i_rt,           // from I-Decoder
     input   wire    [REG_BIT - 1:0]     i_rd,           // from I-Decoder
     input   wire    [5:0]               i_funct,        // from I-Decoder
@@ -70,6 +71,7 @@ module id_ex #(
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,   // to   ALUSrc  MUX & ex_mem
     output  wire    [DATA_BIT - 1:0]    o_sign_extend,  // to   ALUSrc  MUX & Branch ShiftLef2
     output  wire    [ADDR_BIT - 1:0]    o_pc_add4_addr, // to   EX-MEM Bridge
+    output  wire    [REG_BIT - 1:0]     o_rs,           // to   Forwarding Unit
     output  wire    [REG_BIT - 1:0]     o_rt,           // to   EX-MEM Bridge
     output  wire    [REG_BIT - 1:0]     o_rd,           // to   EX-MEM Bridge
     output  wire                        o_regdst,       // to   EX-MEM Bridge
@@ -79,7 +81,7 @@ module id_ex #(
     output  wire                        o_memwrite      // to   EX-MEM Bridge
     );
    
-    reg [REG_BIT - 1:0]     r_rt,           r_rd;
+    reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
     reg [2:0]               r_aluop;
     reg                     r_regdst,       r_regwrite;
     reg                     r_alusrc,       r_memtoreg;
@@ -93,6 +95,7 @@ module id_ex #(
 
         always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
+            r_rs            <= {REG_BIT{1'b0}};
             r_rt            <= {REG_BIT{1'b0}};
             r_rd            <= {REG_BIT{1'b0}};
             r_regdst        <= 1'b0;
@@ -112,6 +115,7 @@ module id_ex #(
             r_jump_addr     <= {(DATA_BIT){1'b0}};
         end
         else begin
+            r_rs            <= i_rs;
             r_rt            <= i_rt;
             r_rd            <= i_rd;
             r_regdst        <= i_regdst;
@@ -132,6 +136,7 @@ module id_ex #(
         end
     end
 
+    assign o_rs             = r_rs;
     assign o_rt             = r_rt;
     assign o_rd             = r_rd;
     assign o_regdst         = r_regdst;
@@ -171,7 +176,7 @@ module ex_mem #(
     input   wire                        i_memwrite,     // from ID-EX Bridge
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   // from ID-EX Bridge
     input   wire    [DATA_BIT - 1:0]    i_alu_out,      // from ALU
-    output  wire    [REG_BIT - 1:0]     o_rt,           // to   MEM-WB Bridge
+    output  wire    [REG_BIT - 1:0]     o_rt,           // to   MEM-WB Bridge & Forwarding Unit
     output  wire    [REG_BIT - 1:0]     o_rd,           // to   MEM-WB Bridge
     output  wire                        o_regdst,       // to   MEM-WB Bridge
     output  wire                        o_memtoreg,     // to   MEN-WB Bridge
