@@ -36,3 +36,9 @@ SoC_Design/*.pb
 
 # Office temp
 ~$*
+
+# TEST_CASE
+SIM/TEST_CASE/convert.o
+SIM/TEST_CASE/main.o
+SIM/TEST_CASE/main.exe
+SIM/TEST_CASE/test_case_x.txt
