@@ -594,7 +594,7 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
         immData         = immData       & negOffset;
         *oInstruction   = *oInstruction | immData;
     }
-    printf("DEBUG : immData : %08x\n", immData);
+    //printf("DEBUG : immData : %08x\n", immData);
 }
 
 ////////////////////
