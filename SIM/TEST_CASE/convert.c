@@ -548,6 +548,8 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
     char    immCount            = 0;
     char    immStr[IMM_STR_LEN] = {0};  
     int     immData             = 0;
+    int     negOffset           = 0x0000FFFF;
+
     while (iLineData[charCount] != ',')
     {
         charCount++;
@@ -583,7 +585,16 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
     }
     immStr[immCount]    = '\0';
     immData             = atoi(immStr);
-    *oInstruction       = *oInstruction | immData;
+    if (immData > 0)
+    {
+        *oInstruction   = *oInstruction | immData;
+    }
+    else
+    {
+        immData         = immData       & negOffset;
+        *oInstruction   = *oInstruction | immData;
+    }
+    printf("DEBUG : immData : %08x\n", immData);
 }
 
 ////////////////////
