@@ -1,18 +1,32 @@
 `timescale 1ns / 1ps
-module forwarding_unit #(
+module alu_forwarding_unit #(
     parameter   REG_BIT = 4
     )(
-    input   wire    [REG_BIT - 1:0] i_wr_reg,
-    input   wire    [REG_BIT - 1:0] i_rd_reg0,
-    input   wire    [REG_BIT - 1:0] i_rd_reg1,
+    input   wire                    i_mem_regwrite,
+    input   wire    [REG_BIT - 1:0] i_mem_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_ex_rs,
+    input   wire    [REG_BIT - 1:0] i_ex_rt,
     output  wire                    o_forward_a,
     output  wire                    o_forward_b
     );
 
-    assign o_forward_a = (i_wr_reg == i_rd_reg0);
-    assign o_forward_b = (i_wr_reg == i_rd_reg1);
+    assign o_forward_a  = (i_mem_regwrite == 1'b1) && (i_mem_wr_reg != {REG_BIT{1'b0}}) && (i_mem_wr_reg == i_ex_rs);
+    assign o_forward_b  = (i_mem_regwrite == 1'b1) && (i_mem_wr_reg != {REG_BIT{1'b0}}) && (i_mem_wr_reg == i_ex_rt);
 
-endmodule    
+endmodule
+
+module wdata_forwarding_unit #(
+    parameter   REG_BIT = 4
+    )(
+    input   wire                    i_wb_regwrite,
+    input   wire    [REG_BIT - 1:0] i_wb_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_mem_rt,
+    output  wire                    o_forward
+    );
+
+    assign o_forward    = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_mem_rt);
+
+endmodule
 /*
 /////////////////////////////////////
 // memtoreg Buffer for checking LW //

@@ -8,10 +8,10 @@ module if_id #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
-    input   wire    [DATA_BIT - 1:0]    i_i_mem_data,   // from I-MEM
-    input   wire    [ADDR_BIT - 1:0]    i_pc_add4_addr, // from PC+4 ADDER
-    output  wire    [DATA_BIT - 1:0]    o_i_mem_data,   // to   I-Decoder
-    output  wire    [ADDR_BIT - 1:0]    o_pc_add4_addr  // to   ID-EX Bridge
+    input   wire    [DATA_BIT - 1:0]    i_i_mem_data,   
+    input   wire    [ADDR_BIT - 1:0]    i_pc_add4_addr, 
+    output  wire    [DATA_BIT - 1:0]    o_i_mem_data,   
+    output  wire    [ADDR_BIT - 1:0]    o_pc_add4_addr  
     );
 
     reg [DATA_BIT - 1:0]    r_i_mem_data;
@@ -43,42 +43,42 @@ module id_ex #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
-    input   wire    [ADDR_BIT - 1:0]    i_pc_add4_addr, // from IF-ID Bridge
-    input   wire    [REG_BIT - 1:0]     i_rs,           // from  I-Decoder
-    input   wire    [REG_BIT - 1:0]     i_rt,           // from I-Decoder
-    input   wire    [REG_BIT - 1:0]     i_rd,           // from I-Decoder
-    input   wire    [5:0]               i_funct,        // from I-Decoder
-    input   wire    [DATA_BIT - 1:0]    i_jump_addr,    // from I-Decoder
-    input   wire                        i_regdst,       // from Control Unit
-    input   wire                        i_alusrc,       // from Control Unit
-    input   wire                        i_memtoreg,     // from Control Unit
-    input   wire                        i_regwrite,     // from Control Unit
-    input   wire                        i_memread,      // from Control Unit
-    input   wire                        i_memwrite,     // from Control Unit
-    input   wire                        i_branch,       // from Control Unit
-    input   wire    [2:0]               i_aluop,        // from Control Unit
-    input   wire                        i_jump,         // from Control Unit
-    input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   // from Registers
-    input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   // from Registers
-    input   wire    [DATA_BIT - 1:0]    i_sign_extend,  // from Sign-Extend Unit
-    output  wire                        o_branch,       // to   be Contorl Input of Branch MUX
-    output  wire                        o_jump,         // to   Jump MUX
-    output  wire    [DATA_BIT - 1:0]    o_jump_addr,    // to   EX-MEM Brdige or Jump    Mux 
-    output  wire    [2:0]               o_aluop,        // to   ALU Control
-    output  wire    [5:0]               o_funct,        // to   ALU Control
-    output  wire                        o_alusrc,       // to   ALUSrc  MUX
-    output  wire    [DATA_BIT - 1:0]    o_reg_rdata1,   // to   ALU
-    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,   // to   ALUSrc  MUX & ex_mem
-    output  wire    [DATA_BIT - 1:0]    o_sign_extend,  // to   ALUSrc  MUX & Branch ShiftLef2
-    output  wire    [ADDR_BIT - 1:0]    o_pc_add4_addr, // to   EX-MEM Bridge
-    output  wire    [REG_BIT - 1:0]     o_rs,           // to   Forwarding Unit
-    output  wire    [REG_BIT - 1:0]     o_rt,           // to   EX-MEM Bridge
-    output  wire    [REG_BIT - 1:0]     o_rd,           // to   EX-MEM Bridge
-    output  wire                        o_regdst,       // to   EX-MEM Bridge
-    output  wire                        o_memtoreg,     // to   EX-MEM Bridge
-    output  wire                        o_regwrite,     // to   EX-MEM Bridge
-    output  wire                        o_memread,      // to   EX-MEM Bridge
-    output  wire                        o_memwrite      // to   EX-MEM Bridge
+    input   wire    [ADDR_BIT - 1:0]    i_pc_add4_addr, 
+    input   wire    [REG_BIT - 1:0]     i_rs,           
+    input   wire    [REG_BIT - 1:0]     i_rt,           
+    input   wire    [REG_BIT - 1:0]     i_rd,           
+    input   wire    [5:0]               i_funct,        
+    input   wire    [DATA_BIT - 1:0]    i_jump_addr,    
+    input   wire                        i_regdst,       
+    input   wire                        i_alusrc,       
+    input   wire                        i_memtoreg,     
+    input   wire                        i_regwrite,     
+    input   wire                        i_memread,      
+    input   wire                        i_memwrite,     
+    input   wire                        i_branch,       
+    input   wire    [2:0]               i_aluop,        
+    input   wire                        i_jump,         
+    input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   
+    input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
+    input   wire    [DATA_BIT - 1:0]    i_sign_extend,  
+    output  wire                        o_branch,       
+    output  wire                        o_jump,         
+    output  wire    [DATA_BIT - 1:0]    o_jump_addr,    
+    output  wire    [2:0]               o_aluop,        
+    output  wire    [5:0]               o_funct,        
+    output  wire                        o_alusrc,       
+    output  wire    [DATA_BIT - 1:0]    o_reg_rdata1,   
+    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,   
+    output  wire    [DATA_BIT - 1:0]    o_sign_extend,  
+    output  wire    [ADDR_BIT - 1:0]    o_pc_add4_addr, 
+    output  wire    [REG_BIT - 1:0]     o_rs,           
+    output  wire    [REG_BIT - 1:0]     o_rt,           
+    output  wire    [REG_BIT - 1:0]     o_rd,           
+    output  wire                        o_regdst,       
+    output  wire                        o_memtoreg,     
+    output  wire                        o_regwrite,     
+    output  wire                        o_memread,      
+    output  wire                        o_memwrite      
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
@@ -167,24 +167,24 @@ module ex_mem #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
-    input   wire    [REG_BIT - 1:0]     i_rt,           // from ID-EX Bridge
-    input   wire    [REG_BIT - 1:0]     i_rd,           // from ID-EX Bridge
-    input   wire                        i_regdst,       // from ID-EX Bridge
-    input   wire                        i_memtoreg,     // from ID-EX Bridge
-    input   wire                        i_regwrite,     // from ID-EX Bridge
-    input   wire                        i_memread,      // from ID-EX Bridge
-    input   wire                        i_memwrite,     // from ID-EX Bridge
-    input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   // from ID-EX Bridge
-    input   wire    [DATA_BIT - 1:0]    i_alu_out,      // from ALU
-    output  wire    [REG_BIT - 1:0]     o_rt,           // to   MEM-WB Bridge & Forwarding Unit
-    output  wire    [REG_BIT - 1:0]     o_rd,           // to   MEM-WB Bridge
-    output  wire                        o_regdst,       // to   MEM-WB Bridge
-    output  wire                        o_memtoreg,     // to   MEN-WB Bridge
-    output  wire                        o_regwrite,     // to   MEM-WB Bridge
-    output  wire                        o_memread,      // to   be D-MEM Read  Enable
-    output  wire                        o_memwrite,     // to   be D-MEM Write Enable
-    output  wire    [DATA_BIT - 1:0]    o_alu_out,      // to D-MEM ADDR
-    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2    // to D-MEM DATA
+    input   wire    [REG_BIT - 1:0]     i_rt,           
+    input   wire    [REG_BIT - 1:0]     i_rd,           
+    input   wire                        i_regdst,       
+    input   wire                        i_memtoreg,     
+    input   wire                        i_regwrite,     
+    input   wire                        i_memread,      
+    input   wire                        i_memwrite,     
+    input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
+    input   wire    [DATA_BIT - 1:0]    i_alu_out,      
+    output  wire    [REG_BIT - 1:0]     o_rt,           
+    output  wire    [REG_BIT - 1:0]     o_rd,           
+    output  wire                        o_regdst,       
+    output  wire                        o_memtoreg,     
+    output  wire                        o_regwrite,     
+    output  wire                        o_memread,      
+    output  wire                        o_memwrite,     
+    output  wire    [DATA_BIT - 1:0]    o_alu_out,      
+    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2    
     );
 
     reg [REG_BIT - 1:0]     r_rt,           r_rd;
@@ -241,26 +241,24 @@ module mem_wb #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
-    input   wire    [REG_BIT - 1:0]     i_rt,           // from EX-MEM Bridge
-    input   wire    [REG_BIT - 1:0]     i_rd,           // from EX-MEM Bridge
-    input   wire                        i_regdst,       // from EX-MEM Bridge
-    input   wire                        i_memtoreg,     // form EX-MEM Bridge
-    input   wire                        i_regwrite,     // from EX-MEM Bridge
-    //input   wire    [DATA_BIT - 1:0]    i_d_mem_rdata,  // from D-MEM
-    input   wire    [DATA_BIT - 1:0]    i_alu_out,      // from ALU
-    output  wire                        o_regdst,       // to   RegDst   MUX Control Input
-    output  wire    [REG_BIT - 1:0]     o_rt,           // to   RegDst   MUX (0)
-    output  wire    [REG_BIT - 1:0]     o_rd,           // to   RegDst   MUX (1)
-    output  wire                        o_memtoreg,     // to   MemtoReg MUX Control Input
-    output  wire                        o_regwrite,     // to   Registers
-    //output  wire    [DATA_BIT - 1:0]    o_d_mem_rdata,  // to   MemtoReg MUX Input (1)
-    output  wire    [DATA_BIT - 1:0]    o_alu_out       // to   MemtoReg MUX Input (0)
+    input   wire    [REG_BIT - 1:0]     i_rt,           
+    input   wire    [REG_BIT - 1:0]     i_rd,           
+    input   wire                        i_regdst,       
+    input   wire                        i_memtoreg,     
+    input   wire                        i_regwrite,     
+    input   wire    [DATA_BIT - 1:0]    i_alu_out,      
+    output  wire                        o_regdst,       
+    output  wire    [REG_BIT - 1:0]     o_rt,           
+    output  wire    [REG_BIT - 1:0]     o_rd,           
+    output  wire                        o_memtoreg,     
+    output  wire                        o_regwrite,     
+    output  wire    [DATA_BIT - 1:0]    o_alu_out       
     );
     
     reg [REG_BIT - 1:0]     r_rt,           r_rd;
     reg                     r_regdst;
     reg                     r_memtoreg,     r_regwrite;
-    reg [DATA_BIT - 1:0]    /*r_d_mem_rdata,*/  r_alu_out;
+    reg [DATA_BIT - 1:0]    r_alu_out;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
@@ -269,7 +267,6 @@ module mem_wb #(
             r_regdst        <= 1'b0;
             r_memtoreg      <= 1'b0;
             r_regwrite      <= 1'b0;
-            //r_d_mem_rdata   <= {(DATA_BIT){1'b0}};
             r_alu_out       <= {(DATA_BIT){1'b0}};
         end
         else begin
@@ -278,7 +275,6 @@ module mem_wb #(
             r_regdst        <= i_regdst;
             r_memtoreg      <= i_memtoreg;
             r_regwrite      <= i_regwrite;
-            //r_d_mem_rdata   <= i_d_mem_rdata;
             r_alu_out       <= i_alu_out;
         end
     end
@@ -288,7 +284,6 @@ module mem_wb #(
     assign o_regdst         = r_regdst;
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
-    //assign o_d_mem_rdata    = r_d_mem_rdata;
     assign o_alu_out        = r_alu_out;
 
 endmodule
