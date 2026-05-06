@@ -1,5 +1,10 @@
 nop
 addiu $v0, $zero, -17
+addiu $v1, $zero, 16
+addiu $a0, $zero, 1
+addiu $a1, $zero, 10
+addiu $a2, $zero, -10
+add $a3, $v0, $a0
 addiu $t0, $zero, 16
 addiu $t1, $zero, 32
 addiu $t2, $zero, 48
@@ -33,15 +38,43 @@ lw $t5, 8($zero)
 lw $t6, 4($zero)
 lw $t7, 0($zero)
 addiu $s0, $t0, 8
+sw $s0, 32($zero)
 add $s1, $s0, $v0
+sw $s1, 36($zero)
 addiu $s2, $t2, 6
+sw $s2, 40($zero)
 add $s3, $s2, $v0
+sw $s3, 44($zero)
 addiu $s4, $t4, 4
+sw $s4, 48($zero)
 add $s5, $v0, $s4
+sw $s5, 52($zero)
 addiu $s6, $t6, 2
+sw $s6, 56($zero)
 add $s7, $s6, $v0
+sw $s7, 60($zero)
 nop
 nop
+nop
+nop
+nop
+add $t0, $t1, $t2
+add $t3, $t0, $t1
+nop
+nop
+nop
+add $t0, $t1, $t3
+addi $t4, $t0, 1
+nop
+nop
+nop
+addi $t0, $t1, 2
+add $t5, $t1, $t0
+nop
+nop
+nop
+addi $t0, $t1, 4
+addi $t6, $t0, 16
 nop
 nop
 nop
