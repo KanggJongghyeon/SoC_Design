@@ -121,7 +121,7 @@ module ctr_unit #(
                 r_branch        = 1'b0;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = 1'b0;
-                r_sign_extend   = 1'b1;
+                r_sign_extend   = 1'b0;
             end
             `OP_SLTI  : begin   // 6'd10
                 r_regdst        = r_regdst;
