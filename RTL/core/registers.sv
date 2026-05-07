@@ -21,23 +21,19 @@ module registers #(
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            //r_rd_data1 <= {DATA_BIT{1'b0}};
-            //r_rd_data2 <= {DATA_BIT{1'b0}};
             for (integer i = 0; i < NUM_REG; i = i + 1) begin
                 register[i] <= {DATA_BIT{1'b0}};
             end
         end
         else begin
-            //r_rd_data1 <= register[i_rd_reg1];
-            //r_rd_data2 <= register[i_rd_reg2];
             if (i_regwrite == 1'b1) begin
                 register[i_wr_reg] <= i_wr_data;
             end
         end
     end
 
-    assign o_rd_data1 = /*r_rd_data1*/register[i_rd_reg1];
-    assign o_rd_data2 = /*r_rd_data2*/register[i_rd_reg2];
+    assign o_rd_data1 = ((i_regwrite == 1'b1) && (i_rd_reg1 == i_wr_reg)) ? i_wr_data : register[i_rd_reg1];
+    assign o_rd_data2 = ((i_regwrite == 1'b1) && (i_rd_reg2 == i_wr_reg)) ? i_wr_data : register[i_rd_reg2];
     
 /*
 MIPS SW Conventions for Registers
