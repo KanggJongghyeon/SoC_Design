@@ -646,8 +646,8 @@ void convert()
         switch(opcodeType[line])
         {
             case TYPE_NONE:
-                printf("[ERROR] Could Not Find OPCODE Type");
-                printf(" : %s\n", assembly[line]);
+                printf("[ERROR] Could Not Find OPCODE Type, (Line %d)");
+                printf(" : %s\n", line, assembly[line]);
                 break;
             case TYPE_R:
                 getRd(assembly[line], &instruction[line]);
