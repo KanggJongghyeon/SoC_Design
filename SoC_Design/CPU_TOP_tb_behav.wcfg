@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="368.200 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,772.201 ns"></ZoomEndTime>
-      <Cursor1Time time="612.200 ns"></Cursor1Time>
+      <ZoomStartTime time="1.900 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,301.901 ns"></ZoomEndTime>
+      <Cursor1Time time="229.900 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="264"></NameColumnWidth>
-      <ValueColumnWidth column_width="65"></ValueColumnWidth>
+      <NameColumnWidth column_width="309"></NameColumnWidth>
+      <ValueColumnWidth column_width="72"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="5" />
    <wvobject fp_name="/tb_top_cpu/clk" type="logic">
@@ -31,6 +31,10 @@
    <wvobject fp_name="group38" type="group">
       <obj_property name="label">I-MEM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/tb_top_cpu/u_inst_mem/clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
       <wvobject fp_name="/tb_top_cpu/u_inst_mem/i_en" type="logic">
          <obj_property name="ElementShortName">i_en</obj_property>
          <obj_property name="ObjectShortName">i_en</obj_property>
@@ -42,6 +46,7 @@
       <wvobject fp_name="/tb_top_cpu/u_inst_mem/i_addr" type="array">
          <obj_property name="ElementShortName">i_addr[11:0]</obj_property>
          <obj_property name="ObjectShortName">i_addr[11:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/tb_top_cpu/u_inst_mem/i_data" type="array">
          <obj_property name="ElementShortName">i_data[31:0]</obj_property>
@@ -63,6 +68,7 @@
       <wvobject fp_name="group4255" type="group">
          <obj_property name="label">IF</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="group4376" type="group">
             <obj_property name="label">PC MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
@@ -86,7 +92,6 @@
          <wvobject fp_name="group4260" type="group">
             <obj_property name="label">PC</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_pc/clk" type="logic">
                <obj_property name="ElementShortName">clk</obj_property>
                <obj_property name="ObjectShortName">clk</obj_property>
@@ -107,6 +112,14 @@
                <obj_property name="ElementShortName">o_mem_addr[11:0]</obj_property>
                <obj_property name="ObjectShortName">o_mem_addr[11:0]</obj_property>
             </wvobject>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/o_i_mem_en" type="logic">
+            <obj_property name="ElementShortName">o_i_mem_en</obj_property>
+            <obj_property name="ObjectShortName">o_i_mem_en</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/o_i_mem_addr" type="array">
+            <obj_property name="ElementShortName">o_i_mem_addr[11:0]</obj_property>
+            <obj_property name="ObjectShortName">o_i_mem_addr[11:0]</obj_property>
          </wvobject>
          <wvobject fp_name="group4261" type="group">
             <obj_property name="label">ADDR+4 ADDER</obj_property>
@@ -169,10 +182,13 @@
                <obj_property name="ObjectShortName">o_o[27:0]</obj_property>
             </wvobject>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/w_id_jump_addr" type="array">
+            <obj_property name="ElementShortName">w_id_jump_addr[31:0]</obj_property>
+            <obj_property name="ObjectShortName">w_id_jump_addr[31:0]</obj_property>
+         </wvobject>
          <wvobject fp_name="group4339" type="group">
             <obj_property name="label">I-DECODER</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_inst_decoder/i_data" type="array">
                <obj_property name="ElementShortName">i_data[31:0]</obj_property>
                <obj_property name="ObjectShortName">i_data[31:0]</obj_property>
@@ -218,7 +234,6 @@
          <wvobject fp_name="group4268" type="group">
             <obj_property name="label">CONTROL UNIT</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_control_unit/i_opcode" type="array">
                <obj_property name="ElementShortName">i_opcode[5:0]</obj_property>
                <obj_property name="ObjectShortName">i_opcode[5:0]</obj_property>
@@ -270,33 +285,9 @@
                <obj_property name="ObjectShortName">o_arbiter_req</obj_property>
             </wvobject>
          </wvobject>
-         <wvobject fp_name="group4361" type="group">
-            <obj_property name="label">REGDST MUX</obj_property>
-            <obj_property name="DisplayName">label</obj_property>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_ctr" type="logic">
-               <obj_property name="ElementShortName">i_ctr</obj_property>
-               <obj_property name="ObjectShortName">i_ctr</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_i0" type="array">
-               <obj_property name="ElementShortName">i_i0[4:0]</obj_property>
-               <obj_property name="ObjectShortName">i_i0[4:0]</obj_property>
-               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_i1" type="array">
-               <obj_property name="ElementShortName">i_i1[4:0]</obj_property>
-               <obj_property name="ObjectShortName">i_i1[4:0]</obj_property>
-               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-            </wvobject>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/o_o" type="array">
-               <obj_property name="ElementShortName">o_o[4:0]</obj_property>
-               <obj_property name="ObjectShortName">o_o[4:0]</obj_property>
-               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-            </wvobject>
-         </wvobject>
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">REGISTERS</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/clk" type="logic">
                <obj_property name="ElementShortName">clk</obj_property>
                <obj_property name="ObjectShortName">clk</obj_property>
@@ -332,160 +323,21 @@
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/o_rd_data1" type="array">
                <obj_property name="ElementShortName">o_rd_data1[31:0]</obj_property>
                <obj_property name="ObjectShortName">o_rd_data1[31:0]</obj_property>
-               <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/o_rd_data2" type="array">
                <obj_property name="ElementShortName">o_rd_data2[31:0]</obj_property>
                <obj_property name="ObjectShortName">o_rd_data2[31:0]</obj_property>
-               <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register" type="array">
                <obj_property name="ElementShortName">register[0:31][31:0]</obj_property>
                <obj_property name="ObjectShortName">register[0:31][31:0]</obj_property>
-               <obj_property name="isExpanded"></obj_property>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[0]" type="array">
-                  <obj_property name="ElementShortName">[0][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[0][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[1]" type="array">
-                  <obj_property name="ElementShortName">[1][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[1][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[2]" type="array">
-                  <obj_property name="ElementShortName">[2][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[2][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[3]" type="array">
-                  <obj_property name="ElementShortName">[3][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[3][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[4]" type="array">
-                  <obj_property name="ElementShortName">[4][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[4][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[5]" type="array">
-                  <obj_property name="ElementShortName">[5][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[5][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[6]" type="array">
-                  <obj_property name="ElementShortName">[6][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[6][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[7]" type="array">
-                  <obj_property name="ElementShortName">[7][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[7][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[8]" type="array">
-                  <obj_property name="ElementShortName">[8][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[8][31:0]</obj_property>
-                  <obj_property name="Radix">HEXRADIX</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[9]" type="array">
-                  <obj_property name="ElementShortName">[9][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[9][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[10]" type="array">
-                  <obj_property name="ElementShortName">[10][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[10][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[11]" type="array">
-                  <obj_property name="ElementShortName">[11][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[11][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[12]" type="array">
-                  <obj_property name="ElementShortName">[12][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[12][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[13]" type="array">
-                  <obj_property name="ElementShortName">[13][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[13][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[14]" type="array">
-                  <obj_property name="ElementShortName">[14][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[14][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[15]" type="array">
-                  <obj_property name="ElementShortName">[15][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[15][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[16]" type="array">
-                  <obj_property name="ElementShortName">[16][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[16][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[17]" type="array">
-                  <obj_property name="ElementShortName">[17][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[17][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[18]" type="array">
-                  <obj_property name="ElementShortName">[18][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[18][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[19]" type="array">
-                  <obj_property name="ElementShortName">[19][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[19][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[20]" type="array">
-                  <obj_property name="ElementShortName">[20][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[20][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[21]" type="array">
-                  <obj_property name="ElementShortName">[21][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[21][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[22]" type="array">
-                  <obj_property name="ElementShortName">[22][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[22][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[23]" type="array">
-                  <obj_property name="ElementShortName">[23][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[23][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[24]" type="array">
-                  <obj_property name="ElementShortName">[24][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[24][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[25]" type="array">
-                  <obj_property name="ElementShortName">[25][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[25][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[26]" type="array">
-                  <obj_property name="ElementShortName">[26][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[26][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[27]" type="array">
-                  <obj_property name="ElementShortName">[27][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[27][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[28]" type="array">
-                  <obj_property name="ElementShortName">[28][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[28][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[29]" type="array">
-                  <obj_property name="ElementShortName">[29][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[29][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[30]" type="array">
-                  <obj_property name="ElementShortName">[30][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[30][31:0]</obj_property>
-               </wvobject>
-               <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_registers/register[31]" type="array">
-                  <obj_property name="ElementShortName">[31][31:0]</obj_property>
-                  <obj_property name="ObjectShortName">[31][31:0]</obj_property>
-               </wvobject>
             </wvobject>
          </wvobject>
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">SIGN-EXTEND</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_sign_extend/i_sign_extend" type="logic">
                <obj_property name="ElementShortName">i_sign_extend</obj_property>
                <obj_property name="ObjectShortName">i_sign_extend</obj_property>
@@ -511,9 +363,14 @@
             <obj_property name="ElementShortName">rst_n</obj_property>
             <obj_property name="ObjectShortName">rst_n</obj_property>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_pc_add4_addr" type="array">
+            <obj_property name="ElementShortName">i_pc_add4_addr[11:0]</obj_property>
+            <obj_property name="ObjectShortName">i_pc_add4_addr[11:0]</obj_property>
+         </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_rs" type="array">
             <obj_property name="ElementShortName">i_rs[4:0]</obj_property>
             <obj_property name="ObjectShortName">i_rs[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_rt" type="array">
             <obj_property name="ElementShortName">i_rt[4:0]</obj_property>
@@ -524,6 +381,15 @@
             <obj_property name="ElementShortName">i_rd[4:0]</obj_property>
             <obj_property name="ObjectShortName">i_rd[4:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_funct" type="array">
+            <obj_property name="ElementShortName">i_funct[5:0]</obj_property>
+            <obj_property name="ObjectShortName">i_funct[5:0]</obj_property>
+            <obj_property name="Radix">BINARYRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_jump_addr" type="array">
+            <obj_property name="ElementShortName">i_jump_addr[31:0]</obj_property>
+            <obj_property name="ObjectShortName">i_jump_addr[31:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_regdst" type="logic">
             <obj_property name="ElementShortName">i_regdst</obj_property>
@@ -556,56 +422,84 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_aluop" type="array">
             <obj_property name="ElementShortName">i_aluop[2:0]</obj_property>
             <obj_property name="ObjectShortName">i_aluop[2:0]</obj_property>
+            <obj_property name="Radix">BINARYRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_jump" type="logic">
             <obj_property name="ElementShortName">i_jump</obj_property>
             <obj_property name="ObjectShortName">i_jump</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_pc_add4_addr" type="array">
-            <obj_property name="ElementShortName">i_pc_add4_addr[11:0]</obj_property>
-            <obj_property name="ObjectShortName">i_pc_add4_addr[11:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_funct" type="array">
-            <obj_property name="ElementShortName">i_funct[5:0]</obj_property>
-            <obj_property name="ObjectShortName">i_funct[5:0]</obj_property>
-         </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_reg_rdata1" type="array">
             <obj_property name="ElementShortName">i_reg_rdata1[31:0]</obj_property>
             <obj_property name="ObjectShortName">i_reg_rdata1[31:0]</obj_property>
-            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_reg_rdata2" type="array">
             <obj_property name="ElementShortName">i_reg_rdata2[31:0]</obj_property>
             <obj_property name="ObjectShortName">i_reg_rdata2[31:0]</obj_property>
-            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_sign_extend" type="array">
             <obj_property name="ElementShortName">i_sign_extend[31:0]</obj_property>
             <obj_property name="ObjectShortName">i_sign_extend[31:0]</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/i_jump_addr" type="array">
-            <obj_property name="ElementShortName">i_jump_addr[31:0]</obj_property>
-            <obj_property name="ObjectShortName">i_jump_addr[31:0]</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_branch" type="logic">
+            <obj_property name="ElementShortName">o_branch</obj_property>
+            <obj_property name="ObjectShortName">o_branch</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rs" type="array">
-            <obj_property name="ElementShortName">o_rs[4:0]</obj_property>
-            <obj_property name="ObjectShortName">o_rs[4:0]</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_jump" type="logic">
+            <obj_property name="ElementShortName">o_jump</obj_property>
+            <obj_property name="ObjectShortName">o_jump</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rt" type="array">
-            <obj_property name="ElementShortName">o_rt[4:0]</obj_property>
-            <obj_property name="ObjectShortName">o_rt[4:0]</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_jump_addr" type="array">
+            <obj_property name="ElementShortName">o_jump_addr[31:0]</obj_property>
+            <obj_property name="ObjectShortName">o_jump_addr[31:0]</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rd" type="array">
-            <obj_property name="ElementShortName">o_rd[4:0]</obj_property>
-            <obj_property name="ObjectShortName">o_rd[4:0]</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_aluop" type="array">
+            <obj_property name="ElementShortName">o_aluop[2:0]</obj_property>
+            <obj_property name="ObjectShortName">o_aluop[2:0]</obj_property>
+            <obj_property name="Radix">BINARYRADIX</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_regdst" type="logic">
-            <obj_property name="ElementShortName">o_regdst</obj_property>
-            <obj_property name="ObjectShortName">o_regdst</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_funct" type="array">
+            <obj_property name="ElementShortName">o_funct[5:0]</obj_property>
+            <obj_property name="ObjectShortName">o_funct[5:0]</obj_property>
+            <obj_property name="Radix">BINARYRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_alusrc" type="logic">
             <obj_property name="ElementShortName">o_alusrc</obj_property>
             <obj_property name="ObjectShortName">o_alusrc</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_reg_rdata1" type="array">
+            <obj_property name="ElementShortName">o_reg_rdata1[31:0]</obj_property>
+            <obj_property name="ObjectShortName">o_reg_rdata1[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_reg_rdata2" type="array">
+            <obj_property name="ElementShortName">o_reg_rdata2[31:0]</obj_property>
+            <obj_property name="ObjectShortName">o_reg_rdata2[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_sign_extend" type="array">
+            <obj_property name="ElementShortName">o_sign_extend[31:0]</obj_property>
+            <obj_property name="ObjectShortName">o_sign_extend[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_pc_add4_addr" type="array">
+            <obj_property name="ElementShortName">o_pc_add4_addr[11:0]</obj_property>
+            <obj_property name="ObjectShortName">o_pc_add4_addr[11:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rs" type="array">
+            <obj_property name="ElementShortName">o_rs[4:0]</obj_property>
+            <obj_property name="ObjectShortName">o_rs[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rt" type="array">
+            <obj_property name="ElementShortName">o_rt[4:0]</obj_property>
+            <obj_property name="ObjectShortName">o_rt[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_rd" type="array">
+            <obj_property name="ElementShortName">o_rd[4:0]</obj_property>
+            <obj_property name="ObjectShortName">o_rd[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_regdst" type="logic">
+            <obj_property name="ElementShortName">o_regdst</obj_property>
+            <obj_property name="ObjectShortName">o_regdst</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_memtoreg" type="logic">
             <obj_property name="ElementShortName">o_memtoreg</obj_property>
@@ -623,48 +517,11 @@
             <obj_property name="ElementShortName">o_memwrite</obj_property>
             <obj_property name="ObjectShortName">o_memwrite</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_branch" type="logic">
-            <obj_property name="ElementShortName">o_branch</obj_property>
-            <obj_property name="ObjectShortName">o_branch</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_aluop" type="array">
-            <obj_property name="ElementShortName">o_aluop[2:0]</obj_property>
-            <obj_property name="ObjectShortName">o_aluop[2:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_jump" type="logic">
-            <obj_property name="ElementShortName">o_jump</obj_property>
-            <obj_property name="ObjectShortName">o_jump</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_pc_add4_addr" type="array">
-            <obj_property name="ElementShortName">o_pc_add4_addr[11:0]</obj_property>
-            <obj_property name="ObjectShortName">o_pc_add4_addr[11:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_funct" type="array">
-            <obj_property name="ElementShortName">o_funct[5:0]</obj_property>
-            <obj_property name="ObjectShortName">o_funct[5:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_reg_rdata1" type="array">
-            <obj_property name="ElementShortName">o_reg_rdata1[31:0]</obj_property>
-            <obj_property name="ObjectShortName">o_reg_rdata1[31:0]</obj_property>
-            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_reg_rdata2" type="array">
-            <obj_property name="ElementShortName">o_reg_rdata2[31:0]</obj_property>
-            <obj_property name="ObjectShortName">o_reg_rdata2[31:0]</obj_property>
-            <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_sign_extend" type="array">
-            <obj_property name="ElementShortName">o_sign_extend[31:0]</obj_property>
-            <obj_property name="ObjectShortName">o_sign_extend[31:0]</obj_property>
-         </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_id_ex_bridge/o_jump_addr" type="array">
-            <obj_property name="ElementShortName">o_jump_addr[31:0]</obj_property>
-            <obj_property name="ObjectShortName">o_jump_addr[31:0]</obj_property>
-         </wvobject>
       </wvobject>
       <wvobject fp_name="group4257" type="group">
          <obj_property name="label">EX</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">BRANCH ADDR&lt;&lt;2</obj_property>
             <obj_property name="DisplayName">label</obj_property>
@@ -676,6 +533,10 @@
                <obj_property name="ElementShortName">o_o[33:0]</obj_property>
                <obj_property name="ObjectShortName">o_o[33:0]</obj_property>
             </wvobject>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/w_ex_sign_extend_branch_addr" type="array">
+            <obj_property name="ElementShortName">w_ex_sign_extend_branch_addr[31:0]</obj_property>
+            <obj_property name="ObjectShortName">w_ex_sign_extend_branch_addr[31:0]</obj_property>
          </wvobject>
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">BRANCH ADDR ADDER</obj_property>
@@ -713,6 +574,10 @@
                <obj_property name="ObjectShortName">o_o[11:0]</obj_property>
             </wvobject>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/w_ex_ctr_jump" type="logic">
+            <obj_property name="ElementShortName">w_ex_ctr_jump</obj_property>
+            <obj_property name="ObjectShortName">w_ex_ctr_jump</obj_property>
+         </wvobject>
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">JUMP MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
@@ -739,20 +604,22 @@
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_control/i_funct" type="array">
                <obj_property name="ElementShortName">i_funct[5:0]</obj_property>
                <obj_property name="ObjectShortName">i_funct[5:0]</obj_property>
+               <obj_property name="Radix">BINARYRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_control/i_aluop" type="array">
                <obj_property name="ElementShortName">i_aluop[2:0]</obj_property>
                <obj_property name="ObjectShortName">i_aluop[2:0]</obj_property>
+               <obj_property name="Radix">BINARYRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_control/o_aluop" type="array">
                <obj_property name="ElementShortName">o_aluop[3:0]</obj_property>
                <obj_property name="ObjectShortName">o_aluop[3:0]</obj_property>
+               <obj_property name="Radix">BINARYRADIX</obj_property>
             </wvobject>
          </wvobject>
          <wvobject fp_name="group4650" type="group">
             <obj_property name="label">ALU FORWARD A MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forward_a_mux/i_ctr" type="array">
                <obj_property name="ElementShortName">i_ctr[1:0]</obj_property>
                <obj_property name="ObjectShortName">i_ctr[1:0]</obj_property>
@@ -782,7 +649,6 @@
          <wvobject fp_name="group13415" type="group">
             <obj_property name="label">ALU FORWARD B MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forward_b_mux/i_ctr" type="array">
                <obj_property name="ElementShortName">i_ctr[1:0]</obj_property>
                <obj_property name="ObjectShortName">i_ctr[1:0]</obj_property>
@@ -812,7 +678,6 @@
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">ALUSRC MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alusrc_mux/i_ctr" type="logic">
                <obj_property name="ElementShortName">i_ctr</obj_property>
                <obj_property name="ObjectShortName">i_ctr</obj_property>
@@ -833,16 +698,15 @@
          <wvobject fp_name="group4366" type="group">
             <obj_property name="label">ALU</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu/i_in0" type="array">
                <obj_property name="ElementShortName">i_in0[31:0]</obj_property>
                <obj_property name="ObjectShortName">i_in0[31:0]</obj_property>
-               <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu/i_in1" type="array">
                <obj_property name="ElementShortName">i_in1[31:0]</obj_property>
                <obj_property name="ObjectShortName">i_in1[31:0]</obj_property>
-               <obj_property name="Radix">SIGNEDDECRADIX</obj_property>
+               <obj_property name="Radix">HEXRADIX</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu/i_carry" type="logic">
                <obj_property name="ElementShortName">i_carry</obj_property>
@@ -864,6 +728,26 @@
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu/o_zero" type="logic">
                <obj_property name="ElementShortName">o_zero</obj_property>
                <obj_property name="ObjectShortName">o_zero</obj_property>
+            </wvobject>
+         </wvobject>
+         <wvobject fp_name="group4454" type="group">
+            <obj_property name="label">WDATA Forward 2Cycle MUX</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_2cycle_mux/i_ctr" type="logic">
+               <obj_property name="ElementShortName">i_ctr</obj_property>
+               <obj_property name="ObjectShortName">i_ctr</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_2cycle_mux/i_i0" type="array">
+               <obj_property name="ElementShortName">i_i0[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i0[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_2cycle_mux/i_i1" type="array">
+               <obj_property name="ElementShortName">i_i1[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i1[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_2cycle_mux/o_o" type="array">
+               <obj_property name="ElementShortName">o_o[31:0]</obj_property>
+               <obj_property name="ObjectShortName">o_o[31:0]</obj_property>
             </wvobject>
          </wvobject>
          <wvobject fp_name="group4366" type="group">
@@ -890,6 +774,29 @@
                <obj_property name="ObjectShortName">o_lo[31:0]</obj_property>
             </wvobject>
          </wvobject>
+         <wvobject fp_name="group4361" type="group">
+            <obj_property name="label">REGDST MUX</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_ctr" type="logic">
+               <obj_property name="ElementShortName">i_ctr</obj_property>
+               <obj_property name="ObjectShortName">i_ctr</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_i0" type="array">
+               <obj_property name="ElementShortName">i_i0[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i0[4:0]</obj_property>
+               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/i_i1" type="array">
+               <obj_property name="ElementShortName">i_i1[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i1[4:0]</obj_property>
+               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_regdst_mux/o_o" type="array">
+               <obj_property name="ElementShortName">o_o[4:0]</obj_property>
+               <obj_property name="ObjectShortName">o_o[4:0]</obj_property>
+               <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+            </wvobject>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="group4269" type="group">
          <obj_property name="label">EX-MEM</obj_property>
@@ -912,6 +819,11 @@
             <obj_property name="ObjectShortName">i_rd[4:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_wr_reg" type="array">
+            <obj_property name="ElementShortName">i_wr_reg[4:0]</obj_property>
+            <obj_property name="ObjectShortName">i_wr_reg[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_regdst" type="logic">
             <obj_property name="ElementShortName">i_regdst</obj_property>
             <obj_property name="ObjectShortName">i_regdst</obj_property>
@@ -932,13 +844,21 @@
             <obj_property name="ElementShortName">i_memwrite</obj_property>
             <obj_property name="ObjectShortName">i_memwrite</obj_property>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_reg_rdata2" type="array">
+            <obj_property name="ElementShortName">i_reg_rdata2[31:0]</obj_property>
+            <obj_property name="ObjectShortName">i_reg_rdata2[31:0]</obj_property>
+         </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_alu_out" type="array">
             <obj_property name="ElementShortName">i_alu_out[31:0]</obj_property>
             <obj_property name="ObjectShortName">i_alu_out[31:0]</obj_property>
          </wvobject>
-         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_reg_rdata2" type="array">
-            <obj_property name="ElementShortName">i_reg_rdata2[31:0]</obj_property>
-            <obj_property name="ObjectShortName">i_reg_rdata2[31:0]</obj_property>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_fw_ctr_wdata_2c" type="logic">
+            <obj_property name="ElementShortName">i_fw_ctr_wdata_2c</obj_property>
+            <obj_property name="ObjectShortName">i_fw_ctr_wdata_2c</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/i_wdata_fw_mux_data" type="array">
+            <obj_property name="ElementShortName">i_wdata_fw_mux_data[31:0]</obj_property>
+            <obj_property name="ObjectShortName">i_wdata_fw_mux_data[31:0]</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_rt" type="array">
             <obj_property name="ElementShortName">o_rt[4:0]</obj_property>
@@ -948,6 +868,11 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_rd" type="array">
             <obj_property name="ElementShortName">o_rd[4:0]</obj_property>
             <obj_property name="ObjectShortName">o_rd[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_wr_reg" type="array">
+            <obj_property name="ElementShortName">o_wr_reg[4:0]</obj_property>
+            <obj_property name="ObjectShortName">o_wr_reg[4:0]</obj_property>
             <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_regdst" type="logic">
@@ -978,25 +903,42 @@
             <obj_property name="ElementShortName">o_reg_rdata2[31:0]</obj_property>
             <obj_property name="ObjectShortName">o_reg_rdata2[31:0]</obj_property>
          </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_fw_ctr_wdata_2c" type="logic">
+            <obj_property name="ElementShortName">o_fw_ctr_wdata_2c</obj_property>
+            <obj_property name="ObjectShortName">o_fw_ctr_wdata_2c</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_ex_mem_bridge/o_wdata_fw_mux_data" type="array">
+            <obj_property name="ElementShortName">o_wdata_fw_mux_data[31:0]</obj_property>
+            <obj_property name="ObjectShortName">o_wdata_fw_mux_data[31:0]</obj_property>
+         </wvobject>
       </wvobject>
       <wvobject fp_name="group4258" type="group">
          <obj_property name="label">MEM</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="group8915" type="group">
             <obj_property name="label">WDATA Forward MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_ctr" type="logic">
-               <obj_property name="ElementShortName">i_ctr</obj_property>
-               <obj_property name="ObjectShortName">i_ctr</obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_ctr" type="array">
+               <obj_property name="ElementShortName">i_ctr[1:0]</obj_property>
+               <obj_property name="ObjectShortName">i_ctr[1:0]</obj_property>
+               <obj_property name="Radix">BINARYRADIX</obj_property>
             </wvobject>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i0" type="array">
-               <obj_property name="ElementShortName">i_i0[31:0]</obj_property>
-               <obj_property name="ObjectShortName">i_i0[31:0]</obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i00" type="array">
+               <obj_property name="ElementShortName">i_i00[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i00[31:0]</obj_property>
             </wvobject>
-            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i1" type="array">
-               <obj_property name="ElementShortName">i_i1[31:0]</obj_property>
-               <obj_property name="ObjectShortName">i_i1[31:0]</obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i01" type="array">
+               <obj_property name="ElementShortName">i_i01[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i01[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i11" type="array">
+               <obj_property name="ElementShortName">i_i11[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i11[31:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/i_i10" type="array">
+               <obj_property name="ElementShortName">i_i10[31:0]</obj_property>
+               <obj_property name="ObjectShortName">i_i10[31:0]</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forward_mux/o_o" type="array">
                <obj_property name="ElementShortName">o_o[31:0]</obj_property>
@@ -1034,10 +976,17 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/i_rt" type="array">
             <obj_property name="ElementShortName">i_rt[4:0]</obj_property>
             <obj_property name="ObjectShortName">i_rt[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/i_rd" type="array">
             <obj_property name="ElementShortName">i_rd[4:0]</obj_property>
             <obj_property name="ObjectShortName">i_rd[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/i_wr_reg" type="array">
+            <obj_property name="ElementShortName">i_wr_reg[4:0]</obj_property>
+            <obj_property name="ObjectShortName">i_wr_reg[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/i_regdst" type="logic">
             <obj_property name="ElementShortName">i_regdst</obj_property>
@@ -1062,10 +1011,17 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/o_rt" type="array">
             <obj_property name="ElementShortName">o_rt[4:0]</obj_property>
             <obj_property name="ObjectShortName">o_rt[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/o_rd" type="array">
             <obj_property name="ElementShortName">o_rd[4:0]</obj_property>
             <obj_property name="ObjectShortName">o_rd[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/o_wr_reg" type="array">
+            <obj_property name="ElementShortName">o_wr_reg[4:0]</obj_property>
+            <obj_property name="ObjectShortName">o_wr_reg[4:0]</obj_property>
+            <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_mem_wb_bridge/o_memtoreg" type="logic">
             <obj_property name="ElementShortName">o_memtoreg</obj_property>
@@ -1083,10 +1039,10 @@
       <wvobject fp_name="group4259" type="group">
          <obj_property name="label">WB</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="group4476" type="group">
             <obj_property name="label">MEMTOREG MUX</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_memtoreg_mux/i_ctr" type="logic">
                <obj_property name="ElementShortName">i_ctr</obj_property>
                <obj_property name="ObjectShortName">i_ctr</obj_property>
@@ -1108,21 +1064,25 @@
       <wvobject fp_name="group8786" type="group">
          <obj_property name="label">Forward Unit</obj_property>
          <obj_property name="DisplayName">label</obj_property>
-         <wvobject fp_name="group8785" type="group">
-            <obj_property name="label">Forward WR Reg MUX</obj_property>
-            <obj_property name="DisplayName">label</obj_property>
-         </wvobject>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="group8790" type="group">
             <obj_property name="label">ALU Forward Unit</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forwarding_unit/i_mem_regwrite" type="logic">
                <obj_property name="ElementShortName">i_mem_regwrite</obj_property>
                <obj_property name="ObjectShortName">i_mem_regwrite</obj_property>
             </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forwarding_unit/i_wb_regwrite" type="logic">
+               <obj_property name="ElementShortName">i_wb_regwrite</obj_property>
+               <obj_property name="ObjectShortName">i_wb_regwrite</obj_property>
+            </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forwarding_unit/i_mem_wr_reg" type="array">
                <obj_property name="ElementShortName">i_mem_wr_reg[4:0]</obj_property>
                <obj_property name="ObjectShortName">i_mem_wr_reg[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forwarding_unit/i_wb_wr_reg" type="array">
+               <obj_property name="ElementShortName">i_wb_wr_reg[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_wb_wr_reg[4:0]</obj_property>
             </wvobject>
             <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_alu_forwarding_unit/i_ex_rs" type="array">
                <obj_property name="ElementShortName">i_ex_rs[4:0]</obj_property>
@@ -1136,14 +1096,36 @@
          <wvobject fp_name="group8910" type="group">
             <obj_property name="label">WDATA Forward Unit</obj_property>
             <obj_property name="DisplayName">label</obj_property>
-            <obj_property name="isExpanded"></obj_property>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/i_wb_regwrite" type="logic">
+               <obj_property name="ElementShortName">i_wb_regwrite</obj_property>
+               <obj_property name="ObjectShortName">i_wb_regwrite</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/i_wb_wr_reg" type="array">
+               <obj_property name="ElementShortName">i_wb_wr_reg[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_wb_wr_reg[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/i_ex_rt" type="array">
+               <obj_property name="ElementShortName">i_ex_rt[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_ex_rt[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/i_mem_rt" type="array">
+               <obj_property name="ElementShortName">i_mem_rt[4:0]</obj_property>
+               <obj_property name="ObjectShortName">i_mem_rt[4:0]</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/o_2c_forward" type="logic">
+               <obj_property name="ElementShortName">o_2c_forward</obj_property>
+               <obj_property name="ObjectShortName">o_2c_forward</obj_property>
+            </wvobject>
+            <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_wdata_forwarding_unit/o_1c_forward" type="logic">
+               <obj_property name="ElementShortName">o_1c_forward</obj_property>
+               <obj_property name="ObjectShortName">o_1c_forward</obj_property>
+            </wvobject>
          </wvobject>
       </wvobject>
    </wvobject>
    <wvobject fp_name="group84" type="group">
       <obj_property name="label">D-MEM</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/tb_top_cpu/u_data_mem/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -1171,7 +1153,6 @@
       <wvobject fp_name="/tb_top_cpu/u_data_mem/mem" type="array">
          <obj_property name="ElementShortName">mem[0:4095][7:0]</obj_property>
          <obj_property name="ObjectShortName">mem[0:4095][7:0]</obj_property>
-         <obj_property name="isExpanded"></obj_property>
       </wvobject>
    </wvobject>
 </wave_config>
