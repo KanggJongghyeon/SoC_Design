@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
 module tb_top_cpu #(
-    parameter ADDR_BIT = 12,    // 0x000 ~ 0xFFF, MEMORY SIZE = 4KB
-    parameter DATA_BIT = 32
+    parameter ADDR_BIT  = 12,    // 0x000 ~ 0xFFF, MEMORY SIZE = 4KB
+    parameter DATA_BIT  = 32,
+    parameter LINE_CNTR = 100
     )();
     
     // Global Signal
@@ -17,7 +18,6 @@ module tb_top_cpu #(
     // for Loading Boot File
     string  boot_file_path  = "V:\\SoC_Design\\SIM\\boot.txt";
     string  temp_file_path  = "V:\\SoC_Design\\SIM\\TEST_CASE\\test_case_x.txt";
-    localparam              LINE_CNTR = 100;
     string                  boot_file;                  // .txt File
     reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
     initial begin
@@ -46,7 +46,9 @@ module tb_top_cpu #(
         end
         #0  i_i_mem_en = 1'b0; i_i_mem_wren = 1'b0; i_i_mem_addr = {ADDR_BIT{1'b0}}; i_i_mem_data = {DATA_BIT{1'b0}};
         #10 rst_n = 1'b1;
-        #800 $finish;
+        #(4 * LINE_CNTR / `CLOCK_RATE);
+        #10 rst_n = 1'b0;
+        #10 $finish;
     end
 
     // wire
