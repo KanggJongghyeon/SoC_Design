@@ -108,15 +108,18 @@ module top_cpu #(
     wire                                w_ex_ctr_branch;                    // Control Input of Branch MUX
     wire [DATA_BIT - 1:0]               w_i_mem_data;                       // I-MEM DATA
     wire [ADDR_BIT - 1:0]               w_if_pc_mux_addr;                   // I-MEM RADDR (Next)
-    wire                                w_fw_ctr_alu_1c_forward_a;          // ALU ForwardA Output (1 Cycle)
-    wire                                w_fw_ctr_alu_1c_forward_b;          // ALU ForwardB Output (1 Cycle)
-    wire                                w_fw_ctr_alu_2c_forward_a;          // ALU ForwardA Output (2 Cycle)
-    wire                                w_fw_ctr_alu_2c_forward_b;          // ALU ForwardB Output (2 Cycle)
-    wire [DATA_BIT - 1:0]               w_ex_alu_forward_mux_data_a;        // ALU ForwardA MUX Data
-    wire [DATA_BIT - 1:0]               w_ex_alu_forward_mux_data_b;        // ALU ForwardB MUX Data
-    wire                                w_fw_ctr_wdata_2c_forward;          // WDATA Forward Output (2 Cycle)
-    wire                                w_fw_ctr_wdata_1c_forward;          // WDATA Forward Output (1 Cycle)
-    wire [DATA_BIT - 1:0]               w_mem_wdata_forward_mux_data;       // WDATA Forward MUX Data
+    wire                                w_fw_ctr_alu_a_1c;                  // ALU ForwardA Output (1 Cycle)
+    wire                                w_fw_ctr_alu_b_1c;                  // ALU ForwardB Output (1 Cycle)
+    wire                                w_fw_ctr_alu_a_2c;                  // ALU ForwardA Output (2 Cycle)
+    wire                                w_fw_ctr_alu_b_2c;                  // ALU ForwardB Output (2 Cycle)
+    wire [DATA_BIT - 1:0]               w_ex_alu_fw_mux_data_a;             // ALU ForwardA MUX Data
+    wire [DATA_BIT - 1:0]               w_ex_alu_fw_mux_data_b;             // ALU ForwardB MUX Data
+    wire                                w_ex_fw_ctr_wdata_2c;               // WDATA Forward Output (2 Cycle) (EX)
+    wire                                w_mem_fw_ctr_wdata_2c;              // WDATA Forward Output (2 Cycle) (MEM)
+    wire                                w_fw_ctr_wdata_1c;                  // WDATA Forward Output (1 Cycle)
+    wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data;            // WDATA Forward MUX Data
+    wire [DATA_BIT - 1:0]               w_ex_wdata_fw_mux_data_2c;          // WDATA Forward MUX Data (2 Cycle) (EX) 
+    wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data_2c;         // WDATA Forward MUX Data (2 Cycle) (MEM) 
 
 ////////////////////////////////////////
 // IF (Instruction Fetch from Memory) //
@@ -334,24 +337,24 @@ module top_cpu #(
     mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_alu_forward_a_mux (
-        .i_ctr          ({w_fw_ctr_alu_2c_forward_a, w_fw_ctr_alu_1c_forward_a}),
+        .i_ctr          ({w_fw_ctr_alu_a_2c, w_fw_ctr_alu_a_1c}),
         .i_i00          (w_ex_reg_rdata1),
         .i_i01          (w_mem_alu_out),
         .i_i11          (w_mem_alu_out),
         .i_i10          (w_wb_alu_out),
-        .o_o            (w_ex_alu_forward_mux_data_a)
+        .o_o            (w_ex_alu_fw_mux_data_a)
     );
 
     /* ALU ForwardB MUX */
     mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_alu_forward_b_mux (
-        .i_ctr          ({w_fw_ctr_alu_2c_forward_b, w_fw_ctr_alu_1c_forward_b}),
+        .i_ctr          ({w_fw_ctr_alu_b_2c, w_fw_ctr_alu_b_1c}),
         .i_i00          (w_ex_reg_rdata2),
         .i_i01          (w_mem_alu_out),
         .i_i11          (w_mem_alu_out),
         .i_i10          (w_wb_alu_out),
-        .o_o            (w_ex_alu_forward_mux_data_b)
+        .o_o            (w_ex_alu_fw_mux_data_b)
     );
 
     /* ALU Input Decision MUX (ALUSrc MUX) */
@@ -359,7 +362,7 @@ module top_cpu #(
         .DATA_BIT       (DATA_BIT)
     ) u_alusrc_mux (
         .i_ctr          (w_ex_ctr_alusrc),
-        .i_i0           (w_ex_alu_forward_mux_data_b),
+        .i_i0           (w_ex_alu_fw_mux_data_b),
         .i_i1           (w_ex_sign_extend_const),
         .o_o            (w_ex_alusrc_mux_data)
     );
@@ -368,7 +371,7 @@ module top_cpu #(
     alu #(
         .DATA_BIT       (DATA_BIT)
     ) u_alu (
-        .i_in0          (w_ex_alu_forward_mux_data_a),
+        .i_in0          (w_ex_alu_fw_mux_data_a),
         .i_in1          (w_ex_alusrc_mux_data),
         .i_carry        (1'b0),
         .i_aluop        (w_ex_alu_ctr),
@@ -377,11 +380,21 @@ module top_cpu #(
         .o_zero         (w_ex_alu_zero)
     );
 
+    /* WDATA Decision MUX (2 Cycle) */
+    mux21 #(
+        .DATA_BIT       (DATA_BIT) 
+    ) u_wdata_forward_2cycle_mux (
+        .i_ctr          (w_ex_fw_ctr_wdata_2c),
+        .i_i0           (w_ex_reg_rdata2),
+        .i_i1           (w_wb_alu_out),
+        .o_o            (w_ex_wdata_fw_mux_data_2c)
+    );
+
     /* Multiple/Divide Unit */
     mul_div_unit #(
         .DATA_BIT       (DATA_BIT)
     ) u_mul_div_unit (
-        .i_in0          (w_ex_alu_forward_mux_data_a),
+        .i_in0          (w_ex_alu_fw_mux_data_a),
         .i_in1          (w_ex_alusrc_mux_data),
         .i_aluop        (w_ex_alu_ctr),
         .o_hi           (w_ex_hi),
@@ -398,49 +411,53 @@ module top_cpu #(
         .o_o            (w_ex_regdst_mux_reg)
     );   
 
-    
-
     /* EX-MEM Bridge */
     ex_mem #(
-        .REG_BIT        (REG_BIT),
-        .ADDR_BIT       (ADDR_BIT),
-        .DATA_BIT       (DATA_BIT)
+        .REG_BIT            (REG_BIT),
+        .ADDR_BIT           (ADDR_BIT),
+        .DATA_BIT           (DATA_BIT)
     ) u_ex_mem_bridge (
-        .clk            (clk),
-        .rst_n          (rst_n),
-        .i_rt           (w_ex_dec_rt),
-        .i_rd           (w_ex_dec_rd),
-        .i_regdst       (w_ex_ctr_regdst),
-        .i_wr_reg       (w_ex_regdst_mux_reg),
-        .i_memtoreg     (w_ex_memtoreg),
-        .i_regwrite     (w_ex_ctr_regwrite),
-        .i_memread      (w_ex_memread),
-        .i_memwrite     (w_ex_memwrite),
-        .i_reg_rdata2   (w_ex_reg_rdata2),
-        .i_alu_out      (w_ex_alu_out),
-        .o_rt           (w_mem_dec_rt),
-        .o_rd           (w_mem_dec_rd),
-        .o_wr_reg       (w_mem_regdst_mux_reg),
-        .o_regdst       (w_mem_regdst),
-        .o_memtoreg     (w_mem_memtoreg),
-        .o_regwrite     (w_mem_regwrite),
-        .o_memread      (w_mem_memread),
-        .o_memwrite     (w_mem_memwrite),
-        .o_alu_out      (w_mem_alu_out),
-        .o_reg_rdata2   (w_mem_reg_rdata2)
+        .clk                (clk),
+        .rst_n              (rst_n),
+        .i_rt               (w_ex_dec_rt),
+        .i_rd               (w_ex_dec_rd),
+        .i_regdst           (w_ex_ctr_regdst),
+        .i_wr_reg           (w_ex_regdst_mux_reg),
+        .i_memtoreg         (w_ex_memtoreg),
+        .i_regwrite         (w_ex_ctr_regwrite),
+        .i_memread          (w_ex_memread),
+        .i_memwrite         (w_ex_memwrite),
+        .i_reg_rdata2       (w_ex_reg_rdata2),
+        .i_alu_out          (w_ex_alu_out),
+        .i_fw_ctr_wdata_2c  (w_ex_fw_ctr_wdata_2c),
+        .i_wdata_fw_mux_data(w_ex_wdata_fw_mux_data_2c),
+        .o_rt               (w_mem_dec_rt),
+        .o_rd               (w_mem_dec_rd),
+        .o_wr_reg           (w_mem_regdst_mux_reg),
+        .o_regdst           (w_mem_regdst),
+        .o_memtoreg         (w_mem_memtoreg),
+        .o_regwrite         (w_mem_regwrite),
+        .o_memread          (w_mem_memread),
+        .o_memwrite         (w_mem_memwrite),
+        .o_alu_out          (w_mem_alu_out),
+        .o_reg_rdata2       (w_mem_reg_rdata2),
+        .o_fw_ctr_wdata_2c  (w_mem_fw_ctr_wdata_2c),
+        .o_wdata_fw_mux_data(w_mem_wdata_fw_mux_data_2c)
     );
 
 /////////////////////////////////
 // MEM (Access Memory Operand) //
 /////////////////////////////////
     /* WDATA Decision MUX */
-    mux21 #(
+    mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_wdata_forward_mux (
-        .i_ctr          (w_fw_ctr_wdata_1c_forward),
-        .i_i0           (w_mem_reg_rdata2),
-        .i_i1           (w_wb_alu_out),
-        .o_o            (w_mem_wdata_forward_mux_data)
+        .i_ctr          ({w_fw_ctr_wdata_1c, w_mem_fw_ctr_wdata_2c}),
+        .i_i00          (w_mem_reg_rdata2),
+        .i_i01          (w_mem_wdata_fw_mux_data_2c),
+        .i_i11          (w_mem_wdata_fw_mux_data_2c/* don't care */),
+        .i_i10          (w_wb_alu_out),
+        .o_o            (w_mem_wdata_fw_mux_data)
     );
 
     /* MEM-WB Bridge */
@@ -493,10 +510,10 @@ module top_cpu #(
         .i_wb_wr_reg    (w_wb_regdst_mux_reg),
         .i_ex_rs        (w_ex_dec_rs),
         .i_ex_rt        (w_ex_dec_rt),
-        .o_1c_forward_a (w_fw_ctr_alu_1c_forward_a),
-        .o_1c_forward_b (w_fw_ctr_alu_1c_forward_b),
-        .o_2c_forward_a (w_fw_ctr_alu_2c_forward_a),
-        .o_2c_forward_b (w_fw_ctr_alu_2c_forward_b)
+        .o_1c_forward_a (w_fw_ctr_alu_a_1c),
+        .o_1c_forward_b (w_fw_ctr_alu_b_1c),
+        .o_2c_forward_a (w_fw_ctr_alu_a_2c),
+        .o_2c_forward_b (w_fw_ctr_alu_b_2c)
     );
 
     /* WDATA Forwarding Unit */
@@ -507,8 +524,8 @@ module top_cpu #(
         .i_wb_wr_reg    (w_wb_regdst_mux_reg),
         .i_ex_rt        (w_ex_dec_rt),
         .i_mem_rt       (w_mem_dec_rt),
-        .o_2c_forward   (w_fw_ctr_wdata_2c_forward),
-        .o_1c_forward   (w_fw_ctr_wdata_1c_forward)
+        .o_2c_forward   (w_ex_fw_ctr_wdata_2c),
+        .o_1c_forward   (w_fw_ctr_wdata_1c)
     );
 
     /* Assign wire */
@@ -521,6 +538,6 @@ module top_cpu #(
     assign o_d_mem_en                   = w_mem_memwrite | w_mem_memread;
     assign o_d_mem_wren                 = w_mem_memwrite;
     assign o_d_mem_addr                 = w_mem_alu_out[ADDR_BIT - 1:0];
-    assign o_d_mem_data                 = w_mem_wdata_forward_mux_data;
+    assign o_d_mem_data                 = w_mem_wdata_fw_mux_data;
 
 endmodule

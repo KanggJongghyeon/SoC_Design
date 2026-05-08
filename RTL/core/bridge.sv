@@ -47,7 +47,6 @@ module id_ex #(
     input   wire    [REG_BIT - 1:0]     i_rs,           
     input   wire    [REG_BIT - 1:0]     i_rt,           
     input   wire    [REG_BIT - 1:0]     i_rd,           
-    input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire    [5:0]               i_funct,        
     input   wire    [DATA_BIT - 1:0]    i_jump_addr,    
     input   wire                        i_regdst,       
@@ -75,7 +74,6 @@ module id_ex #(
     output  wire    [REG_BIT - 1:0]     o_rs,           
     output  wire    [REG_BIT - 1:0]     o_rt,           
     output  wire    [REG_BIT - 1:0]     o_rd,   
-    output  wire    [REG_BIT - 1:0]     o_wr_reg,
     output  wire                        o_regdst,       
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
@@ -84,7 +82,6 @@ module id_ex #(
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
-    reg [REG_BIT - 1:0]     r_wr_reg;
     reg [2:0]               r_aluop;
     reg                     r_regdst,       r_regwrite;
     reg                     r_alusrc,       r_memtoreg;
@@ -101,7 +98,6 @@ module id_ex #(
             r_rs            <= {REG_BIT{1'b0}};
             r_rt            <= {REG_BIT{1'b0}};
             r_rd            <= {REG_BIT{1'b0}};
-            r_wr_reg        <= {REG_BIT{1'b0}};
             r_regdst        <= 1'b0;
             r_alusrc        <= 1'b0;
             r_memtoreg      <= 1'b0;
@@ -122,7 +118,6 @@ module id_ex #(
             r_rs            <= i_rs;
             r_rt            <= i_rt;
             r_rd            <= i_rd;
-            r_wr_reg        <= i_wr_reg;
             r_regdst        <= i_regdst;
             r_alusrc        <= i_alusrc;
             r_memtoreg      <= i_memtoreg;
@@ -144,7 +139,6 @@ module id_ex #(
     assign o_rs             = r_rs;
     assign o_rt             = r_rt;
     assign o_rd             = r_rd;
-    assign o_wr_reg         = r_wr_reg;
     assign o_regdst         = r_regdst;
     assign o_alusrc         = r_alusrc;
     assign o_memtoreg       = r_memtoreg;
@@ -182,7 +176,9 @@ module ex_mem #(
     input   wire                        i_memread,      
     input   wire                        i_memwrite,     
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
-    input   wire    [DATA_BIT - 1:0]    i_alu_out,      
+    input   wire    [DATA_BIT - 1:0]    i_alu_out,  
+    input   wire                        i_fw_ctr_wdata_2c,
+    input   wire    [DATA_BIT - 1:0]    i_wdata_fw_mux_data,
     output  wire    [REG_BIT - 1:0]     o_rt,           
     output  wire    [REG_BIT - 1:0]     o_rd,  
     output  wire    [REG_BIT - 1:0]     o_wr_reg,
@@ -192,7 +188,9 @@ module ex_mem #(
     output  wire                        o_memread,      
     output  wire                        o_memwrite,     
     output  wire    [DATA_BIT - 1:0]    o_alu_out,      
-    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2    
+    output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,
+    output  wire                        o_fw_ctr_wdata_2c,
+    output  wire    [DATA_BIT - 1:0]    o_wdata_fw_mux_data
     );
 
     reg [REG_BIT - 1:0]     r_rt,           r_rd;
@@ -202,44 +200,52 @@ module ex_mem #(
     reg                     r_memread,      r_memwrite;
     reg [DATA_BIT - 1:0]    r_alu_out;
     reg [DATA_BIT - 1:0]    r_reg_rdata2;
+    reg                     r_fw_ctr_wdata_2c;
+    reg [DATA_BIT - 1:0]    r_wdata_fw_mux_data;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            r_rt            <= {REG_BIT{1'b0}};
-            r_rd            <= {REG_BIT{1'b0}};
-            r_wr_reg        <= {REG_BIT{1'b0}};
-            r_regdst        <= 1'b0;
-            r_memtoreg      <= 1'b0;
-            r_regwrite      <= 1'b0;
-            r_memread       <= 1'b0;
-            r_memwrite      <= 1'b0;
-            r_alu_out       <= {(DATA_BIT){1'b0}};
-            r_reg_rdata2    <= {(DATA_BIT){1'b0}};
+            r_rt                <= {REG_BIT{1'b0}};
+            r_rd                <= {REG_BIT{1'b0}};
+            r_wr_reg            <= {REG_BIT{1'b0}};
+            r_regdst            <= 1'b0;
+            r_memtoreg          <= 1'b0;
+            r_regwrite          <= 1'b0;
+            r_memread           <= 1'b0;
+            r_memwrite          <= 1'b0;
+            r_alu_out           <= {(DATA_BIT){1'b0}};
+            r_reg_rdata2        <= {(DATA_BIT){1'b0}};
+            r_fw_ctr_wdata_2c   <= 1'b0;
+            r_wdata_fw_mux_data <= {(DATA_BIT){1'b0}};
         end
         else begin
-            r_rt            <= i_rt;
-            r_rd            <= i_rd;
-            r_wr_reg        <= i_wr_reg;
-            r_regdst        <= i_regdst;
-            r_memtoreg      <= i_memtoreg;
-            r_regwrite      <= i_regwrite;
-            r_memread       <= i_memread;
-            r_memwrite      <= i_memwrite;
-            r_alu_out       <= i_alu_out;
-            r_reg_rdata2    <= i_reg_rdata2;
+            r_rt                <= i_rt;
+            r_rd                <= i_rd;
+            r_wr_reg            <= i_wr_reg;
+            r_regdst            <= i_regdst;
+            r_memtoreg          <= i_memtoreg;
+            r_regwrite          <= i_regwrite;
+            r_memread           <= i_memread;
+            r_memwrite          <= i_memwrite;
+            r_alu_out           <= i_alu_out;
+            r_reg_rdata2        <= i_reg_rdata2;
+            r_fw_ctr_wdata_2c   <= i_fw_ctr_wdata_2c;
+            r_wdata_fw_mux_data <= i_wdata_fw_mux_data;
         end
     end
 
-    assign o_rt             = r_rt;
-    assign o_rd             = r_rd;
-    assign o_wr_reg         = r_wr_reg;
-    assign o_regdst         = r_regdst;
-    assign o_memtoreg       = r_memtoreg;
-    assign o_regwrite       = r_regwrite;
-    assign o_memread        = r_memread;
-    assign o_memwrite       = r_memwrite;
-    assign o_alu_out        = r_alu_out;
-    assign o_reg_rdata2     = r_reg_rdata2;
+    assign o_rt                 = r_rt;
+    assign o_rd                 = r_rd;
+    assign o_wr_reg             = r_wr_reg;
+    assign o_regdst             = r_regdst;
+    assign o_memtoreg           = r_memtoreg;
+    assign o_regwrite           = r_regwrite;
+    assign o_memread            = r_memread;
+    assign o_memwrite           = r_memwrite;
+    assign o_alu_out            = r_alu_out;
+    assign o_reg_rdata2         = r_reg_rdata2;
+    assign o_fw_ctr_wdata_2c    = r_fw_ctr_wdata_2c;
+    assign o_wdata_fw_mux_data  = r_wdata_fw_mux_data;
 
 endmodule
 
