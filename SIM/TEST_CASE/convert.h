@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include "mips.h"
 
-#define MAX_LINE 100
+#define MAX_LINE 1000
 #define MAX_LEN  50
 
 // Global Variable
