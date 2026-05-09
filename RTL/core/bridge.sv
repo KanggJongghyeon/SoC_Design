@@ -9,6 +9,7 @@ module if_id #(
     input   wire                        clk,
     input   wire                        rst_n,
     input   wire                        i_flush,
+    input   wire                        i_stall,
     input   wire    [DATA_BIT - 1:0]    i_i_mem_data,   
     input   wire    [ADDR_BIT - 1:0]    i_pc_addr, 
     output  wire    [DATA_BIT - 1:0]    o_i_mem_data,   
@@ -31,7 +32,7 @@ module if_id #(
                 if (i_flush | r_flushing) begin
                     r_i_mem_data<= {(DATA_BIT){1'b0}};
                 end
-                else begin      
+                else if (~i_stall) begin      
                     r_i_mem_data<= i_i_mem_data;
                 end
             end
@@ -216,9 +217,7 @@ module ex_mem #(
     input   wire                        clk,
     input   wire                        rst_n,
     input   wire    [REG_BIT - 1:0]     i_rt,           
-    input   wire    [REG_BIT - 1:0]     i_rd,
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
-    input   wire                        i_regdst,       
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,     
     input   wire                        i_memread,      
@@ -228,9 +227,7 @@ module ex_mem #(
     input   wire                        i_fw_ctr_wdata_2c,
     input   wire    [DATA_BIT - 1:0]    i_wdata_fw_mux_data,
     output  wire    [REG_BIT - 1:0]     o_rt,           
-    output  wire    [REG_BIT - 1:0]     o_rd,  
     output  wire    [REG_BIT - 1:0]     o_wr_reg,
-    output  wire                        o_regdst,       
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
     output  wire                        o_memread,      
@@ -241,9 +238,8 @@ module ex_mem #(
     output  wire    [DATA_BIT - 1:0]    o_wdata_fw_mux_data
     );
 
-    reg [REG_BIT - 1:0]     r_rt,           r_rd;
+    reg [REG_BIT - 1:0]     r_rt;
     reg [REG_BIT - 1:0]     r_wr_reg;
-    reg                     r_regdst;
     reg                     r_memtoreg,     r_regwrite;
     reg                     r_memread,      r_memwrite;
     reg [DATA_BIT - 1:0]    r_alu_out;
@@ -254,9 +250,7 @@ module ex_mem #(
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
             r_rt                <= {REG_BIT{1'b0}};
-            r_rd                <= {REG_BIT{1'b0}};
             r_wr_reg            <= {REG_BIT{1'b0}};
-            r_regdst            <= 1'b0;
             r_memtoreg          <= 1'b0;
             r_regwrite          <= 1'b0;
             r_memread           <= 1'b0;
@@ -268,9 +262,7 @@ module ex_mem #(
         end
         else begin
             r_rt                <= i_rt;
-            r_rd                <= i_rd;
             r_wr_reg            <= i_wr_reg;
-            r_regdst            <= i_regdst;
             r_memtoreg          <= i_memtoreg;
             r_regwrite          <= i_regwrite;
             r_memread           <= i_memread;
@@ -283,9 +275,7 @@ module ex_mem #(
     end
 
     assign o_rt                 = r_rt;
-    assign o_rd                 = r_rd;
     assign o_wr_reg             = r_wr_reg;
-    assign o_regdst             = r_regdst;
     assign o_memtoreg           = r_memtoreg;
     assign o_regwrite           = r_regwrite;
     assign o_memread            = r_memread;
@@ -307,53 +297,36 @@ module mem_wb #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
-    input   wire    [REG_BIT - 1:0]     i_rt,           
-    input   wire    [REG_BIT - 1:0]     i_rd,
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
-    input   wire                        i_regdst,       
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,     
     input   wire    [DATA_BIT - 1:0]    i_alu_out,      
-    output  wire                        o_regdst,       
-    output  wire    [REG_BIT - 1:0]     o_rt,           
-    output  wire    [REG_BIT - 1:0]     o_rd,           
     output  wire    [REG_BIT - 1:0]     o_wr_reg,           
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
     output  wire    [DATA_BIT - 1:0]    o_alu_out       
     );
     
-    reg [REG_BIT - 1:0]     r_rt,           r_rd;
     reg [REG_BIT - 1:0]     r_wr_reg;
-    reg                     r_regdst;
     reg                     r_memtoreg,     r_regwrite;
     reg [DATA_BIT - 1:0]    r_alu_out;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            r_rt            <= {REG_BIT{1'b0}};
-            r_rd            <= {REG_BIT{1'b0}};
             r_wr_reg        <= {REG_BIT{1'b0}};
-            r_regdst        <= 1'b0;
             r_memtoreg      <= 1'b0;
             r_regwrite      <= 1'b0;
             r_alu_out       <= {(DATA_BIT){1'b0}};
         end
         else begin
-            r_rt            <= i_rt;
-            r_rd            <= i_rd;
             r_wr_reg        <= i_wr_reg;
-            r_regdst        <= i_regdst;
             r_memtoreg      <= i_memtoreg;
             r_regwrite      <= i_regwrite;
             r_alu_out       <= i_alu_out;
         end
     end
 
-    assign o_rt             = r_rt;
-    assign o_rd             = r_rd;
     assign o_wr_reg         = r_wr_reg;
-    assign o_regdst         = r_regdst;
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
     assign o_alu_out        = r_alu_out;
