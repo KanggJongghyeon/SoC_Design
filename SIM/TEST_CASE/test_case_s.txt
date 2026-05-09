@@ -95,6 +95,11 @@ sw $t9, -1($s3)
 sw $t9, 3($s3)
 sw $t9, -10($s2)
 sw $t9, -6($s2)
+addiu $t4, $t4, 1028
+sw $t4, 80($zero)
+lw $t5, 80($zero)
+add $t6, $t5, $t4
+nop
 nop
 nop
 nop
