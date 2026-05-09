@@ -3,7 +3,7 @@
 module tb_top_cpu #(
     parameter ADDR_BIT  = 12,    // 0x000 ~ 0xFFF, MEMORY SIZE = 4KB
     parameter DATA_BIT  = 32,
-    parameter LINE_CNTR = 100
+    parameter LINE_CNTR = 120
     )();
     
     // Global Signal
