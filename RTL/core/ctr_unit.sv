@@ -14,7 +14,7 @@ module ctr_unit #(
     output wire                     o_regwrite,
     output wire                     o_memread,
     output wire                     o_memwrite,
-    output wire                     o_branch,
+    output wire [1:0]               o_branch,
     output wire [2:0]               o_aluop,
     output wire                     o_jump,
     output wire                     o_sign_extend,
@@ -22,8 +22,9 @@ module ctr_unit #(
     input  wire                     i_arbiter_gnt
     );
 
-    reg       r_regdst, r_alusrc, r_memtoreg, r_regwrite, r_memread, r_memwrite, r_branch, r_jump, r_sign_extend;
-    reg [2:0] r_aluop;
+    reg         r_regdst, r_alusrc, r_memtoreg, r_regwrite, r_memread, r_memwrite, r_jump, r_sign_extend;
+    reg [1:0]   r_branch;
+    reg [2:0]   r_aluop;
 
     always @ (*) begin
         case(i_opcode)
@@ -34,7 +35,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_RTYPE;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b0;
@@ -82,7 +83,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b1;
+                r_branch        = 2'b01;
                 r_aluop         = `ALUOP_SUB;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -94,7 +95,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b1;
+                r_branch        = 2'b10;
                 r_aluop         = `ALUOP_SUB;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -106,7 +107,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -118,7 +119,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b0;
@@ -154,7 +155,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ANDI;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b0;
@@ -166,7 +167,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ORI;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b0;
@@ -178,7 +179,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_XORI;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b0;
@@ -190,7 +191,7 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_LUI;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -201,7 +202,7 @@ module ctr_unit #(
                 r_memtoreg      = 1'b1;
                 r_regwrite      = 1'b1;
                 r_memwrite      = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -218,7 +219,7 @@ module ctr_unit #(
                 r_memtoreg      = r_memtoreg;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;
@@ -236,7 +237,7 @@ module ctr_unit #(
                 r_regwrite      = r_regwrite;
                 r_memread       = r_memread;
                 r_memwrite      = r_memwrite;
-                r_branch        = 1'b0;
+                r_branch        = 2'b00;
                 r_aluop         = r_aluop;
                 r_jump          = 1'b0;
                 r_sign_extend   = 1'b1;

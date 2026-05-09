@@ -30,11 +30,11 @@ module top_cpu #(
     // wire //
     //////////
     wire                                w_if_i_mem_en;                      // I-MEM  Enable
-    wire [ADDR_BIT - 1:0]               w_if_i_mem_addr;                    // I-MEM  ADDR
+    wire [ADDR_BIT - 1:0]               w_if_pc_addr;                       // PC     ADDR (IF)
+    wire [ADDR_BIT - 1:0]               w_id_pc_addr;                       // PC     ADDR (EX)
     wire [ADDR_BIT - 1:0]               w_ex_jump_mux_addr;                 // Branch ADDR or Jump ADDR ([Warning] Hazard)
     wire [ADDR_BIT - 1:0]               w_if_add4_addr;                     // PC     ADDR + 4 (IF)
-    wire [ADDR_BIT - 1:0]               w_id_add4_addr;                     // PC     ADDR + 4 (ID)
-    wire [ADDR_BIT - 1:0]               w_ex_add4_addr;                     // PC     ADDR + 4 (EX)
+    wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                     // PC     ADDR + 4 (EX)
     wire [DATA_BIT - OPCODE_BIT - 1:0]  w_id_dec_jaddr;                     // Jump   ADDR (by Decoder)
     wire [DATA_BIT - OPCODE_BIT + 1:0]  w_id_shift_left2_dec_jaddr;         // Jump   ADDR (by Decoder) >> 2
     wire [DATA_BIT - 1:0]               w_id_jump_addr;                     // Jump   ADDR (ID)
@@ -81,9 +81,9 @@ module top_cpu #(
     wire                                w_id_memwrite;                      // MemWrite     Flag (ID)
     wire                                w_ex_memwrite;                      // MemWrite     Flag (EX)
     wire                                w_mem_memwrite;                     // MemWrite     Flag (MEM)
-    wire                                w_id_branch;                        // Branch       Flag (ID)
-    wire                                w_ex_branch;                        // Branch       Flag (EX)
-    wire                                w_id_ctr_jump;                      // Jump         Flag (ID)
+    wire [1:0]                          w_id_branch;                        // Branch       Flag (ID)
+    wire [1:0]                          w_ex_branch;                        // Branch       Flag (EX)
+    wire                                w_id_jump;                          // Jump         Flag (ID)
     wire                                w_ex_ctr_jump;                      // Jump         Flag (EX)
     wire                                w_id_sign_extend;                   // SignExtend   Flag (ID)
     wire [3:0]                          w_ex_alu_ctr;                       // ALUOpB
@@ -120,6 +120,7 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data;            // WDATA Forward MUX Data
     wire [DATA_BIT - 1:0]               w_ex_wdata_fw_mux_data_2c;          // WDATA Forward MUX Data (2 Cycle) (EX) 
     wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data_2c;         // WDATA Forward MUX Data (2 Cycle) (MEM) 
+    wire                                w_ex_flush;                         // Instruction Flush Sinal
 
 ////////////////////////////////////////
 // IF (Instruction Fetch from Memory) //
@@ -128,7 +129,7 @@ module top_cpu #(
     mux21 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_pc_mux (
-        .i_ctr          (w_ex_ctr_branch | w_ex_ctr_jump),
+        .i_ctr          (w_ex_flush),
         .i_i0           (w_if_add4_addr),
         .i_i1           (w_ex_jump_mux_addr),
         .o_o            (w_if_pc_mux_addr)
@@ -142,12 +143,12 @@ module top_cpu #(
         .rst_n          (rst_n),
         .i_n_mem_addr   (w_if_pc_mux_addr),
         .o_mem_en       (w_if_i_mem_en),
-        .o_mem_addr     (w_if_i_mem_addr)
+        .o_mem_addr     (w_if_pc_addr)
     );
     adder21 #(      // ADDR Adder (just add ADDR+4)
         .ADDR_BIT       (ADDR_BIT)
     ) u_addr_4_adder (
-        .i_i0           (w_if_i_mem_addr),
+        .i_i0           (w_if_pc_addr),
         .i_i1           (ADDR_BIT'(4)),
         .o_o            (w_if_add4_addr)
     );
@@ -159,10 +160,11 @@ module top_cpu #(
     ) u_if_id_bridge(
         .clk            (clk),
         .rst_n          (rst_n),
+        .i_flush        (w_ex_flush),
         .i_i_mem_data   (i_i_mem_data),
-        .i_pc_add4_addr (w_if_add4_addr),
+        .i_pc_addr      (w_if_pc_addr/*w_if_add4_addr*/),
         .o_i_mem_data   (w_i_mem_data),
-        .o_pc_add4_addr (w_id_add4_addr)
+        .o_pc_addr      (w_id_pc_addr)
     );
 
 ///////////////////////////////////////////////
@@ -208,7 +210,7 @@ module top_cpu #(
         .o_memwrite     (w_id_memwrite),
         .o_branch       (w_id_branch),
         .o_aluop        (w_id_aluop),
-        .o_jump         (w_id_ctr_jump),
+        .o_jump         (w_id_jump),
         .o_sign_extend  (w_id_sign_extend),
         .o_arbiter_req  (o_arbiter_req),
         .i_arbiter_gnt  (i_arbiter_gnt)
@@ -247,7 +249,8 @@ module top_cpu #(
     ) u_id_ex_bridge (
         .clk            (clk),
         .rst_n          (rst_n),
-        .i_pc_add4_addr (w_id_add4_addr),
+        .i_flush        (w_ex_flush),
+        .i_pc_addr      (w_id_pc_addr),
         .i_rs           (w_id_dec_rs),
         .i_rt           (w_id_dec_rt),
         .i_rd           (w_id_dec_rd),
@@ -261,7 +264,7 @@ module top_cpu #(
         .i_memwrite     (w_id_memwrite),
         .i_branch       (w_id_branch),
         .i_aluop        (w_id_aluop),
-        .i_jump         (w_id_ctr_jump),
+        .i_jump         (w_id_jump),
         .i_reg_rdata1   (w_id_reg_rdata1),
         .i_reg_rdata2   (w_id_reg_rdata2),
         .i_sign_extend  (w_id_sign_extend_const),
@@ -274,7 +277,7 @@ module top_cpu #(
         .o_reg_rdata1   (w_ex_reg_rdata1),
         .o_reg_rdata2   (w_ex_reg_rdata2),
         .o_sign_extend  (w_ex_sign_extend_const),
-        .o_pc_add4_addr (w_ex_add4_addr),
+        .o_pc_addr      (w_ex_pc_addr),
         .o_rs           (w_ex_dec_rs),
         .o_rt           (w_ex_dec_rt),
         .o_rd           (w_ex_dec_rd),
@@ -299,7 +302,7 @@ module top_cpu #(
     adder21 #(  // Branch ADDR Adder
         .ADDR_BIT       (DATA_BIT)
     ) u_branch_addr_adder ( 
-        .i_i0           ({{(DATA_BIT - ADDR_BIT){1'b0}}, w_ex_add4_addr}),
+        .i_i0           ({{(DATA_BIT - ADDR_BIT){1'b0}}, w_ex_pc_addr}),
         .i_i1           (w_ex_sign_extend_branch_addr),
         .o_o            (w_ex_branch_addr)
     );
@@ -309,7 +312,7 @@ module top_cpu #(
         .DATA_BIT       (ADDR_BIT)
     ) u_branch_mux (
         .i_ctr          (w_ex_ctr_branch),
-        .i_i0           (w_ex_add4_addr),
+        .i_i0           (w_ex_pc_addr),
         .i_i1           (w_ex_branch_addr[ADDR_BIT - 1:0]),
         .o_o            (w_ex_branch_mux_addr)
     );
@@ -341,7 +344,7 @@ module top_cpu #(
         .i_i00          (w_ex_reg_rdata1),
         .i_i01          (w_mem_alu_out),
         .i_i11          (w_mem_alu_out),
-        .i_i10          (w_wb_alu_out),
+        .i_i10          (w_wb_memtoreg_mux_data),
         .o_o            (w_ex_alu_fw_mux_data_a)
     );
 
@@ -353,7 +356,7 @@ module top_cpu #(
         .i_i00          (w_ex_reg_rdata2),
         .i_i01          (w_mem_alu_out),
         .i_i11          (w_mem_alu_out),
-        .i_i10          (w_wb_alu_out),
+        .i_i10          (w_wb_memtoreg_mux_data),
         .o_o            (w_ex_alu_fw_mux_data_b)
     );
 
@@ -529,12 +532,13 @@ module top_cpu #(
     );
 
     /* Assign wire */
-    assign w_id_jump_addr               = {w_id_add4_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
+    assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
     assign w_ex_sign_extend_branch_addr = w_ex_shift_left2_sign_extend_const[DATA_BIT - 1:0];
-    assign w_ex_ctr_branch              = w_ex_branch & w_ex_alu_zero;
-    
+    assign w_ex_ctr_branch              = ((w_ex_branch == 2'b01) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == 2'b10) && (w_ex_alu_zero == 1'b0));
+    assign w_ex_flush                   = w_ex_ctr_branch | w_ex_ctr_jump;
+
     assign o_i_mem_en                   = w_if_i_mem_en;
-    assign o_i_mem_addr                 = w_if_i_mem_addr;
+    assign o_i_mem_addr                 = w_if_pc_addr;
     assign o_d_mem_en                   = w_mem_memwrite | w_mem_memread;
     assign o_d_mem_wren                 = w_mem_memwrite;
     assign o_d_mem_addr                 = w_mem_alu_out[ADDR_BIT - 1:0];
