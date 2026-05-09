@@ -182,13 +182,13 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
     {
         *oInstruction   = (unsigned int)OP_J;
         *oInstruction   = *oInstruction << 26;
-        *oOpcodeType    = TYPE_I;
+        *oOpcodeType    = TYPE_J;
     }
     else if (0 == strcmp(iOpcodeStr, "jal\0"))
     {
         *oInstruction   = (unsigned int)OP_JAL;
         *oInstruction   = *oInstruction << 26;
-        *oOpcodeType    = TYPE_I;  
+        *oOpcodeType    = TYPE_J;  
     }
     else if (0 == strcmp(iOpcodeStr, "beq\0"))
     {
@@ -416,7 +416,7 @@ unsigned int getRegNumber(char* iRegStr)
 }
 
 /////////////////////
-// Store RD(5-BIT) //
+// Store rd(5-BIT) //
 /////////////////////
 void getRd(char* iLineData, unsigned int* oInstruction)
 {
@@ -440,10 +440,12 @@ void getRd(char* iLineData, unsigned int* oInstruction)
     *oInstruction   = *oInstruction | rdNumber;
 }
 
-/////////////////////
-// Store RT(5-BIT) //
-/////////////////////
-void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction){
+///////////////////////////
+// Store rt & rs (5-BIT) //
+///////////////////////////
+void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction)
+{
+    //@ 1. Init Member Variable
     char            charCount           = 0;
     char            rtCount             = 0;
     char            rsCount             = 0;
@@ -451,19 +453,25 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
     char            rsStr[REG_STR_LEN]  = {0};
     unsigned int    rtNumber            = (unsigned int)R_NONE;
     unsigned int    rsNumber            = (unsigned int)R_NONE;
+    unsigned int    opcode              = (unsigned int)OP_NONE;
+    //@ 2. Skip OPCODE Part
     while (iLineData[charCount] != ' ')
     {
         charCount++;
     }
     charCount++;
+    //@ 3. Get Rt and Rs Register for each Opcode Type
     switch(iOpcodeType)
     {
+        //@ 3a. For the TYPE_R:
         case TYPE_R:
+            //@ 3a1. Skip Rd Register Part
             while (iLineData[charCount] != ',')
             {
                 charCount++;
             }
             charCount = charCount + 2;
+            //@ 3a2. Get Rs Register
             while (iLineData[charCount] != ',')
             {
                 rsStr[rsCount] = iLineData[charCount];
@@ -471,9 +479,12 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 rsCount++;
             }
             rsStr[rsCount]  = '\0';
+            //@ 3a3. Get Rs Register Number
             rsNumber        = getRegNumber(rsStr) << 21;
+            //@ 3a4. Save Rs Register Number in Instruction
             *oInstruction   = *oInstruction | rsNumber;
             charCount = charCount + 2;
+            //@ 3a5. Get Rt Register
             while (iLineData[charCount] != '\0')
             {
                 rtStr[rtCount] = iLineData[charCount];
@@ -481,35 +492,70 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 rtCount++;
             }
             rtStr[rtCount]  = '\0';
+            //@ 3a6. Get Rt Register Number
             rtNumber        = getRegNumber(rtStr) << 16;
+            //@ 3a7. Save Rt Register Number in Instruction
             *oInstruction   = *oInstruction | rtNumber;
             break;
+        //@ 3b. For the TYPE_SHIFT:
         case TYPE_SHIFT:
-            // TBD
+            //@ 3b1. TBD
             break;
+        //@ 3c. For the TYPE_I:
         case TYPE_I:
-            while (iLineData[charCount] != ',')
+            //@ 3c1. Get Opcode Number 
+            opcode = *oInstruction >> 26;
+            //@ 3c1a. If Opocde Number is OP_BEQ or OP_BNE:
+            if ((opcode == (unsigned int)OP_BEQ) | (opcode == (unsigned int)OP_BNE))
             {
-                rtStr[rtCount] = iLineData[charCount];
-                charCount++;
-                rtCount++;
+                //@ 3c1a1. Get Rs - Rt Register
+                while (iLineData[charCount] != ',')
+                {
+                    rsStr[rsCount] = iLineData[charCount];
+                    charCount++;
+                    rsCount++;
+                }
+                rsStr[rsCount]  = '\0';
+                charCount       = charCount + 2;
+                while (iLineData[charCount] != ',')
+                {
+                    rtStr[rtCount] = iLineData[charCount];
+                    charCount++;
+                    rtCount++;
+                }
+                rtStr[rtCount]  = '\0';
             }
-            rtStr[rtCount] = '\0';
-            rtNumber        = getRegNumber(rtStr) << 16;
+            //@ 3c1b. In All Other Cases:
+            else
+            {
+                //@ 3c1b1. Get Rt - Rs Register
+                while (iLineData[charCount] != ',')
+                {
+                    rtStr[rtCount] = iLineData[charCount];
+                    charCount++;
+                    rtCount++;
+                }
+                rtStr[rtCount]  = '\0';
+                charCount       = charCount + 2;
+                while (iLineData[charCount] != ',')
+                {
+                    rsStr[rsCount] = iLineData[charCount];
+                    charCount++;
+                    rsCount++;
+                }
+                rsStr[rsCount]  = '\0';
+            }
+            //@ 3c2. Get Rt and Rs Register Number
+            rtNumber    = getRegNumber(rtStr) << 16;
+            rsNumber    = getRegNumber(rsStr) << 21;
+            //@ 3c3. Save Rt and Rs Register Number in Instruction
             *oInstruction   = *oInstruction | rtNumber;
-            charCount = charCount + 2;
-            while (iLineData[charCount] != ',')
-            {
-                rsStr[rsCount] = iLineData[charCount];
-                charCount++;
-                rsCount++;
-            }
-            rsStr[rsCount]  = '\0';
-            rsNumber        = getRegNumber(rsStr) << 21;
-            *oInstruction   = *oInstruction | rsNumber;
+            *oInstruction   = *oInstruction | rsNumber;            
             break;
+        //@ 3d. For the TYPE_LW or TYPE_SW:
         case TYPE_LW:
         case TYPE_SW:
+            //@ 3d1. Get Rt and Rs Register
             while (iLineData[charCount] != ',')
             {
                 rtStr[rtCount] = iLineData[charCount];
@@ -517,8 +563,6 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 rtCount++;
             }
             rtStr[rtCount] = '\0';
-            rtNumber        = getRegNumber(rtStr) << 16;
-            *oInstruction   = *oInstruction | rtNumber;
             while (iLineData[charCount] != '(')
             {
                 charCount++;
@@ -531,7 +575,11 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 rsCount++;
             }
             rsStr[rsCount]  = '\0';
+            //@ 3d2. Get Rt and Rs Register Number
+            rtNumber        = getRegNumber(rtStr) << 16;
             rsNumber        = getRegNumber(rsStr) << 21;
+            //@ 3d3. Save Rt and Rs Register Number in Instruction
+            *oInstruction   = *oInstruction | rtNumber;
             *oInstruction   = *oInstruction | rsNumber;
             break;
         default:
@@ -655,6 +703,7 @@ void convert()
                 //printf("After2  : %08x\n", instruction[line]);   // DEBUG
                 break;
             case TYPE_SHIFT:
+                printf("SHIFT Event (line %d)\n", line + 1);
                 // TBD
                 break;
             case TYPE_I:
@@ -668,6 +717,10 @@ void convert()
             case TYPE_SW:
                 getRtRs(assembly[line], opcodeType[line], &instruction[line]);
                 getImm(assembly[line], opcodeType[line], &instruction[line]);
+                break;
+            case TYPE_J:
+                printf("JUMP Event (line %d)\n", line + 1);
+                // TBD
                 break;
             case TYPE_NOP:
                 // Do - Nothing

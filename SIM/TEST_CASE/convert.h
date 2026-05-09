@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "mips.h"
 
 #define MAX_LINE 100
@@ -26,10 +27,10 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
 // Get Registers' Number
 unsigned int getRegNumber(char* iRegStr);
 
-// Store RD(5-BIT)
+// Store rd(5-BIT)
 void getRd(char* iLineData, unsigned int* oInstruction);
 
-// Store RT(5-BIT), RS(5-BIT)
+// Store rt(5-BIT), rs(5-BIT)
 void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);
 
 // Store Imm(16-BIT) Data
@@ -37,9 +38,6 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
 
 // Make Text File
 void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount);
-
-// Store RS(5-BIT)
-//void getRs(char* iLineData, unsigned int* oInstruction);
 
 // Convert main
 void convert();
