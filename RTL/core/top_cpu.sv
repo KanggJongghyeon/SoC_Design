@@ -34,7 +34,7 @@ module top_cpu #(
     wire [ADDR_BIT - 1:0]               w_id_pc_addr;                       // PC     ADDR (EX)
     wire [ADDR_BIT - 1:0]               w_ex_jump_mux_addr;                 // Branch ADDR or Jump ADDR ([Warning] Hazard)
     wire [ADDR_BIT - 1:0]               w_if_add4_addr;                     // PC     ADDR + 4 (IF)
-    wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                     // PC     ADDR + 4 (EX)
+    wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                       // PC     ADDR + 4 (EX)
     wire [DATA_BIT - OPCODE_BIT - 1:0]  w_id_dec_jaddr;                     // Jump   ADDR (by Decoder)
     wire [DATA_BIT - OPCODE_BIT + 1:0]  w_id_shift_left2_dec_jaddr;         // Jump   ADDR (by Decoder) >> 2
     wire [DATA_BIT - 1:0]               w_id_jump_addr;                     // Jump   ADDR (ID)
