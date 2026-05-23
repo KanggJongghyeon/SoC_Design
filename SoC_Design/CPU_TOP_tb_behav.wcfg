@@ -11,13 +11,13 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="366.089 ns"></ZoomStartTime>
-      <ZoomEndTime time="550.783 ns"></ZoomEndTime>
-      <Cursor1Time time="425.314 ns"></Cursor1Time>
+      <ZoomStartTime time="508.966 ns"></ZoomStartTime>
+      <ZoomEndTime time="522.207 ns"></ZoomEndTime>
+      <Cursor1Time time="520.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="309"></NameColumnWidth>
-      <ValueColumnWidth column_width="64"></ValueColumnWidth>
+      <ValueColumnWidth column_width="60"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="5" />
    <wvobject fp_name="/tb_top_cpu/clk" type="logic">
@@ -141,6 +141,7 @@
       <wvobject fp_name="group4269" type="group">
          <obj_property name="label">IF-ID</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/clk" type="logic">
             <obj_property name="ElementShortName">clk</obj_property>
             <obj_property name="ObjectShortName">clk</obj_property>
@@ -152,6 +153,10 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/i_flush" type="logic">
             <obj_property name="ElementShortName">i_flush</obj_property>
             <obj_property name="ObjectShortName">i_flush</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/i_stall" type="logic">
+            <obj_property name="ElementShortName">i_stall</obj_property>
+            <obj_property name="ObjectShortName">i_stall</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/i_i_mem_data" type="array">
             <obj_property name="ElementShortName">i_i_mem_data[31:0]</obj_property>
@@ -168,6 +173,10 @@
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/o_pc_addr" type="array">
             <obj_property name="ElementShortName">o_pc_addr[11:0]</obj_property>
             <obj_property name="ObjectShortName">o_pc_addr[11:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/r_flushing" type="logic">
+            <obj_property name="ElementShortName">r_flushing</obj_property>
+            <obj_property name="ObjectShortName">r_flushing</obj_property>
          </wvobject>
          <wvobject fp_name="/tb_top_cpu/u_cpu_top/u_if_id_bridge/r_wait_1c_n" type="logic">
             <obj_property name="ElementShortName">r_wait_1c_n</obj_property>
