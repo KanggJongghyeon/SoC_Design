@@ -1,54 +1,41 @@
-`timescale 1ns / 1ps
-`include "..\peripheral\sfr_table.svh"
-module ahb3 #(
-    parameter DATA_SIZE = 32,
-    parameter NUM_SLAVE = 32 
-    )(
-    input  wire                   HCLK,
-    input  wire                   HRESETn,
-    input  wire                   i_empty,
-    input  wire                   i_full,
-    output wire                   o_popen,
-    output wire                   o_pushen,
-    input  wire [DATA_SIZE - 1:0] i_popdata,
-    output wire [DATA_SIZE - 1:0] o_pushdata,
-    output wire                   HREADYIN,
-    output wire [NUM_SLAVE - 1:0] HSEL,
-    output wire [31:0]            HADDR,
-    output wire [2:0]             HBURST,
-    output wire [1:0]             HSIZE,
-    output wire [1:0]             HTRANS,
-    output wire                   HWRITE,
-    output wire [31:0]            HWDATA,
-    input  wire [31:0]            HRDATA,
-    input  wire [1:0]             HRESP,
-    input  wire [NUM_SLAVE - 1:0] HREADYOUT
+interface AHB4 #(
+    parameter ADDR_SIZE = 32,
+    parameter DATA_SIZE = 32 // MAX(DATA_SIZE) = 128
     );
 
-/*
-    //Step 0 (IDLE)
-    if (signal)
-        goto Step1
-    //Step 1 (ADDR Phase) 
-    i_popdata[15]    : HWRITE
-    i_popdata[14:13] : HTRANS
-    i_popdata[12:11] : HSIZE
-    i_popdata[10:8]  : HBURST
-    i_popdata[7:0]   : HADDR
-    goto Step2
-    //Step 2 (DATA Phase)
-    if (HWRITE == 1)
-        i_popdata[31:0]  : HWDATA
-        goto Step3
-    else (HWRITE == 0)
-    //Step 3 (Waiting Response)
-    if (HRESP == 2'b00)
-        goto Step 0
-    //Step 4 (Waiting HRDATA)
-    o_pushdata = HRDATA
-    goto Step 0
-*/
+    localparam STRB_SIZE = DATA_SIZE / 8;
 
+    /* Control Signal
+    HTRANS : Transfer Signal
+        {00 : IDLE, 01 : BUSY, 10 : NONSEQ, 11 : SEQ}
+    HPROT : Protection Signal
+        {000 : OPCODE Fetch, 001 : Data Access, 010 : User Access, 011 : Privileged Access, 100 : Not Bufferable, 101 : Bufferable, 110 : Not Cacheable, 111 : Cacheable}
+    HSIZE : Transfer Size
+        2^(HSIZE) Byte    
+    HBURST : Burst Signal
+        {000 : SINGLE, 001 : INCR, 010 : WRAP4, 011 : INCR4, 100 : WRAP8, 101 : INCR8, 110 : WRAP16, 111 : INCR16}
+    */
 
+    wire [1:0]              HTRANS; 
+    wire [ADDR_SIZE - 1:0]  HADDR;
+    wire                    HWRITE;
+    wire [3:0]              HPROT;  
+    wire [2:0]              HSIZE;  
+    wire [2:0]              HBURST;
+    wire [DATA_SIZE - 1:0]  HWDATA;
+    wire [STRB_SIZE - 1:0]  HWSTRB;
+    wire [DATA_SIZE - 1:0]  HRDATA;
+    wire                    HREADY;
+    wire                    HRESP;
 
-endmodule
+    modport MASTER (
+        input   HREADY, HRESP, HRDATA,
+        output  HTRANS, HADDR, HWRITE, HPROT, HSIZE, HBURST, HWDATA, HWSTRB
+    );
+
+    modport SLAVE (
+        input   HTRANS, HADDR, HWRITE, HPROT, HSIZE, HBURST, HWDATA, HWSTRB,
+        output  HREADY, HRESP, HRDATA
+    );
+
+endinterface
