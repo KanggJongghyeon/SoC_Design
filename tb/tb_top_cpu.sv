@@ -16,8 +16,8 @@ module tb_top_cpu #(
     reg [DATA_BIT - 1:0]    i_i_mem_data;
     
     // for Loading Boot File
-    string  boot_file_path  = "V:\\SoC_Design\\SIM\\boot.txt";
-    string  temp_file_path  = "V:\\SoC_Design\\SIM\\TEST_CASE\\test_case_x.txt";
+    string  boot_file_path  = "V:\\SoC_Design\\tb\\boot.txt";
+    string  temp_file_path  = "V:\\SoC_Design\\tb\\test_case\\test_case_x.txt";
     string                  boot_file;                  // .txt File
     reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
     initial begin
