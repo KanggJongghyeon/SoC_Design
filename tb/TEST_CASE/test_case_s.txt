@@ -1,0 +1,105 @@
+addi $v0, $zero, -17
+addi $v1, $zero, 16
+addi $a0, $zero, 1
+addi $a1, $zero, 10
+addi $a2, $zero, -10
+add $a3, $v0, $a0
+addiu $t0, $zero, 16
+addiu $t1, $zero, 32
+addiu $t2, $zero, 48
+addiu $t3, $zero, 64
+addiu $t4, $zero, 80
+addiu $t5, $zero, 96
+addiu $t6, $zero, 112
+addiu $t7, $zero, 128
+add $s0, $zero, $t0
+add $s1, $zero, $t1
+add $s2, $zero, $t2
+add $s3, $zero, $t3
+add $s4, $zero, $t4
+add $s5, $zero, $t5
+add $s6, $zero, $t6
+add $s7, $zero, $t7
+sw $s0, 0($zero)
+sw $s1, 4($zero)
+sw $s2, 8($zero)
+sw $s3, 12($zero)
+sw $s4, 16($zero)
+sw $s5, 20($zero)
+sw $s6, 24($zero)
+sw $s7, 28($zero)
+lw $t0, 28($zero)
+lw $t1, 24($zero)
+lw $t2, 20($zero)
+lw $t3, 16($zero)
+lw $t4, 12($zero)
+lw $t5, 8($zero)
+lw $t6, 4($zero)
+lw $t7, 0($zero)
+addiu $s0, $t0, 8
+sw $s0, 32($zero)
+add $s1, $s0, $v0
+sw $s1, 36($zero)
+addiu $s2, $t2, 6
+sw $s2, 40($zero)
+add $s3, $s2, $v0
+sw $s3, 44($zero)
+addiu $s4, $t4, 4
+sw $s4, 48($zero)
+add $s5, $v0, $s4
+sw $s5, 52($zero)
+addiu $s6, $t6, 2
+sw $s6, 56($zero)
+add $s7, $s6, $v0
+sw $s7, 60($zero)
+addu $t8, $t8, $v1
+addu $t9, $v1, $t9
+addu $t8, $v1, $t8
+addu $t9, $t9, $v1
+addu $t8, $t8, $v1
+addu $t9, $v1, $t9
+addiu $t0, $zero, 65535
+sw $t0, 64($zero)
+sw $t0, 68($zero)
+sw $t0, 72($zero)
+sw $t0, 76($zero)
+lw $t1, 16($v1)
+lw $t2, 24($v1)
+lw $t1, 20($v1)
+lw $t2, 28($v1)
+addu $t1, $t1, $a0
+addu $t1, $t1, $a0
+addu $t1, $t1, $a0
+addu $t2, $t2, $a0
+addu $t2, $t2, $a0
+addu $t2, $t2, $a0
+beq $v1, $t7, 7
+subu $t8, $s0, $s7
+subu $t8, $t8, $s7
+subu $t8, $t8, $s7
+subu $t8, $t8, $s7
+subu $t8, $t8, $s7
+subu $t8, $t8, $s7
+subu $t8, $t8, $s7
+subu $t9, $s0, $s7
+subu $t9, $t9, $s7
+subu $t9, $t9, $s7
+subu $t9, $t9, $s7
+subu $t9, $t9, $s7
+subu $t9, $t9, $s7
+subu $t9, $t9, $s7
+bne $t0, $s0,  3 
+sw $t9, -5($s3)
+sw $t9, 12($s4)
+sw $t9, -1($s3)
+sw $t9, 3($s3)
+sw $t9, -10($s2)
+sw $t9, -6($s2)
+addiu $t4, $t4, 1028
+sw $t4, 80($zero)
+lw $t5, 80($zero)
+add $t6, $t5, $t4
+nop
+nop
+nop
+nop
