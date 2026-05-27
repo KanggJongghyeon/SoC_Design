@@ -19,7 +19,7 @@ module if_id #(
     reg [DATA_BIT - 1:0]    r_i_mem_data;
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg                     r_flushing;                     // for 2-Cycle IF Flush
-    reg                     r_wait_1c_n,    r_wait_2c_n;    // for 2-Cycle IF
+    reg                     r_wait_1c_n,    r_wait_2c_n;    // for 2-Cycle Waiting
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
