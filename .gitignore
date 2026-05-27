@@ -1,17 +1,17 @@
 # Vivado project folders
-SoC_Design/SoC_Design.cache/
-SoC_Design/SoC_Design.sim/
-SoC_Design/*.runs/
-SoC_Design/*.hw/
-SoC_Design/*.ip_user_files/
-SoC_Design/*.gen/
-SoC_Design/*.Xil/
+soc_design/SoC_Design.cache/
+soc_design/SoC_Design.sim/
+soc_design/*.runs/
+soc_design/*.hw/
+soc_design/*.ip_user_files/
+soc_design/*.gen/
+soc_design/*.Xil/
 
 # Vivado logs
-SoC_Design/*.log
-SoC_Design/*.jou
-SoC_Design/*.str
-SoC_Design/*.pb
+soc_design/*.log
+soc_design/*.jou
+soc_design/*.str
+soc_design/*.pb
 
 # Simulation / xsim
 *.wdb
@@ -38,10 +38,10 @@ SoC_Design/*.pb
 ~$*
 
 # TEST_CASE
-SIM/TEST_CASE/convert.o
-SIM/TEST_CASE/main.o
-SIM/TEST_CASE/main.exe
-SIM/TEST_CASE/test_case_x.txt
+tb/TEST_CASE/convert.o
+tb/TEST_CASE/main.o
+tb/TEST_CASE/main.exe
+tb/TEST_CASE/test_case_x.txt
 
 # Linking Folder
 컴퓨터구조론교안.lnk
