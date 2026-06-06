@@ -1,10 +1,10 @@
 interface AXI5 #(
-    parameter ADDR_SIZE = 32,
-    parameter DATA_SIZE = 32,
-    parameter ID_SIZE   = 12
+    parameter ADDR_BIT  = 32,
+    parameter DATA_BIT  = 32,
+    parameter ID_BIT    = 12
     );
 
-    localparam STRB_SIZE = DATA_SIZE / 8;
+    localparam STRB_BIT = DATA_BIT / 8;
 
     /*
     Control Signal Description
@@ -17,8 +17,8 @@ interface AXI5 #(
     // AW Channel   (WRITE ADDRESS)
     wire                    AWVALID;
     wire                    AWREADY;
-    wire [ID_SIZE   - 1:0]  AWID;
-    wire [ADDR_SIZE - 1:0]  AWADDR;
+    wire [ID_BIT   - 1:0]   AWID;
+    wire [ADDR_BIT - 1:0]   AWADDR;
     wire [7:0]              AWLEN;  
     wire [2:0]              AWSIZE; 
     wire [1:0]              AWBURST;
@@ -26,22 +26,22 @@ interface AXI5 #(
     // W Channel    (WRITE)
     wire                    WVALID;
     wire                    WREADY;
-    wire [ID_SIZE   - 1:0]  WID;
-    wire [DATA_SIZE - 1:0]  WDATA;
-    wire [STRB_SIZE - 1:0]  WSTRB;
+    wire [ID_BIT   - 1:0]   WID;
+    wire [DATA_BIT - 1:0]   WDATA;
+    wire [STRB_BIT - 1:0]   WSTRB;
     wire                    WLAST;
 
     // B Channel    (WRITE RESPONSE)
     wire                    BVALID;
     wire                    BREADY;
-    wire [ID_SIZE   - 1:0]  BID;
+    wire [ID_BIT   - 1:0]   BID;
     wire [1:0]              BRESP;
 
     // AR Channel   (READ ADDRESS)
     wire                    ARVALID;
     wire                    ARREADY;
-    wire [ID_SIZE   - 1:0]  ARID;
-    wire [ADDR_SIZE - 1:0]  ARADDR;
+    wire [ID_BIT   - 1:0]   ARID;
+    wire [ADDR_BIT - 1:0]   ARADDR;
     wire [7:0]              ARLEN;   
     wire [2:0]              ARSIZE; 
     wire [1:0]              ARBURST;
@@ -49,8 +49,8 @@ interface AXI5 #(
     // R Channel (READ and READ RESPONSE)
     wire                    RVALID;
     wire                    RREADY;
-    wire [ID_SIZE   - 1:0]  RID;
-    wire [DATA_SIZE - 1:0]  RDATA;
+    wire [ID_BIT   - 1:0]   RID;
+    wire [DATA_BIT - 1:0]   RDATA;
     wire                    RLAST;
     wire [1:0]              RRESP;
    

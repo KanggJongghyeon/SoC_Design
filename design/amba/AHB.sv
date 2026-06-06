@@ -1,9 +1,9 @@
 interface AHB4 #(
-    parameter ADDR_SIZE = 32,
-    parameter DATA_SIZE = 32 // MAX(DATA_SIZE) = 128
+    parameter ADDR_BIT = 32,
+    parameter DATA_BIT = 32 // MAX(DATA_BIT) = 128
     );
 
-    localparam STRB_SIZE = DATA_SIZE / 8;
+    localparam STRB_BIT = DATA_BIT / 8;
 
     /* Control Signal
     HTRANS : Transfer Signal
@@ -17,14 +17,14 @@ interface AHB4 #(
     */
 
     wire [1:0]              HTRANS; 
-    wire [ADDR_SIZE - 1:0]  HADDR;
+    wire [ADDR_BIT - 1:0]   HADDR;
     wire                    HWRITE;
     wire [3:0]              HPROT;  
     wire [2:0]              HSIZE;  
     wire [2:0]              HBURST;
-    wire [DATA_SIZE - 1:0]  HWDATA;
-    wire [STRB_SIZE - 1:0]  HWSTRB;
-    wire [DATA_SIZE - 1:0]  HRDATA;
+    wire [DATA_BIT - 1:0]   HWDATA;
+    wire [STRB_BIT - 1:0]   HWSTRB;
+    wire [DATA_BIT - 1:0]   HRDATA;
     wire                    HREADY;
     wire                    HRESP;
 
