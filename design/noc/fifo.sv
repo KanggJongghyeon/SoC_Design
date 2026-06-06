@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module async_fifo #(
-    parameter DATA_BIT = 32,
-    parameter FIFO_BIT = 32
+    parameter DATA_BIT  = 32,
+    parameter FIFO_SIZE = 32
     )(
     input  wire                     push_clk,
     input  wire                     push_rst_n,
@@ -17,12 +17,12 @@ module async_fifo #(
 
     reg  [DATA_BIT - 1:0] r_popdata;
 
-    localparam PTR_BIT = $clog2(FIFO_BIT) + 1;
+    localparam PTR_BIT = $clog2(FIFO_SIZE) + 1;
     reg  [PTR_BIT - 1:0]  r_wptr_b, r_wptr_g_cdc_e, r_wptr_g_cdc_f;
     reg  [PTR_BIT - 1:0]  r_rptr_b, r_rptr_g_cdc_e, r_rptr_g_cdc_f;
     wire [PTR_BIT - 1:0]  w_wptr_g, w_rptr_g;
 
-    reg [DATA_BIT - 1:0]  fifo [0:FIFO_BIT - 1];
+    reg [DATA_BIT - 1:0]  fifo [0:FIFO_SIZE - 1];
     
     always @ (posedge push_clk or negedge push_rst_n) begin
         if (~push_rst_n) begin
@@ -86,7 +86,7 @@ module async_fifo #(
 
     always @ (posedge push_clk or negedge push_rst_n) begin
         if (~push_rst_n) begin
-            for (integer i = 0; i < FIFO_BIT; i = i + 1) begin
+            for (integer i = 0; i < FIFO_SIZE; i = i + 1) begin
                 fifo[i] = {DATA_BIT{1'b0}};
             end
         end
@@ -115,8 +115,8 @@ module async_fifo #(
 endmodule
 
 module sync_fifo #(
-    parameter DATA_BIT = 32,
-    parameter FIFO_BIT = 128
+    parameter DATA_BIT  = 32,
+    parameter FIFO_SIZE = 128
     )(
     input  wire                     clk,
     input  wire                     rst_n,
@@ -128,10 +128,10 @@ module sync_fifo #(
     output wire                     o_full
     );
 
-    localparam PTR_BIT = $clog2(FIFO_BIT) + 1;
-    reg [DATA_BIT - 1:0]    fifo    [0:FIFO_BIT - 1];
+    localparam PTR_BIT = $clog2(FIFO_SIZE) + 1;
+    reg [DATA_BIT - 1:0]    fifo    [0:FIFO_SIZE - 1];
     reg [DATA_BIT - 1:0]    r_popdata;
-    reg [PTR_BIT - 1:0]     r_wptr,     r_rptr;
+    reg [PTR_BIT - 1:0]     r_wptr, r_rptr;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
@@ -152,9 +152,9 @@ module sync_fifo #(
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            for (fifo_index = 0; fifo_index < FIFO_BIT; fifo_index = fifo_index + 1) begin
+            for (fifo_index = 0; fifo_index < FIFO_SIZE; fifo_index = fifo_index + 1) begin
                 fifo[fifo_index]<= {DATA_BIT{1'b0}};
-            end
+            end                 
         end
         else begin
             if (i_pushen) begin
@@ -179,3 +179,4 @@ module sync_fifo #(
     assign o_full   = (r_wptr[PTR_BIT - 1] != r_rptr[PTR_BIT - 1]) && (r_wptr[PTR_BIT - 2:0] == r_rptr[PTR_BIT - 2:0]);
 
 endmodule
+

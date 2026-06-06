@@ -26,7 +26,6 @@ interface AXI5 #(
     // W Channel    (WRITE)
     wire                    WVALID;
     wire                    WREADY;
-    wire [ID_BIT   - 1:0]   WID;
     wire [DATA_BIT - 1:0]   WDATA;
     wire [STRB_BIT - 1:0]   WSTRB;
     wire                    WLAST;
@@ -61,7 +60,7 @@ interface AXI5 #(
         
         // W
         input   WREADY,
-        output  WVALID, WID, WDATA, WSTRB, WLAST,
+        output  WVALID, WDATA, WSTRB, WLAST,
 
         // B
         input   BVALID, BID, BRESP,  
@@ -82,7 +81,7 @@ interface AXI5 #(
         output  AWREADY,
 
         // W
-        input   WVALID, WID, WDATA, WSTRB, WLAST,
+        input   WVALID, WDATA, WSTRB, WLAST,
         output  WREADY,
 
         // B
