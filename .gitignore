@@ -1,4 +1,5 @@
 # Vivado project folders
+soc_design/
 soc_design/SoC_Design.cache/
 soc_design/SoC_Design.sim/
 soc_design/*.runs/
