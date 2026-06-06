@@ -1,6 +1,6 @@
-`timescale 1ns / 1ps
+`include "memory.svh"
 module DRAM #(
-    parameter ADDR_SIZE = 8,
+    parameter ADDR_SIZE = 8,    // Not Used
     parameter DATA_SIZE = 32
     )(
     input  wire                     clk,
@@ -11,25 +11,26 @@ module DRAM #(
     output wire [DATA_SIZE - 1:0]   o_data
     );
 
-    localparam MEMORY_SIZE  = 8;
-    localparam MEM_SIZE     = 2 ** ADDR_SIZE;
+    localparam BYTE_SIZE    = 8;    // Byte Size (8 Bit)
+    localparam WORD_BYTES   = DATA_SIZE / BYTE_SIZE;
+    localparam MEM_SIZE     = `DRAM_SIZE;
 
-    reg [DATA_SIZE   - 1:0] r_data;
-    reg [MEMORY_SIZE - 1:0] mem [0:MEM_SIZE - 1];
+    reg [DATA_SIZE - 1:0] r_data;
+    reg [BYTE_SIZE - 1:0] mem [0:MEM_SIZE - 1];
+
+    integer byte_cntr;
 
     always @ (posedge clk) begin
         if (i_en == 1'b1) begin
             if (i_wren == 1'b1) begin
-                mem[i_addr + 0] <= i_data[1 * MEMORY_SIZE - 1:0 * MEMORY_SIZE];
-                mem[i_addr + 1] <= i_data[2 * MEMORY_SIZE - 1:1 * MEMORY_SIZE];
-                mem[i_addr + 2] <= i_data[3 * MEMORY_SIZE - 1:2 * MEMORY_SIZE];
-                mem[i_addr + 3] <= i_data[4 * MEMORY_SIZE - 1:3 * MEMORY_SIZE];
+                for (byte_cntr = 0; byte_cntr < WORD_BYTES; byte_cntr = byte_cntr + 1) begin
+                    mem[i_addr + byte_cntr] <= i_data[byte_cntr * BYTE_SIZE +: BYTE_SIZE];
+                end
             end
             else begin
-                r_data[1 * MEMORY_SIZE -1:0 * MEMORY_SIZE]  <= mem[i_addr + 0];
-                r_data[2 * MEMORY_SIZE -1:1 * MEMORY_SIZE]  <= mem[i_addr + 1];
-                r_data[3 * MEMORY_SIZE -1:2 * MEMORY_SIZE]  <= mem[i_addr + 2];
-                r_data[4 * MEMORY_SIZE -1:3 * MEMORY_SIZE]  <= mem[i_addr + 3];
+                for (byte_cntr = 0; byte_cntr < WORD_BYTES; byte_cntr = byte_cntr + 1) begin
+                    r_data[byte_cntr * BYTE_SIZE +: BYTE_SIZE]  <= mem[i_addr + byte_cntr];
+                end
             end
         end
     end

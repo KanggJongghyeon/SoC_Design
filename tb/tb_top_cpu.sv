@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
 module tb_top_cpu #(
-    parameter ADDR_BIT  = 12,    // 0x000 ~ 0xFFF, MEMORY SIZE = 4KB
+    parameter ADDR_BIT  = 32,    
     parameter DATA_BIT  = 32,
     parameter LINE_CNTR = 120
     )();

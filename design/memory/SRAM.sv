@@ -4,9 +4,9 @@ Cache Size  = 32KB = 512 Block x
 # of Block  = 512 Line
 Association = 2-way = 256 Set
 */
-`timescale 1ns/1ps
+`include "memory.svh"
 module CACHE #(
-    parameter   ADDR_SIZE   = 8,
+    parameter   ADDR_SIZE   = 8,    // Not Used`
     parameter   DATA_SIZE   = 512
     )(
     input   wire                        clk,
