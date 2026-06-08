@@ -8,7 +8,7 @@ module cpu_axi_bridge_master #(
     // cpu if
     input   wire                        i_cpu_en,
     input   wire                        i_cpu_wren,
-    input   wire                        i_cpu_addr,
+    input   wire    [ADDR_BIT - 1:0]    i_cpu_addr,
     input   wire    [DATA_BIT - 1:0]    i_cpu_data, // Store(sw)
     output  wire    [DATA_BIT - 1:0]    o_cpu_data, // Load (lw)
     // axi if
@@ -20,13 +20,13 @@ module cpu_axi_bridge_master #(
     localparam BUF_SIZE     = 32;
     localparam BUF_ADDR_BIT = $clog2(BUF_SIZE);
     // for Buffer
-    reg     [DATA_BIT - 1:0]    buf_cpu_waddr   [0:BUF_SIZE - 1];   // WADDR Buffer 
+    reg     [ADDR_BIT - 1:0]    buf_cpu_waddr   [0:BUF_SIZE - 1];   // WADDR Buffer 
     reg     [DATA_BIT - 1:0]    buf_cpu_wdata   [0:BUF_SIZE - 1];   // WDATA Buffer 
-    reg     [DATA_BIT - 1:0]    buf_cpu_raddr   [0:BUF_SIZE - 1];   // RADDR Buffer 
+    reg     [ADDR_BIT - 1:0]    buf_cpu_raddr   [0:BUF_SIZE - 1];   // RADDR Buffer 
     reg     [BUF_ADDR_BIT - 1:0]r_buf_waddr_push_addr,  r_buf_wdata_push_addr,  r_buf_raddr_push_addr;  // Buffer Push ADDR               
     reg     [BUF_ADDR_BIT - 1:0]r_buf_waddr_pop_addr,   r_buf_wdata_pop_addr,   r_buf_raddr_pop_addr;   // Buffer Pop ADDR
     wire                        w_buf_waddr_empty,      w_buf_wdata_empty,      w_buf_raddr_empty;      // Buffer Empty
-    // for AXI Output
+    // for AXI Master Output
     reg                         r_awvalid;  // AWVALID
     reg     [AXI.ID_BIT - 1:0]  r_awid;     // AWID
     reg     [ADDR_BIT - 1:0]    r_awaddr;   // AWADDR
@@ -44,7 +44,7 @@ module cpu_axi_bridge_master #(
     reg     [7:0]               r_arlen;    // ARLEN
     reg     [2:0]               r_arsize;   // ARSIZE
     reg     [1:0]               r_arburst;  // ARBURST
-    reg                         r_ready;    // RREADY
+    reg                         r_rready;   // RREADY
     // for CPU Output
     reg     [DATA_BIT - 1:0]    r_cpu_data; // CPU Load DATA
     // for Loop Variable
@@ -73,7 +73,7 @@ module cpu_axi_bridge_master #(
     // RADDR Buffer
     always @ (posedge clk or  negedge rst_n) begin
         if (~rst_n) begin
-            for (buf_idx == 0; buf_idx < BUF_SIZE; buf_idx = buf_idx + 1) begin
+            for (buf_idx = 0; buf_idx < BUF_SIZE; buf_idx = buf_idx + 1) begin
                 buf_cpu_raddr[buf_idx]  <= {DATA_BIT{1'b0}};
             end
             r_buf_raddr_push_addr       <= {BUF_ADDR_BIT{1'b0}}; 
@@ -101,7 +101,7 @@ module cpu_axi_bridge_master #(
             if (w_buf_waddr_empty == 1'b1) begin
                 r_awvalid           <= 1'b0;
             end
-            else if (AXI.AWREADY == 1'b1)begin
+            else if (AXI.AWREADY == 1'b0) begin
                 r_buf_waddr_pop_addr<= r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
                 r_awvalid           <= 1'b1;
                 r_awid              <= {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
@@ -125,7 +125,7 @@ module cpu_axi_bridge_master #(
             if (w_buf_wdata_empty == 1'b1) begin
                 r_wvalid            <= 1'b0;
             end
-            else if ((AXI.WREADY == 1'b1) && (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr)) begin
+            else if ((AXI.WREADY == 1'b0) && (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr)) begin
                 r_buf_wdata_pop_addr<= r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
                 r_wvalid            <= 1'b1;
                 r_wdata             <= buf_cpu_wdata[r_buf_wdata_pop_addr];
@@ -143,7 +143,8 @@ module cpu_axi_bridge_master #(
         else begin
             if ((AXI.BVALID == 1'b1) && (AXI.BRESP != `XRESP_SLVERR) && (AXI.BRESP != `XRESP_DECERR)) begin
                 r_bready    <= 1'b1;
-            end         
+            end 
+            else begin
                 r_bready    <= 1'b0;
             end
         end
@@ -164,7 +165,7 @@ module cpu_axi_bridge_master #(
             if (w_buf_raddr_empty == 1'b1) begin
                 r_arvalid           <= 1'b0;
             end
-            else if (AXI.ARREADY == 1'b1)begin
+            else if (AXI.ARREADY == 1'b0)begin
                 r_buf_raddr_pop_addr<= r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
                 r_arvalid           <= 1'b1;
                 r_arid              <= {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
@@ -183,11 +184,11 @@ module cpu_axi_bridge_master #(
         end
         else begin
             if ((AXI.RVALID == 1'b1) && (AXI.RRESP != `XRESP_SLVERR) && (AXI.RRESP != `XRESP_DECERR)) begin
-                r_bready    <= 1'b1;
+                r_rready    <= 1'b1;
                 r_cpu_data  <= AXI.RDATA;
             end         
             else begin
-                r_bready    <= 1'b0;
+                r_rready    <= 1'b0;
                 r_cpu_data  <= AXI.RDATA;
             end
         end
@@ -219,7 +220,7 @@ module cpu_axi_bridge_master #(
     assign AXI.ARSIZE       = r_arsize;
     assign AXI.ARBURST      = r_arburst;
     // AXI R Output
-    assign AXI.RREADY       = r_ready;
+    assign AXI.RREADY       = r_rready;
     // CPU Output
     assign o_cpu_data       = r_cpu_data;
 
