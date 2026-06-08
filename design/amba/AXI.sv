@@ -71,7 +71,7 @@ interface AXI5 #(
         output  ARVALID, ARID, ARADDR, ARLEN, ARSIZE, ARBURST,
 
         // R
-        input   RVALID, RID, RDATA, RLAST, RESP,
+        input   RVALID, RID, RDATA, RLAST, RRESP,
         output  RREADY
     );
 
@@ -94,7 +94,7 @@ interface AXI5 #(
 
         // R
         input   RREADY,
-        output  RVALID, RID, RDATA, RLAST, RESP
+        output  RVALID, RID, RDATA, RLAST, RRESP
     );
 
 endinterface
