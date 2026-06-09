@@ -101,13 +101,15 @@ module cpu_axi_bridge_master #(
             if (w_buf_waddr_empty == 1'b1) begin
                 r_awvalid           <= 1'b0;
             end
-            else if (AXI.AWREADY == 1'b0) begin
-                r_buf_waddr_pop_addr<= r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+            else begin
                 r_awvalid           <= 1'b1;
                 r_awid              <= {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
                 r_awaddr            <= buf_cpu_waddr[r_buf_waddr_pop_addr];
                 r_awsize            <= 3'b010;
                 r_awburst           <= `AXBURST_INCR;
+                if (AXI.AWREADY == 1'b1) begin
+                    r_buf_waddr_pop_addr<= r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+                end
             end
         end
     end
@@ -125,12 +127,18 @@ module cpu_axi_bridge_master #(
             if (w_buf_wdata_empty == 1'b1) begin
                 r_wvalid            <= 1'b0;
             end
-            else if ((AXI.WREADY == 1'b0) && (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr)) begin
-                r_buf_wdata_pop_addr<= r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
-                r_wvalid            <= 1'b1;
-                r_wdata             <= buf_cpu_wdata[r_buf_wdata_pop_addr];
-                r_wstrb             <= {AXI.STRB_BIT{1'b1}};
-                r_wlast             <= 1'b1;
+            else begin
+                if (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr) begin
+                    r_wvalid            <= 1'b1;
+                    r_wdata             <= buf_cpu_wdata[r_buf_wdata_pop_addr];
+                    r_wstrb             <= {AXI.STRB_BIT{1'b1}};
+                    r_wlast             <= 1'b1;
+                end
+                else begin
+                    if (AXI.WREADY == 1'b1) begin
+                        r_buf_wdata_pop_addr<= r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
+                    end
+                end
             end
         end
     end
@@ -165,13 +173,15 @@ module cpu_axi_bridge_master #(
             if (w_buf_raddr_empty == 1'b1) begin
                 r_arvalid           <= 1'b0;
             end
-            else if (AXI.ARREADY == 1'b0)begin
-                r_buf_raddr_pop_addr<= r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+            else begin
                 r_arvalid           <= 1'b1;
                 r_arid              <= {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
                 r_araddr            <= buf_cpu_raddr[r_buf_raddr_pop_addr];
                 r_arsize            <= 3'b010;
                 r_arburst           <= `AXBURST_INCR;
+                if (AXI.ARREADY == 1'b1)begin
+                    r_buf_raddr_pop_addr<= r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+                end
             end
         end
     end
