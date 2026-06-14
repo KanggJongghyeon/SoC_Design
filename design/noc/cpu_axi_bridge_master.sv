@@ -25,30 +25,35 @@ module cpu_axi_bridge_master #(
     reg     [ADDR_BIT - 1:0]    buf_cpu_raddr   [0:BUF_SIZE - 1];   // RADDR Buffer 
     reg     [BUF_ADDR_BIT - 1:0]r_buf_waddr_push_addr,  r_buf_wdata_push_addr,  r_buf_raddr_push_addr;  // Buffer Push ADDR               
     reg     [BUF_ADDR_BIT - 1:0]r_buf_waddr_pop_addr,   r_buf_wdata_pop_addr,   r_buf_raddr_pop_addr;   // Buffer Pop ADDR
+    reg     [BUF_ADDR_BIT - 1:0]r_n_buf_waddr_pop_addr, r_n_buf_wdata_pop_addr, r_n_buf_raddr_pop_addr; // Buffer Pop ADDR (Next)
     wire                        w_buf_waddr_empty,      w_buf_wdata_empty,      w_buf_raddr_empty;      // Buffer Empty
-    // for AXI Master Output
-    reg                         r_awvalid;  // AWVALID
-    reg     [AXI.ID_BIT - 1:0]  r_awid;     // AWID
-    reg     [ADDR_BIT - 1:0]    r_awaddr;   // AWADDR
-    reg     [7:0]               r_awlen;    // AWLEN
-    reg     [2:0]               r_awsize;   // AWSIZE
-    reg     [1:0]               r_awburst;  // AWBURST
-    reg                         r_wvalid;   // WVALID
-    reg     [DATA_BIT - 1:0]    r_wdata;    // WDATA
-    reg     [AXI.STRB_BIT - 1:0]r_wstrb;    // WSTRB
-    reg                         r_wlast;    // WLAST
-    reg                         r_bready;   // BREADY
-    reg                         r_arvalid;  // ARVALID
-    reg     [AXI.ID_BIT - 1:0]  r_arid;     // ARID
-    reg     [ADDR_BIT - 1:0]    r_araddr;   // ARADDR
-    reg     [7:0]               r_arlen;    // ARLEN
-    reg     [2:0]               r_arsize;   // ARSIZE
-    reg     [1:0]               r_arburst;  // ARBURST
-    reg                         r_rready;   // RREADY
+    // for AXI Master Output                            
+    reg                         r_awvalid,  r_n_awvalid;// AWVALID
+    reg     [AXI.ID_BIT - 1:0]  r_awid,     r_n_awid;   // AWID
+    reg     [ADDR_BIT - 1:0]    r_awaddr,   r_n_awaddr; // AWADDR
+    reg     [7:0]               r_awlen;                // AWLEN
+    reg     [2:0]               r_awsize,   r_n_awsize; // AWSIZE
+    reg     [1:0]               r_awburst;              // AWBURST
+    reg                         r_wvalid,   r_n_wvalid; // WVALID
+    reg     [DATA_BIT - 1:0]    r_wdata,    r_n_wdata;  // WDATA
+    reg     [AXI.STRB_BIT - 1:0]r_wstrb,    r_n_wstrb;  // WSTRB
+    reg                         r_wlast,    r_n_wlast;  // WLAST
+    reg                         r_bready;               // BREADY
+    reg                         r_arvalid,  r_n_arvalid;// ARVALID
+    reg     [AXI.ID_BIT - 1:0]  r_arid,     r_n_arid;   // ARID
+    reg     [ADDR_BIT - 1:0]    r_araddr,   r_n_araddr; // ARADDR
+    reg     [7:0]               r_arlen;                // ARLEN
+    reg     [2:0]               r_arsize,   r_n_arsize; // ARSIZE
+    reg     [1:0]               r_arburst;              // ARBURST
+    reg                         r_rready;               // RREADY
     // for CPU Output
     reg     [DATA_BIT - 1:0]    r_cpu_data; // CPU Load DATA
     // for Loop Variable
     integer                     buf_idx;
+    // for AXI Master State
+    reg     [1:0]               r_aw_state, r_n_aw_state;
+    reg     [1:0]               r_w_state,  r_n_w_state;
+    reg     [1:0]               r_ar_state, r_n_ar_state;
 
     // WADDR/WDATA Buffer
     always @ (posedge clk or  negedge rst_n) begin
@@ -88,35 +93,117 @@ module cpu_axi_bridge_master #(
 
     // AW Channel Logic
     always @ (posedge clk or negedge rst_n) begin
+        r_awlen     <= `SINGLE_BURST;
+        r_awburst   <= `AXBURST_FIXED;
         if (~rst_n) begin
-            r_buf_waddr_pop_addr<= {BUF_ADDR_BIT{1'b0}}; 
+            r_aw_state          <= `S_AXI_IDLE;
+            r_buf_waddr_pop_addr<= {BUF_ADDR_BIT{1'b0}};
             r_awvalid           <= 1'b0;
             r_awid              <= {AXI.ID_BIT{1'b0}}; 
             r_awaddr            <= {ADDR_BIT{1'b0}};
-            r_awlen             <= `SINGLE_BURST;
             r_awsize            <= 3'b000; 
-            r_awburst           <= `AXBURST_FIXED;
         end
         else begin
-            if (w_buf_waddr_empty == 1'b1) begin
-                r_awvalid           <= 1'b0;
-            end
-            else begin
-                r_awvalid           <= 1'b1;
-                r_awid              <= {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
-                r_awaddr            <= buf_cpu_waddr[r_buf_waddr_pop_addr];
-                r_awsize            <= 3'b010;
-                r_awburst           <= `AXBURST_INCR;
-                if (AXI.AWREADY == 1'b1) begin
-                    r_buf_waddr_pop_addr<= r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+            r_aw_state          <= r_n_aw_state;
+            r_buf_waddr_pop_addr<= r_n_buf_waddr_pop_addr;
+            r_awvalid           <= r_n_awvalid;
+            r_awid              <= r_n_awid; 
+            r_awaddr            <= r_n_awaddr;
+            r_awsize            <= r_n_awsize;
+        end
+    end
+    
+    always @ (*) begin
+        if (~rst_n) begin
+            r_n_aw_state            = `S_AXI_IDLE;
+            r_n_buf_waddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+            r_n_awvalid             = 1'b0;
+            r_n_awid                = {AXI.ID_BIT{1'b0}}; 
+            r_n_awaddr              = {ADDR_BIT{1'b0}};
+            r_n_awsize              = 3'b000; 
+        end
+        else begin
+            case (r_aw_state)
+                `S_AXI_IDLE : begin
+                    if (w_buf_waddr_empty == 1'b1) begin
+                        r_n_aw_state            = `S_AXI_IDLE;
+                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
+                        r_n_awvalid             = 1'b0;
+                        r_n_awid                = r_awid;
+                        r_n_awaddr              = r_awaddr;
+                        r_n_awsize              = r_awsize;
+                    end
+                    else begin
+                        r_n_aw_state            = `S_AXI_RUN;
+                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+                        r_n_awvalid             = 1'b1;
+                        r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
+                        r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
+                        r_n_awsize              = 3'b010;
+                    end
                 end
-            end
+                `S_AXI_RUN  : begin
+                    if (AXI.AWREADY == 1'b1) begin
+                        if (w_buf_waddr_empty != 1'b1) begin
+                            r_n_aw_state            = `S_AXI_RUN;
+                            r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_awvalid             = 1'b1;
+                            r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
+                            r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
+                            r_n_awsize              = 3'b010;
+                        end
+                        else begin
+                            r_n_aw_state            = `S_AXI_IDLE;
+                            r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
+                            r_n_awvalid             = 1'b0;
+                            r_n_awid                = {AXI.ID_BIT{1'b0}};
+                            r_n_awaddr              = {ADDR_BIT{1'b0}};
+                            r_n_awsize              = 3'b000;
+                        end
+                    end
+                    else begin
+                        r_n_aw_state            = `S_AXI_WAIT;
+                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
+                        r_n_awvalid             = 1'b1;
+                        r_n_awid                = r_awid;
+                        r_n_awaddr              = r_awaddr;
+                        r_n_awsize              = r_awsize;
+                    end
+                end
+                `S_AXI_WAIT : begin
+                    if (AXI.AWREADY == 1'b1) begin
+                        r_n_aw_state            = `S_AXI_RUN;
+                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+                        r_n_awvalid             = 1'b1;
+                        r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
+                        r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
+                        r_n_awsize              = 3'b010;
+                    end
+                    else begin
+                        r_n_aw_state            = `S_AXI_WAIT;
+                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
+                        r_n_awvalid             = 1'b1;
+                        r_n_awid                = r_awid;
+                        r_n_awaddr              = r_awaddr;
+                        r_n_awsize              = r_awsize;
+                    end
+                end
+                default     : begin
+                    r_n_aw_state            = `S_AXI_IDLE;
+                    r_n_buf_waddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+                    r_n_awvalid             = 1'b0;
+                    r_n_awid                = {AXI.ID_BIT{1'b0}}; 
+                    r_n_awaddr              = {ADDR_BIT{1'b0}};
+                    r_n_awsize              = 3'b000; 
+                end
+            endcase
         end
     end
 
     // W Channel Logic
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
+            r_w_state           <= `S_AXI_IDLE;
             r_buf_wdata_pop_addr<= {BUF_ADDR_BIT{1'b0}};
             r_wvalid            <= 1'b0;
             r_wdata             <= {DATA_BIT{1'b0}};
@@ -124,83 +211,234 @@ module cpu_axi_bridge_master #(
             r_wlast             <= 1'b0;
         end
         else begin
-            if (w_buf_wdata_empty == 1'b1) begin
-                r_wvalid            <= 1'b0;
-            end
-            else begin
-                if (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr) begin
-                    r_wvalid            <= 1'b1;
-                    r_wdata             <= buf_cpu_wdata[r_buf_wdata_pop_addr];
-                    r_wstrb             <= {AXI.STRB_BIT{1'b1}};
-                    r_wlast             <= 1'b1;
-                end
-                else begin
-                    if (AXI.WREADY == 1'b1) begin
-                        r_buf_wdata_pop_addr<= r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
-                    end
-                end
-            end
+            r_w_state           <= r_n_w_state;
+            r_buf_wdata_pop_addr<= r_n_buf_wdata_pop_addr;
+            r_wvalid            <= r_n_wvalid;
+            r_wdata             <= r_n_wdata;
+            r_wstrb             <= r_n_wstrb;
+            r_wlast             <= r_n_wlast;
         end
     end
 
-    // B Channel Logic
-    always @ (posedge clk or negedge rst_n) begin
+    always @ (*) begin
         if (~rst_n) begin
-            r_bready    <= 1'b0;
+            r_n_w_state             = `S_AXI_IDLE;
+            r_n_buf_wdata_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+            r_n_wvalid              = 1'b0;
+            r_n_wdata               = {DATA_BIT{1'b0}};
+            r_n_wstrb               = {AXI.STRB_BIT{1'b0}};
+            r_n_wlast               = 1'b0;
         end
         else begin
-            if ((AXI.BVALID == 1'b1) && (AXI.BRESP != `XRESP_SLVERR) && (AXI.BRESP != `XRESP_DECERR)) begin
-                r_bready    <= 1'b1;
-            end 
-            else begin
-                r_bready    <= 1'b0;
-            end
+            case (r_w_state)
+                `S_AXI_IDLE : begin
+                    if (w_buf_wdata_empty == 1'b1) begin
+                        r_n_w_state             = `S_AXI_IDLE;
+                        r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                        r_n_wvalid              = 1'b0;
+                        r_n_wdata               = r_wdata;
+                        r_n_wstrb               = r_wstrb;
+                        r_n_wlast               = 1'b0;
+                    end
+                    else begin
+                        if (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr) begin
+                            r_n_w_state             = `S_AXI_RUN;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_wvalid              = 1'b1;
+                            r_n_wdata               = buf_cpu_wdata[r_buf_wdata_pop_addr];
+                            r_n_wstrb               = {AXI.STRB_BIT{1'b1}};
+                            r_n_wlast               = 1'b1;
+                        end
+                        else begin
+                            r_n_w_state             = `S_AXI_IDLE;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                            r_n_wvalid              = 1'b0;
+                            r_n_wdata               = r_wdata;
+                            r_n_wstrb               = r_wstrb;
+                            r_n_wlast               = 1'b0;
+                        end
+                    end
+                end
+                `S_AXI_RUN  : begin
+                    if (AXI.WREADY == 1'b1) begin
+                        if ((w_buf_wdata_empty != 1'b1) && (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr)) begin
+                            r_n_w_state             = `S_AXI_RUN;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_wvalid              = 1'b1;
+                            r_n_wdata               = buf_cpu_wdata[r_buf_wdata_pop_addr];
+                            r_n_wstrb               = {AXI.STRB_BIT{1'b1}};
+                            r_n_wlast               = 1'b1;
+                        end
+                        else begin
+                            r_n_w_state             = `S_AXI_IDLE;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                            r_n_wvalid              = 1'b0;
+                            r_n_wdata               = {DATA_BIT{1'b0}};
+                            r_n_wstrb               = {AXI.STRB_BIT{1'b0}};
+                            r_n_wlast               = 1'b0;
+                        end
+                    end
+                    else begin
+                        r_n_w_state             = `S_AXI_WAIT;
+                        r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                        r_n_wvalid              = 1'b1;
+                        r_n_wdata               = r_wdata;
+                        r_n_wstrb               = r_wstrb;
+                        r_n_wlast               = r_wlast;
+                    end
+                end
+                `S_AXI_WAIT : begin
+                    if (AXI.WREADY == 1'b1) begin
+                        r_n_w_state             = `S_AXI_RUN;
+                        r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
+                        r_n_wvalid              = 1'b1;
+                        r_n_wdata               = buf_cpu_wdata[r_buf_wdata_pop_addr];
+                        r_n_wstrb               = {AXI.STRB_BIT{1'b1}};
+                        r_n_wlast               = 1'b1;
+                    end
+                    else begin
+                        r_n_w_state             = `S_AXI_WAIT;
+                        r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                        r_n_wvalid              = 1'b1;
+                        r_n_wdata               = r_wdata;
+                        r_n_wstrb               = r_wstrb;
+                        r_n_wlast               = r_wlast;
+                    end
+                end
+                default     : begin
+                    r_n_w_state             = `S_AXI_IDLE;
+                    r_n_buf_wdata_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+                    r_n_wvalid              = 1'b0;
+                    r_n_wdata               = {DATA_BIT{1'b0}};
+                    r_n_wstrb               = {AXI.STRB_BIT{1'b0}};
+                    r_n_wlast               = 1'b0;
+                end
+            endcase
         end
+    end
+    
+    // B Channel Logic
+    always @ (posedge clk or negedge rst_n) begin
+        r_bready    <= 1'b1;
     end
 
     // AR Channel Logic
     always @ (posedge clk or negedge rst_n) begin
+        r_arlen     <= `SINGLE_BURST;
+        r_arburst   <= `AXBURST_FIXED;
         if (~rst_n) begin
+            r_ar_state          <= `S_AXI_IDLE;
             r_buf_raddr_pop_addr<= {BUF_ADDR_BIT{1'b0}};
             r_arvalid           <= 1'b0;
             r_arid              <= {AXI.ID_BIT{1'b0}};
             r_araddr            <= {ADDR_BIT{1'b0}};
-            r_arlen             <= `SINGLE_BURST;
             r_arsize            <= 3'b000;
-            r_arburst           <= `AXBURST_FIXED;
         end
         else begin
-            if (w_buf_raddr_empty == 1'b1) begin
-                r_arvalid           <= 1'b0;
-            end
-            else begin
-                r_arvalid           <= 1'b1;
-                r_arid              <= {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
-                r_araddr            <= buf_cpu_raddr[r_buf_raddr_pop_addr];
-                r_arsize            <= 3'b010;
-                r_arburst           <= `AXBURST_INCR;
-                if (AXI.ARREADY == 1'b1)begin
-                    r_buf_raddr_pop_addr<= r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+            r_ar_state          <= r_n_ar_state;
+            r_buf_raddr_pop_addr<= r_n_buf_raddr_pop_addr;
+            r_arvalid           <= r_n_arvalid;
+            r_arid              <= r_n_arid;
+            r_araddr            <= r_n_araddr;
+            r_arsize            <= r_n_arsize;
+        end
+    end
+
+    always @ (*) begin
+        if (~rst_n) begin
+            r_n_ar_state            = `S_AXI_IDLE;
+            r_n_buf_raddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+            r_n_arvalid             = 1'b0;
+            r_n_arid                = {AXI.ID_BIT{1'b0}};
+            r_n_araddr              = {ADDR_BIT{1'b0}};
+            r_n_arsize              = 3'b000;
+        end
+        else begin
+            case (r_ar_state)
+                `S_AXI_IDLE : begin
+                    if (w_buf_raddr_empty == 1'b1) begin
+                        r_n_ar_state            = `S_AXI_IDLE;
+                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
+                        r_n_arvalid             = 1'b0;
+                        r_n_arid                = r_arid;
+                        r_n_araddr              = r_araddr;
+                        r_n_arsize              = r_arsize;
+                    end
+                    else begin
+                        r_n_ar_state            = `S_AXI_RUN;
+                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+                        r_n_arvalid             = 1'b1;
+                        r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
+                        r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
+                        r_n_arsize              = 3'b010;
+                    end
                 end
-            end
+                `S_AXI_RUN  : begin
+                    if (AXI.ARREADY == 1'b1) begin
+                        if (w_buf_raddr_empty != 1'b1) begin
+                            r_n_ar_state            = `S_AXI_RUN;
+                            r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_arvalid             = 1'b1;
+                            r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
+                            r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
+                            r_n_arsize              = 3'b010;
+                        end
+                        else begin
+                            r_n_ar_state            = `S_AXI_IDLE;
+                            r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
+                            r_n_arvalid             = 1'b0;
+                            r_n_arid                = {AXI.ID_BIT{1'b0}};
+                            r_n_araddr              = {ADDR_BIT{1'b0}};
+                            r_n_arsize              = 3'b000;
+                        end
+                    end
+                    else begin
+                        r_n_ar_state            = `S_AXI_WAIT;
+                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
+                        r_n_arvalid             = 1'b1;
+                        r_n_arid                = r_arid;
+                        r_n_araddr              = r_araddr;
+                        r_n_arsize              = r_arsize;
+                    end
+                end
+                `S_AXI_WAIT : begin
+                    if (AXI.ARREADY == 1'b1) begin
+                        r_n_ar_state            = `S_AXI_RUN;
+                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+                        r_n_arvalid             = 1'b1;
+                        r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
+                        r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
+                        r_n_arsize              = 3'b010;
+                    end
+                    else begin
+                        r_n_ar_state            = `S_AXI_WAIT;
+                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
+                        r_n_arvalid             = 1'b1;
+                        r_n_arid                = r_arid;
+                        r_n_araddr              = r_araddr;
+                        r_n_arsize              = r_arsize;
+                    end
+                end
+                default     : begin
+                    r_n_ar_state            = `S_AXI_IDLE;
+                    r_n_buf_raddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
+                    r_n_arvalid             = 1'b0;
+                    r_n_arid                = {AXI.ID_BIT{1'b0}}; 
+                    r_n_araddr              = {ADDR_BIT{1'b0}};
+                    r_n_arsize              = 3'b000; 
+                end
+            endcase
         end
     end
 
     // R Channel Logic
     always @ (posedge clk or negedge rst_n) begin
+        r_rready    <= 1'b1;
         if (~rst_n) begin
-            r_rready    <= 1'b0;
             r_cpu_data  <= {DATA_BIT{1'b0}};
         end
         else begin
-            if ((AXI.RVALID == 1'b1) && (AXI.RRESP != `XRESP_SLVERR) && (AXI.RRESP != `XRESP_DECERR)) begin
-                r_rready    <= 1'b1;
-                r_cpu_data  <= AXI.RDATA;
-            end         
-            else begin
-                r_rready    <= 1'b0;
-                r_cpu_data  <= AXI.RDATA;
-            end
+            r_cpu_data  <= AXI.RDATA;
         end
     end
 
