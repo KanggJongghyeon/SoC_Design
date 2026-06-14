@@ -1,6 +1,8 @@
 //////////////////////////////////////////
 // Path : .\design\core\instruction.svh //
 //////////////////////////////////////////
+`ifndef INSTRUCTION_SVH // Header Guard
+`define INSTRUCTION_SVH
 `timescale 1ns / 1ps
 // INSTRUCTION OPCODE
 // 16-Bit System
@@ -54,7 +56,7 @@
 `define FUNCT_ADDU  6'b100001   // 33
 `define FUNCT_SUB   6'b100010   // 34
 `define FUNCT_SUBU  6'b100011   // 35
-`define FUNCT_AND   6'b100100   // 36
+`define FUNCT_AND 6'b100100   // 36
 `define FUNCT_OR    6'b100101   // 37
 `define FUNCT_XOR   6'b100110   // 38
 `define FUNCT_NOR   6'b100111   // 39
@@ -89,6 +91,7 @@
 `define ALU_CTR_DIV     4'b1110 // 14   DIV,    DIVU
 `define ALU_CTR_XXX     4'b1111 // 15   Not Defined
 
+`endif  // INSTRUCTION_SVH
 /*
 ALUOP[1]    ALUOP[0]    FUNCT CODE  ALU CONTROL
 0           0           XXXXXX      0010

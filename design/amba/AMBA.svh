@@ -1,5 +1,6 @@
+`ifndef AMBA_SVH    // Header Guard
+`define AMBA_SVH    
 `timescale 1ns / 1ps
-
 /////////
 // APB //
 /////////
@@ -39,12 +40,10 @@
 // AXI //
 /////////
 // FSM
-`define S_AXI_IDLE  2'b00
-`define S_AXI_AW    2'b01
-`define S_AXI_AR    2'b01
-`define S_AXI_W     2'b11
-`define S_AXI_R     2'b11
-`define S_AXI_B     2'b10
+`define S_AXI_IDLE      2'b00
+`define S_AXI_RUN       2'b01
+`define S_AXI_WAIT      2'b11
+//`define S_AXI_PENDING   2'b10
 // Signal
 `define SINGLE_BURST    8'h00
 `define AXBURST_FIXED       2'b00
@@ -55,3 +54,5 @@
 `define XRESP_EXOKAY        2'b01
 `define XRESP_SLVERR        2'b10
 `define XRESP_DECERR        2'b11
+
+`endif  // AMBA_SVH
