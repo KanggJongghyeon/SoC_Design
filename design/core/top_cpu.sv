@@ -31,7 +31,7 @@ module top_cpu #(
     `else
         localparam OPCODE_BIT   = 6;
         localparam REG_BIT      = 5;
-    `endif
+    `endif  // CPU_32BIT (Vivado Define Option)
 
     //////////
     // wire //
