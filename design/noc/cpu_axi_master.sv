@@ -1,5 +1,5 @@
 `include "../amba/AMBA.svh"
-module cpu_axi_bridge_master #(
+module cpu_axi_master #(
     parameter ADDR_BIT  = 32,
     parameter DATA_BIT  = 32
     )(
