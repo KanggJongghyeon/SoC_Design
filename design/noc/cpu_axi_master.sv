@@ -1,4 +1,5 @@
 `include "../amba/AMBA.svh"
+`timescale 1ns / 1ps
 module cpu_axi_master #(
     parameter ADDR_BIT  = 32,
     parameter DATA_BIT  = 32

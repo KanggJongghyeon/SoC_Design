@@ -1,4 +1,5 @@
 `include "../amba/AMBA.svh"
+`timescale 1ns / 1ps
 module top_noc #(
     parameter AXI5_ADDR_BIT = 32,
     parameter AXI5_DATA_BIT = 32,
@@ -9,7 +10,7 @@ module top_noc #(
     // cpu interface
     input   wire                            i_cpu_en,
     input   wire                            i_cpu_wren,
-    input   wire    [AXI5_ADDR_BIT - 1:0]   i_cpu_adddr,
+    input   wire    [AXI5_ADDR_BIT - 1:0]   i_cpu_addr,
     input   wire    [AXI5_DATA_BIT - 1:0]   i_cpu_data,
     output  wire    [AXI5_DATA_BIT - 1:0]   o_cpu_data
     );
@@ -21,8 +22,8 @@ module top_noc #(
     ) b_axi_cpu_noc ();
 
     cpu_axi_master #(
-        .ADDR_BIT   (ADDR_BIT),
-        .DATA_BIT   (DATA_BIT)
+        .ADDR_BIT   (AXI5_ADDR_BIT),
+        .DATA_BIT   (AXI5_DATA_BIT)
     ) u_cpu_axi_master (
         .clk        (clk),
         .rst_n      (rst_n),

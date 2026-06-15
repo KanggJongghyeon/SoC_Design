@@ -1,13 +1,17 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
-module tb_top_noc #(
-    parameter ADDR_BIT  = 32,    
-    parameter DATA_BIT  = 32,
-    parameter LINE_CNTR = 120
-    )();
+module tb_top_noc (); 
     
     // Local Parameter
+    `ifndef CPU_32BIT
+        localparam ADDR_BIT = 16;
+        localparam DATA_BIT = 16;
+    `else
+        localparam ADDR_BIT = 32;
+        localparam DATA_BIT = 32;
+    `endif  // CPU_32BIT (Vivado Define Option)
     localparam  AXI5_ID_BIT = 12;
+    localparam  LINE_CNTR   = 120;
 
     // Global Signal
     reg                     clk;
