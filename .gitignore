@@ -8,22 +8,22 @@ soc_design/
 #soc_design/*.gen/
 #soc_design/*.Xil/
 
-# Vivado logs
+## Vivado logs
 #soc_design/*.log
 #soc_design/*.jou
 #soc_design/*.str
 #soc_design/*.pb
 
-# Simulation / xsim
-*.wdb
-*.wcfg
-*.sdb
-*.dbg
-*.mem
-*.reloc
-*.rlx
-*.rtti
-*.xdbg
+## Simulation / xsim
+#*.wdb
+#*.wcfg
+#*.sdb
+#*.dbg
+#*.mem
+#*.reloc
+#*.rlx
+#*.rtti
+#*.xdbg
 
 # Build
 *.obj
