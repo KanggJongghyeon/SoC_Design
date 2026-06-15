@@ -142,7 +142,7 @@ module top_cpu #(
         .o_mem_addr     (w_if_pc_addr)
     );
     adder21 #(      // ADDR Adder (just add ADDR+4)
-        .ADDR_BIT       (ADDR_BIT)
+        .DATA_BIT       (ADDR_BIT)
     ) u_addr_4_adder (
         .i_i0           (w_if_pc_addr),
         .i_i1           (ADDR_BIT'(4)),
@@ -297,7 +297,7 @@ module top_cpu #(
         .o_o            (w_ex_shift_left2_sign_extend_const)
     );
     adder21 #(  // Branch ADDR Adder
-        .ADDR_BIT       (DATA_BIT)
+        .DATA_BIT       (DATA_BIT)
     ) u_branch_addr_adder ( 
         .i_i0           ({{(DATA_BIT - ADDR_BIT){1'b0}}, w_ex_pc_addr}),
         .i_i1           (w_ex_sign_extend_branch_addr),
