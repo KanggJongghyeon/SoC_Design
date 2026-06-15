@@ -66,13 +66,6 @@ module tb_top_noc #(
     wire [DATA_BIT - 1:0]   w_d_mem_wdata;
     wire                    w_arbiter_req;
 
-    // AXI MASTER BUS (CPU<=>)
-    AXI5 #(
-        .ADDR_BIT           (ADDR_BIT),
-        .DATA_BIT           (DATA_BIT),
-        .ID_BIT             (AXI5_ID_BIT)
-    ) b_axi_cpu_noc ();
-
     // I-MEM
     DRAM #(
         .ADDR_SIZE          (ADDR_BIT),
@@ -118,29 +111,19 @@ module tb_top_noc #(
         .o_data             (w_d_mem_rdata)
     );
 
-    // AXI MASTER
-    cpu_axi_bridge_master #(
-        .ADDR_BIT           (ADDR_BIT),
-        .DATA_BIT           (DATA_BIT)
-    ) u_axi_master (
-        .clk                (clk),
-        .rst_n              (rst_n),
-        .i_cpu_en           (w_d_mem_en),
-        .i_cpu_wren         (w_d_mem_wren),
-        .i_cpu_addr         (w_d_mem_addr),
-        .i_cpu_data         (w_d_mem_wdata),
-        .o_cpu_data         (),
-        .AXI                (b_axi_cpu_noc)
-    );
-
-    // NOC
-    noc #(
-        .ADDR_BIT           (ADDR_BIT),
-        .DATA_BIT           (DATA_BIT)
-    ) u_noc (
-        .ACLK               (clk),
-        .ARESET_N           (rst_n),
-        .AXI                (b_axi_cpu_noc)
+    // Network on Chip
+    top_noc #(
+        .AXI5_ADDR_BIT  (ADDR_BIT),
+        .AXI5_DATA_BIT  (DATA_BIT),
+        .AXI5_ID_BIT    (AXI5_ID_BIT)
+    ) u_top_noc (
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .i_cpu_en       (w_d_mem_en),
+        .i_cpu_wren     (w_d_mem_wren),
+        .i_cpu_addr     (w_d_mem_addr),
+        .i_cpu_data     (w_d_mem_wdata),
+        .o_cpu_data     ()
     );
 
 endmodule
