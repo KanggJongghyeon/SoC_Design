@@ -38,6 +38,9 @@ soc_design/
 # Office temp
 ~$*
 
+# tb
+tb/tb_TOP.sv
+
 # TEST_CASE
 tb/test_case/convert.o
 tb/test_case/main.o
