@@ -39,10 +39,11 @@ soc_design/
 ~$*
 
 # TEST_CASE
-tb/TEST_CASE/convert.o
-tb/TEST_CASE/main.o
-tb/TEST_CASE/main.exe
-tb/TEST_CASE/test_case_x.txt
+tb/test_case/convert.o
+tb/test_case/main.o
+tb/test_case/main.exe
+tb/test_case/test_case_x.txt
+tb/test_case/old_test_case/
 
 # Linking Folder
 SOC설계및실습(청강).lnk
