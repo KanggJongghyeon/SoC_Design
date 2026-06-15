@@ -1,5 +1,5 @@
-`timescale 1ns / 1ps
 `include "instruction.svh"
+`timescale 1ns / 1ps
 module alu #(
     parameter DATA_BIT = 16
     )(

@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 // Shift Left
 module shift_left #(
     parameter LEFT_CNT  = 2,

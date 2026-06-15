@@ -1,4 +1,5 @@
 `include "memory.svh"
+`timescale 1ns / 1ps
 module DRAM #(
     parameter ADDR_SIZE = 8,    // Not Used
     parameter DATA_SIZE = 32

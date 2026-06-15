@@ -1,5 +1,5 @@
-`timescale 1ns / 1ps
 `include "instruction.svh"
+`timescale 1ns / 1ps
 module mul_div_unit #(
     parameter DATA_BIT = 64
     )(

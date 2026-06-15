@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 1ns / 1ps
 module adder21 #(
     parameter DATA_BIT = 8
     )(

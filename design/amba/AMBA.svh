@@ -1,6 +1,5 @@
 `ifndef AMBA_SVH    // Header Guard
 `define AMBA_SVH    
-`timescale 1ns / 1ps
 /////////
 // APB //
 /////////

@@ -3,7 +3,6 @@
 ///////////////////////////////////////
 `ifndef MEMORY_SVH
 `define MEMORY_SVH
-`timescale 1ns / 1ps
 // DRAM
 `define DRAM_SIZE 4096  // [Byte]
 // SRAM

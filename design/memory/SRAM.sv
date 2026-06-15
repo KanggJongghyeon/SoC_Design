@@ -5,6 +5,7 @@ Cache Size  = 32KB = 512 Block x
 Association = 2-way = 256 Set
 */
 `include "memory.svh"
+`timescale 1ns / 1ps
 module CACHE #(
     parameter   ADDR_SIZE   = 8,    // Not Used`
     parameter   DATA_SIZE   = 512

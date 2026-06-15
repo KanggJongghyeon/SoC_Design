@@ -3,7 +3,6 @@
 //////////////////////////////////////////
 `ifndef INSTRUCTION_SVH // Header Guard
 `define INSTRUCTION_SVH
-`timescale 1ns / 1ps
 // INSTRUCTION OPCODE
 // 16-Bit System
 `define OPCODE_ADI   4'b0100
