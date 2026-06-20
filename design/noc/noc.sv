@@ -33,6 +33,19 @@ module noc #(
     reg [AXI.ID_BIT - 1:0]  r_x2_awid;
     // for Loop Variable
     integer                 buf_idx;
+    // Wire from ADDR_DECODER
+    wire                    w_boot_rom_wren;
+    wire                    w_axi2ahb_wren;
+    wire                    w_axi2apb_wren;
+    wire                    w_cache_mem_wren;
+    wire                    w_main_mem_wren;
+    wire                    w_aux_mem_wren;
+    wire                    w_boot_rom_rden;
+    wire                    w_axi2ahb_rden;
+    wire                    w_axi2apb_rden;
+    wire                    w_cache_mem_rden;
+    wire                    w_main_mem_rden;
+    wire                    w_aux_mem_rden;
 
     // Store Previous AWID
     always @ (posedge ACLK or negedge ARESET_N) begin
@@ -130,6 +143,34 @@ module noc #(
             end
         end
     end
+
+    // WADDR DECODER
+    addr_decoder #(
+        .ADDR_BIT       (AXI.ADDR_BIT)
+    ) u_waddr_decoder (
+        .AXVALID        (AXI.AWVALID),
+        .AXADDR         (AXI.AWADDR),
+        .o_boot_rom_en  (w_boot_rom_wren),
+        .o_axi2ahb_en   (w_axi2ahb_wren),
+        .o_axi2apb_en   (w_axi2apb_wren),
+        .o_cache_mem_en (w_cache_mem_wren),
+        .o_main_mem_en  (w_main_mem_wren),
+        .o_aux_mem_en   (w_aux_mem_wren)
+    );
+
+    // RADDR DECODER
+    addr_decoder #(
+        .ADDR_BIT       (AXI.ADDR_BIT)
+    ) u_raddr_decoder (
+        .AXVALID        (AXI.ARVALID),
+        .AXADDR         (AXI.ARADDR),
+        .o_boot_rom_en  (w_boot_rom_rden),
+        .o_axi2ahb_en   (w_axi2ahb_rden),
+        .o_axi2apb_en   (w_axi2apb_rden),
+        .o_cache_mem_en (w_cache_mem_rden),
+        .o_main_mem_en  (w_main_mem_rden),
+        .o_aux_mem_en   (w_aux_mem_rden)
+    );
 
     assign AXI.AWREADY  = r_awready;
     assign AXI.WREADY   = r_wready;
