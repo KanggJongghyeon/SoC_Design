@@ -39,14 +39,14 @@ soc_design/
 ~$*
 
 #design
-design/*.mem
-design/*.txt
+design/**/*.mem
+design/**/*.txt
 design/top.sv
 
 # tb
 tb/tb_TOP.sv
-tb/*.txt
-tb/*.mem
+tb/**/*.txt
+tb/**/*.mem
 
 # TEST_CASE
 tb/test_case/convert.o
