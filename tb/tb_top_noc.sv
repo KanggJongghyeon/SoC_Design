@@ -22,17 +22,16 @@ module tb_top_noc ();
     reg [ADDR_BIT - 1:0]    i_i_mem_addr;
     reg [DATA_BIT - 1:0]    i_i_mem_data;
     
-    // for Loading Boot File
-    string  boot_file_path  = "V:\\SoC_Design\\tb\\boot.txt";
-    string  temp_file_path  = "V:\\SoC_Design\\tb\\test_case\\test_case_x.txt";
-    string                  boot_file;                  // .txt File
+    // for Loading Text File
+    string  boot_loader_path= ".\\..\\tb\\boot_loader.mem";
+    string  application_path= ".\\..\\tb\\application.mem";    
+    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\test_case\\test_case.mem";
     reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
     
     initial begin
-        #1;
-        //$sformat (boot_file, boot_file_path);
-        $sformat (boot_file, temp_file_path);
-        $readmemh(boot_file, boot_rom);                 // Store to boot_rom
+        //$readmemh(boot_loader_path, boot_rom);
+        //$readmemh(application_path, boot_rom);
+        $readmemh(debug_mode_path, boot_rom);   // Store to boot_rom
     end
 
     // Clock On
@@ -71,7 +70,7 @@ module tb_top_noc ();
     wire                    w_arbiter_req;
 
     // I-MEM
-    DRAM #(
+    SDRAM #(
         .ADDR_SIZE          (ADDR_BIT),
         .DATA_SIZE          (DATA_BIT)
     ) u_inst_mem (
@@ -103,7 +102,7 @@ module tb_top_noc ();
     );
 
     // D-MEM
-    DRAM #(
+    SDRAM #(
         .ADDR_SIZE          (ADDR_BIT),
         .DATA_SIZE          (DATA_BIT)
     ) u_data_mem (
@@ -128,6 +127,17 @@ module tb_top_noc ();
         .i_cpu_addr     (w_d_mem_addr),
         .i_cpu_data     (w_d_mem_wdata),
         .o_cpu_data     ()
+    );
+
+    // BOOT ROM
+    BOOT_ROM #(
+        .ADDR_BIT       (ADDR_BIT),
+        .DATA_BIT       (DATA_BIT)
+    ) u_boot_rom (
+        .clk            (clk),
+        .i_en           (),
+        .i_addr         (),
+        .o_data         ()
     );
 
 endmodule

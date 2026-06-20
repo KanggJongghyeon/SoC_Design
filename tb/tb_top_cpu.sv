@@ -82,7 +82,7 @@ module tb_top_cpu #(
     );
 
     // I-MEM
-    DRAM #(
+    SDRAM #(
         .ADDR_SIZE          (ADDR_BIT),
         .DATA_SIZE          (DATA_BIT)
     ) u_inst_mem (
@@ -95,7 +95,7 @@ module tb_top_cpu #(
     );
 
     // D-MEM
-    DRAM #(
+    SDRAM #(
         .ADDR_SIZE          (ADDR_BIT),
         .DATA_SIZE          (DATA_BIT)
     ) u_data_mem (
