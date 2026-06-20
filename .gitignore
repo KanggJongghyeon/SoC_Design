@@ -38,14 +38,19 @@ soc_design/
 # Office temp
 ~$*
 
+#design
+design/*.mem
+design/*.txt
+
 # tb
 tb/tb_TOP.sv
+tb/*.txt
+tb/*.mem
 
 # TEST_CASE
 tb/test_case/convert.o
 tb/test_case/main.o
 tb/test_case/main.exe
-tb/test_case/test_case_x.txt
 tb/test_case/old_test_case/
 
 # Linking Folder
