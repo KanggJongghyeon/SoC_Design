@@ -41,6 +41,7 @@ soc_design/
 #design
 design/*.mem
 design/*.txt
+design/top.sv
 
 # tb
 tb/tb_TOP.sv
