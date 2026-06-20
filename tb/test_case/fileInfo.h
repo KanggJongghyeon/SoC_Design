@@ -4,6 +4,7 @@
 // Input File Info
 #define MAX_LINE 1000
 #define MAX_LEN  50
+#define BOOT_ROM_SIZE 1024
 //#define ASM                 ".txt"
 //#define HEX                 ".mem"
 //#define BOOT_ROM_PATH       "./../../design/memory/boot_rom"

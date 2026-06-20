@@ -9,7 +9,7 @@ static eOpcodeType  opcodeType[MAX_LINE]        = {TYPE_NONE};  // OPCODE TYPE S
 ////////////////////////
 // Load Assembly File //
 ////////////////////////
-bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount)
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char* oCount)
 {
     bool fError = false;
     FILE *fp    = fopen(iFileName, "r");
@@ -701,9 +701,9 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
 ////////////////////
 // Make Text File //
 ////////////////////
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount, eInput iInput)
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput)
 {
-    FILE *fp = fopen(oFileName, "w");
+    FILE*           fp = fopen(oFileName, "w");
     if (fp == NULL)
     {
         printf("[ERROR] File Open Fail : %s\n", oFileName);
@@ -712,13 +712,22 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCou
     {
         unsigned int lineBuffer     = 0;
         unsigned int bytesOffset[4] = {0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000};
-        for (char count = 0; count < iCount; count++)
+        for (unsigned char count = 0; count < iCount; count++)
         {
-            for (char bytes = 0; bytes < 4; bytes++)
+            for (unsigned char bytes = 0; bytes < 4; bytes++)
             {
                 lineBuffer = bytesOffset[bytes] & iInstruction[count];
                 lineBuffer = lineBuffer >> (8 * bytes);
                 fprintf(fp, "%02x\n", lineBuffer);
+            }
+        }
+        // Zero-Setting
+        iCount = (unsigned int)iCount;
+        if (iCount < BOOT_ROM_SIZE / 4)
+        {
+            for (unsigned int count = iCount * 4; count < BOOT_ROM_SIZE; count++)
+            {
+                fprintf(fp, "%02x\n", 0);   // Set Zero
             }
         }
     }
@@ -738,8 +747,8 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCou
 //////////////////
 void convert(eInput iInput)
 {
-    char lineCount  = 0;    // Text File Line Counter
-    bool error      = false;// File Open Error Flag
+    unsigned char   lineCount  = 0;     // Text File Line Counter
+    bool            error      = false; // File Open Error Flag
     // getAssembly()
     switch (iInput)
     {
@@ -765,7 +774,7 @@ void convert(eInput iInput)
     // Check File Open ERROR
     if (error == false)
     {
-        for (char line = 0; line < lineCount; line++)
+        for (unsigned char line = 0; line < lineCount; line++)
         {
             // getOpcodeStr()
             char opcodeStr[OPCODE_STR_LEN] = {0};   // OPCODE Command
@@ -836,7 +845,7 @@ void convert(eInput iInput)
                 setHexTextFile("./../application.mem", instruction, lineCount, iInput);
                 break;
             case 4:
-                setHexTextFile("./test_case_x.mem", instruction, lineCount, iInput);
+                setHexTextFile("./test_case.mem", instruction, lineCount, iInput);
                 break;
             default:
                 break;

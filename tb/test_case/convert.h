@@ -14,7 +14,7 @@ static unsigned int instruction[MAX_LINE];      // hex      <= assembly
 static eOpcodeType  opcodeType[MAX_LINE];       // OPCODE TYPE Storage
 
 // Load Assembly File
-bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount);
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char* oCount);
 
 // Get Opcode Command
 void getOpcodeStr(char* iLineData, char* oOpcodeStr);
@@ -35,7 +35,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);
 
 // Make Text File
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount, eInput iInput);
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput);
 
 // Convert main
 void convert(eInput iInput);
