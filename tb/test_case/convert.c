@@ -1,5 +1,4 @@
 #include "convert.h"
-
 /////////////////////
 // Global Variable //
 /////////////////////
@@ -10,24 +9,29 @@ static eOpcodeType  opcodeType[MAX_LINE]        = {TYPE_NONE};  // OPCODE TYPE S
 ////////////////////////
 // Load Assembly File //
 ////////////////////////
-void getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount)
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount)
 {
-    FILE *fp = fopen(iFileName, "r");
+    bool fError = false;
+    FILE *fp    = fopen(iFileName, "r");
+    
     if (fp == NULL)
     {
+        fError = true;
         printf("[ERROR] File Open Fail : %s\n", iFileName);
     }
     else
     {
         printf("File Open Complete : %s\n", iFileName);
+        *oCount = 0;
+        while (*oCount < MAX_LINE && fgets(oAssembly[*oCount], MAX_LEN, fp) != NULL)
+        {
+            oAssembly[*oCount][strcspn(oAssembly[*oCount], "\n")] = '\0';
+            (*oCount)++;
+        }
+        fclose(fp);
     }
-    *oCount = 0;
-    while (*oCount < MAX_LINE && fgets(oAssembly[*oCount], MAX_LEN, fp) != NULL)
-    {
-        oAssembly[*oCount][strcspn(oAssembly[*oCount], "\n")] = '\0';
-        (*oCount)++;
-    }
-    fclose(fp);
+
+    return fError;
 }
 
 ////////////////////////
@@ -275,8 +279,9 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
 //////////////////////////
 unsigned int getRegNumber(char* iRegStr)
 {
+    //@ 1. Init Member Variable
     eRegisters oRegNumber = R_NONE;
-    
+    //@ 2. Set Register Number
     if (0 == strcmp(iRegStr, "$zero\0"))
     {
         oRegNumber  = R_ZERO;
@@ -405,6 +410,11 @@ unsigned int getRegNumber(char* iRegStr)
     {
         oRegNumber  = R_RA;
     }
+    else if (iRegStr[0] == '\0')   // case for lui
+    {
+        //printf("[DEBUG] LUI\n");
+        oRegNumber  = R_ZERO;
+    }
     else
     {
         oRegNumber  = R_NONE;
@@ -525,10 +535,23 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 }
                 rtStr[rtCount]  = '\0';
             }
-            //@ 3c1b. In All Other Cases:
+            //@ 3c1b. If Opcode Number is OP_LUI:
+            else if (opcode == (unsigned int)OP_LUI)
+            {
+                //@ 3c1b1. Get Rt Register
+                while (iLineData[charCount] != ',')
+                {
+                    rtStr[rtCount] = iLineData[charCount];
+                    charCount++;
+                    rtCount++;
+                }
+                rtStr[rtCount] = '\0';
+                rsStr[rsCount] = '\0';  // lui doesn't have rs
+            }
+            //@ 3c1c. In All Other Cases:
             else
             {
-                //@ 3c1b1. Get Rt - Rs Register
+                //@ 3c1c1. Get Rt - Rs Register
                 while (iLineData[charCount] != ',')
                 {
                     rtStr[rtCount] = iLineData[charCount];
@@ -592,35 +615,59 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
 ////////////////////////////
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction)
 {
-    char    charCount           = 0;
-    char    immCount            = 0;
-    char    immStr[IMM_STR_LEN] = {0};  
-    int     immData             = 0;
-    int     negOffset           = 0x0000FFFF;
-
+    //@ 1. Init Member Variable
+    char            charCount           = 0;
+    char            immCount            = 0;
+    char            immStr[IMM_STR_LEN] = {0};  
+    int             immData             = 0;
+    int             negOffset           = 0x0000FFFF;
+    unsigned int    opcode              = (unsigned int)OP_NONE; 
+    //@ 2. Skip OPCODE Part
     while (iLineData[charCount] != ',')
     {
         charCount++;
     }
     charCount++;
+    //@ 3. Get Imm Data for each Opcode Type
     switch (iOpcodeType)
     {
+        //@ 3a. For the TYPE_I:
         case TYPE_I:
-            while (iLineData[charCount] != ',')
+            //@ 3a1. Get Opcode Number
+            opcode = *oInstruction >> 26;
+            //@ 3a1a. If Opcode Number is OP_LUI:
+            if (opcode == (unsigned int)OP_LUI)
             {
-                charCount++;
+                //@ 3a1a1. Get Imm String
+                while (iLineData[charCount] != '\0')
+                {
+                    immStr[immCount] = iLineData[charCount];
+                    charCount++;
+                    immCount++;
+                }
             }
-            charCount = charCount + 2;
-            while (iLineData[charCount] != '\0')
+            //@ 3a1b. In All Other Cases:
+            else
             {
-                immStr[immCount] = iLineData[charCount];
-                charCount++;
-                immCount++;
+                //@ 3a1b1. Get Imm String
+                while (iLineData[charCount] != ',')
+                {
+                    charCount++;
+                }
+                charCount = charCount + 2;
+                while (iLineData[charCount] != '\0')
+                {
+                    immStr[immCount] = iLineData[charCount];
+                    charCount++;
+                    immCount++;
+                }
             }
             break;
+        //@ 3b. For the TYPE_LW or TYPE_SW:
         case TYPE_LW:
         case TYPE_SW:
             charCount++;
+            //@ 3b1. Get Imm String
             while (iLineData[charCount] != '(')
             {
                 immStr[immCount] = iLineData[charCount];
@@ -632,14 +679,20 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
             break;
     }
     immStr[immCount]    = '\0';
+    //@ 4. Get Imm Data
     immData             = atoi(immStr);
+    //@ 4a. If Imm Data is Positive Value:
     if (immData > 0)
     {
+        //@ 4a1. Add Imm Data to Instruction
         *oInstruction   = *oInstruction | immData;
     }
+    //@ 4b. In All Other Cases:
     else
     {
+        //@ 4b1. Set Neative Offset to Imm Data
         immData         = immData       & negOffset;
+        //@ 4b2. Add Imm Data to Instruction
         *oInstruction   = *oInstruction | immData;
     }
     //printf("DEBUG : immData : %08x\n", immData);
@@ -648,92 +701,153 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
 ////////////////////
 // Make Text File //
 ////////////////////
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount)
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount, eInput iInput)
 {
     FILE *fp = fopen(oFileName, "w");
     if (fp == NULL)
     {
         printf("[ERROR] File Open Fail : %s\n", oFileName);
     }
-    for (char count = 0; count < iCount; count++)
+    if (iInput == I_BOOT_ROM)
     {
-        fprintf(fp, "%08x\n", iInstruction[count]);
+        unsigned int lineBuffer     = 0;
+        unsigned int bytesOffset[4] = {0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000};
+        for (char count = 0; count < iCount; count++)
+        {
+            for (char bytes = 0; bytes < 4; bytes++)
+            {
+                lineBuffer = bytesOffset[bytes] & iInstruction[count];
+                lineBuffer = lineBuffer >> (8 * bytes);
+                fprintf(fp, "%02x\n", lineBuffer);
+            }
+        }
+    }
+    else
+    {
+        for (char count = 0; count < iCount; count++)
+        {
+            fprintf(fp, "%08x\n", iInstruction[count]);
+        }
     }
     fclose(fp);
-    printf("Make %s Complete\n", oFileName);
+    printf("Create %s Complete\n", oFileName);
 }
 
 //////////////////
 // Convert Main //
 //////////////////
-void convert()
+void convert(eInput iInput)
 {
-    char lineCount = 0; // Text File Line Counter
-
+    char lineCount  = 0;    // Text File Line Counter
+    bool error      = false;// File Open Error Flag
     // getAssembly()
-    getAssembly("test_case_s.txt", assembly, &lineCount);
-
-    for (char line = 0; line < lineCount; line++)
+    switch (iInput)
     {
-        // getOpcodeStr()
-        char opcodeStr[OPCODE_STR_LEN] = {0};   // OPCODE Command
-        getOpcodeStr(assembly[line], opcodeStr);
-        //printf("%s\n", opcodeStr); // DEBUG
-        
-        if (0 != strcmp(opcodeStr, "nop\0"))
+        case I_NONE:
+            printf("[ERROR] Invalid Input (%d)\n", iInput);
+            break;
+        case I_BOOT_ROM:
+            error   = getAssembly("./../../design/memory/boot_rom.txt", assembly, &lineCount);
+            break;
+        case I_BOOT_LOADER:
+            error   = getAssembly("./../boot_loader.txt", assembly, &lineCount);
+            break;
+        case I_APPLICATION:
+            error   = getAssembly("./../application.txt", assembly, &lineCount);
+            break;
+        case I_DEBUG_MODE:
+            error   = getAssembly("./test_case.txt", assembly, &lineCount);
+            break;
+        default:
+            printf("[ERROR] Invalid Input (%d)\n", iInput);
+            break;
+    }
+    // Check File Open ERROR
+    if (error == false)
+    {
+        for (char line = 0; line < lineCount; line++)
         {
-            //printf("Before : %08x\n", instruction[line]); // DEBUG
-            // getOpcodeAndTypeAndFunct()
-            getOpcodeAndTypeAndFunct(opcodeStr, &instruction[line], &opcodeType[line]);
+            // getOpcodeStr()
+            char opcodeStr[OPCODE_STR_LEN] = {0};   // OPCODE Command
+            getOpcodeStr(assembly[line], opcodeStr);
+            //printf("%s\n", opcodeStr); // DEBUG
+            
+            if (0 != strcmp(opcodeStr, "nop\0"))
+            {
+                //printf("Before : %08x\n", instruction[line]); // DEBUG
+                // getOpcodeAndTypeAndFunct()
+                getOpcodeAndTypeAndFunct(opcodeStr, &instruction[line], &opcodeType[line]);
+            }
+            else
+            {
+                opcodeType[line] = TYPE_NOP;
+            }
+            //printf("After1  : %08x\n", instruction[line]);   // DEBUG
+            switch(opcodeType[line])
+            {
+                case TYPE_NONE:
+                    printf("[ERROR] Could Not Find OPCODE Type, (Line %d)");
+                    printf(" : %s\n", line, assembly[line]);
+                    break;
+                case TYPE_R:
+                    getRd(assembly[line], &instruction[line]);
+                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    //printf("After2  : %08x\n", instruction[line]);   // DEBUG
+                    break;
+                case TYPE_SHIFT:
+                    printf("SHIFT Event (line %d)\n", line + 1);
+                    // TBD
+                    break;
+                case TYPE_I:
+                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    getImm(assembly[line], opcodeType[line], &instruction[line]);
+                    break;
+                case TYPE_LW:
+                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    getImm(assembly[line], opcodeType[line], &instruction[line]);
+                    break;
+                case TYPE_SW:
+                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    getImm(assembly[line], opcodeType[line], &instruction[line]);
+                    break;
+                case TYPE_J:
+                    printf("JUMP Event (line %d)\n", line + 1);
+                    // TBD
+                    break;
+                case TYPE_NOP:
+                    // Do - Nothing
+                    break;
+                default:
+                    break;
+            }
+            //printf("[%d] After1  : %08x\n", line+1, instruction[line]);   // DEBUG
         }
-        else
+        switch (iInput)
         {
-            opcodeType[line] = TYPE_NOP;
-        }
-        //printf("After1  : %08x\n", instruction[line]);   // DEBUG
-        switch(opcodeType[line])
-        {
-            case TYPE_NONE:
-                printf("[ERROR] Could Not Find OPCODE Type, (Line %d)");
-                printf(" : %s\n", line, assembly[line]);
+            case 0:
                 break;
-            case TYPE_R:
-                getRd(assembly[line], &instruction[line]);
-                getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                //printf("After2  : %08x\n", instruction[line]);   // DEBUG
+            case 1:
+                setHexTextFile("./../../design/memory/boot_rom.mem", instruction, lineCount, iInput);
                 break;
-            case TYPE_SHIFT:
-                printf("SHIFT Event (line %d)\n", line + 1);
-                // TBD
+            case 2:
+                setHexTextFile("./../boot_loader.mem", instruction, lineCount, iInput);
                 break;
-            case TYPE_I:
-                getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                getImm(assembly[line], opcodeType[line], &instruction[line]);
+            case 3:
+                setHexTextFile("./../application.mem", instruction, lineCount, iInput);
                 break;
-            case TYPE_LW:
-                getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                getImm(assembly[line], opcodeType[line], &instruction[line]);
-                break;
-            case TYPE_SW:
-                getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                getImm(assembly[line], opcodeType[line], &instruction[line]);
-                break;
-            case TYPE_J:
-                printf("JUMP Event (line %d)\n", line + 1);
-                // TBD
-                break;
-            case TYPE_NOP:
-                // Do - Nothing
+            case 4:
+                setHexTextFile("./test_case_x.mem", instruction, lineCount, iInput);
                 break;
             default:
                 break;
         }
-        //printf("[%d] After1  : %08x\n", line+1, instruction[line]);   // DEBUG
     }
-
-    setHexTextFile("test_case_x.txt", instruction, lineCount);
+    else
+    {
+        printf("Fail Converting...\nquit\n");
+    }
 }
 
 //////////////////////////////////////
-// Path : .\SIM\TEST_CASE\convert.c //
+// Path : .\tb\TEST_CASE\convert.c //
 //////////////////////////////////////

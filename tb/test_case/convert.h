@@ -6,9 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "mips.h"
-
-#define MAX_LINE 1000
-#define MAX_LEN  50
+#include "fileInfo.h"
 
 // Global Variable
 static char         assembly[MAX_LINE][MAX_LEN];// assembly <= File Data
@@ -16,7 +14,7 @@ static unsigned int instruction[MAX_LINE];      // hex      <= assembly
 static eOpcodeType  opcodeType[MAX_LINE];       // OPCODE TYPE Storage
 
 // Load Assembly File
-void getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount);
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], char* oCount);
 
 // Get Opcode Command
 void getOpcodeStr(char* iLineData, char* oOpcodeStr);
@@ -37,10 +35,10 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);
 
 // Make Text File
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount);
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, char iCount, eInput iInput);
 
 // Convert main
-void convert();
+void convert(eInput iInput);
 
 /*
 add rd, rs, rt
