@@ -4,6 +4,7 @@
 #define OPCODE_STR_LEN  7
 #define REG_STR_LEN     6
 #define IMM_STR_LEN     7
+#define JADDR_STR_LEN   9
 
 typedef enum 
 {

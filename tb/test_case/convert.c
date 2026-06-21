@@ -14,7 +14,7 @@ bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char
     bool fError = false;
     FILE *fp    = fopen(iFileName, "r");
     
-    if (fp == NULL)
+    if (NULL == fp)
     {
         fError = true;
         printf("[ERROR] File Open Fail : %s\n", iFileName);
@@ -23,7 +23,7 @@ bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char
     {
         printf("File Open Complete : %s\n", iFileName);
         *oCount = 0;
-        while (*oCount < MAX_LINE && fgets(oAssembly[*oCount], MAX_LEN, fp) != NULL)
+        while ((*oCount < MAX_LINE) && (NULL != fgets(oAssembly[*oCount], MAX_LEN, fp)))
         {
             oAssembly[*oCount][strcspn(oAssembly[*oCount], "\n")] = '\0';
             (*oCount)++;
@@ -41,13 +41,13 @@ void getOpcodeStr(char* iLineData, char* oOpcodeStr)
 {
     char charCount                  = 0;
     
-    if ((iLineData[0] == 'n') | (iLineData[1] == 'o') | (iLineData[2] == 'p'))
+    if ('n' == (iLineData[0]) | ('o' == iLineData[1]) | ('p' == iLineData[2]))
     {
         strcpy(oOpcodeStr, "nop\0");
     }
     else
     {
-        while (iLineData[charCount] != ' ')
+        while (' ' != iLineData[charCount])
         {
             oOpcodeStr[charCount] = iLineData[charCount];
             charCount++;
@@ -279,7 +279,7 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
 //////////////////////////
 unsigned int getRegNumber(char* iRegStr)
 {
-    //@ 1. Init Member Variable
+    //@ 1. Init Local Variable
     eRegisters oRegNumber = R_NONE;
     //@ 2. Set Register Number
     if (0 == strcmp(iRegStr, "$zero\0"))
@@ -425,29 +425,53 @@ unsigned int getRegNumber(char* iRegStr)
     return (unsigned int)oRegNumber;
 }
 
-/////////////////////
-// Store rd(5-BIT) //
-/////////////////////
-void getRd(char* iLineData, unsigned int* oInstruction)
+////////////////////////////
+// Store rd or rs (5-BIT) //
+////////////////////////////
+void getRdOrRs(char* iLineData, unsigned int* oInstruction)
 {
+    //@ 1. Init Local Variable
     char            charCount           = 0;
-    char            rdCount             = 0;
-    char            rdStr[REG_STR_LEN]  = {0};
-    unsigned int    rdNumber            = (unsigned int)R_NONE;
-    while (iLineData[charCount] != ' ')
+    char            regCount            = 0;
+    char            regStr[REG_STR_LEN] = {0};
+    unsigned int    regNumber           = (unsigned int)R_NONE;
+    unsigned int    functCode           = 0;
+    //@ 2. Skip OPCODE Part
+    while (' ' != iLineData[charCount])
     {
         charCount++;
     }
     charCount++;
-    while (iLineData[charCount] != ',')
+    //@ 3. Get Funct Code Number
+    functCode = *oInstruction;
+    //@ 3a. If Funct Code is not FUNCT_JR:
+    if ((unsigned int)FUNCT_JR != functCode)
     {
-        rdStr[rdCount] = iLineData[charCount];
-        charCount++;
-        rdCount++;
+        //@ 3a1. Get Register Number until Find ','
+        while (',' != iLineData[charCount])
+        {                   
+            regStr[regCount]= iLineData[charCount];
+            charCount++;
+            regCount++;
+        }
+        regStr[regCount]= '\0';
+        regNumber       = getRegNumber(regStr) << 11;
     }
-    rdStr[rdCount]  = '\0';
-    rdNumber        = getRegNumber(rdStr) << 11;
-    *oInstruction   = *oInstruction | rdNumber;
+    //@ 3b. In All Other Cases:
+    else
+    {
+        //@ 3b1. Get Register Number until End of Line
+        while ('\0' != iLineData[charCount])
+        {                   
+            regStr[regCount]= iLineData[charCount];
+            charCount++;
+            regCount++;
+        }
+        regStr[regCount]= '\0';
+        regNumber       = getRegNumber(regStr) << 21;
+    }
+    //@ 4. Save Register Number in Instruction
+    *oInstruction   = *oInstruction | regNumber;
 }
 
 ///////////////////////////
@@ -455,7 +479,7 @@ void getRd(char* iLineData, unsigned int* oInstruction)
 ///////////////////////////
 void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction)
 {
-    //@ 1. Init Member Variable
+    //@ 1. Init Local Variable
     char            charCount           = 0;
     char            rtCount             = 0;
     char            rsCount             = 0;
@@ -465,7 +489,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
     unsigned int    rsNumber            = (unsigned int)R_NONE;
     unsigned int    opcode              = (unsigned int)OP_NONE;
     //@ 2. Skip OPCODE Part
-    while (iLineData[charCount] != ' ')
+    while (' ' != iLineData[charCount])
     {
         charCount++;
     }
@@ -476,13 +500,13 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
         //@ 3a. For the TYPE_R:
         case TYPE_R:
             //@ 3a1. Skip Rd Register Part
-            while (iLineData[charCount] != ',')
+            while (',' != iLineData[charCount])
             {
                 charCount++;
             }
             charCount = charCount + 2;
             //@ 3a2. Get Rs Register
-            while (iLineData[charCount] != ',')
+            while (',' != iLineData[charCount])
             {
                 rsStr[rsCount] = iLineData[charCount];
                 charCount++;
@@ -495,7 +519,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
             *oInstruction   = *oInstruction | rsNumber;
             charCount = charCount + 2;
             //@ 3a5. Get Rt Register
-            while (iLineData[charCount] != '\0')
+            while ('\0' != iLineData[charCount])
             {
                 rtStr[rtCount] = iLineData[charCount];
                 charCount++;
@@ -516,10 +540,10 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
             //@ 3c1. Get Opcode Number 
             opcode = *oInstruction >> 26;
             //@ 3c1a. If Opocde Number is OP_BEQ or OP_BNE:
-            if ((opcode == (unsigned int)OP_BEQ) | (opcode == (unsigned int)OP_BNE))
+            if (((unsigned int)OP_BEQ == opcode) | ((unsigned int)OP_BNE == opcode))
             {
                 //@ 3c1a1. Get Rs - Rt Register
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     rsStr[rsCount] = iLineData[charCount];
                     charCount++;
@@ -527,7 +551,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 }
                 rsStr[rsCount]  = '\0';
                 charCount       = charCount + 2;
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     rtStr[rtCount] = iLineData[charCount];
                     charCount++;
@@ -536,10 +560,10 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 rtStr[rtCount]  = '\0';
             }
             //@ 3c1b. If Opcode Number is OP_LUI:
-            else if (opcode == (unsigned int)OP_LUI)
+            else if ((unsigned int)OP_LUI == opcode)
             {
                 //@ 3c1b1. Get Rt Register
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     rtStr[rtCount] = iLineData[charCount];
                     charCount++;
@@ -552,7 +576,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
             else
             {
                 //@ 3c1c1. Get Rt - Rs Register
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     rtStr[rtCount] = iLineData[charCount];
                     charCount++;
@@ -560,7 +584,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
                 }
                 rtStr[rtCount]  = '\0';
                 charCount       = charCount + 2;
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     rsStr[rsCount] = iLineData[charCount];
                     charCount++;
@@ -579,19 +603,19 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
         case TYPE_LW:
         case TYPE_SW:
             //@ 3d1. Get Rt and Rs Register
-            while (iLineData[charCount] != ',')
+            while (',' != iLineData[charCount])
             {
                 rtStr[rtCount] = iLineData[charCount];
                 charCount++;
                 rtCount++;
             }
             rtStr[rtCount] = '\0';
-            while (iLineData[charCount] != '(')
+            while ('(' != iLineData[charCount])
             {
                 charCount++;
             }
             charCount++;
-            while (iLineData[charCount] != ')')
+            while (')' != iLineData[charCount])
             {
                 rsStr[rsCount] = iLineData[charCount];
                 charCount++;
@@ -615,7 +639,7 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
 ////////////////////////////
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction)
 {
-    //@ 1. Init Member Variable
+    //@ 1. Init Local Variable
     char            charCount           = 0;
     char            immCount            = 0;
     char            immStr[IMM_STR_LEN] = {0};  
@@ -623,7 +647,7 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
     int             negOffset           = 0x0000FFFF;
     unsigned int    opcode              = (unsigned int)OP_NONE; 
     //@ 2. Skip OPCODE Part
-    while (iLineData[charCount] != ',')
+    while (',' != iLineData[charCount])
     {
         charCount++;
     }
@@ -636,10 +660,10 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
             //@ 3a1. Get Opcode Number
             opcode = *oInstruction >> 26;
             //@ 3a1a. If Opcode Number is OP_LUI:
-            if (opcode == (unsigned int)OP_LUI)
+            if ((unsigned int)OP_LUI == opcode)
             {
                 //@ 3a1a1. Get Imm String
-                while (iLineData[charCount] != '\0')
+                while ('\0' != iLineData[charCount])
                 {
                     immStr[immCount] = iLineData[charCount];
                     charCount++;
@@ -650,12 +674,12 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
             else
             {
                 //@ 3a1b1. Get Imm String
-                while (iLineData[charCount] != ',')
+                while (',' != iLineData[charCount])
                 {
                     charCount++;
                 }
                 charCount = charCount + 2;
-                while (iLineData[charCount] != '\0')
+                while ('\0' != iLineData[charCount])
                 {
                     immStr[immCount] = iLineData[charCount];
                     charCount++;
@@ -668,7 +692,7 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
         case TYPE_SW:
             charCount++;
             //@ 3b1. Get Imm String
-            while (iLineData[charCount] != '(')
+            while ('(' != iLineData[charCount])
             {
                 immStr[immCount] = iLineData[charCount];
                 charCount++;
@@ -679,7 +703,7 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
             break;
     }
     immStr[immCount]    = '\0';
-    //@ 4. Get Imm Data
+    //@ 4. Convert Imm Data String to Integer
     immData             = atoi(immStr);
     //@ 4a. If Imm Data is Positive Value:
     if (immData > 0)
@@ -698,17 +722,47 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
     //printf("DEBUG : immData : %08x\n", immData);
 }
 
+/////////////////////////////////
+// Store Jump Address (26-BIT) //
+/////////////////////////////////
+void getJaddr(char* iLineData, unsigned int* oInstruction)
+{
+    //@ 1. Init Local Variable
+    char            charCount               = 0;
+    char            jaddrCount              = 0;
+    char            jaddrStr[JADDR_STR_LEN] = {0};
+    unsigned int    jaddrData               = 0;
+    //@ 2. Skip OPCODE Part
+    while (' ' != iLineData[charCount])
+    {
+        charCount++;
+    }
+    charCount++;
+    //@ 3. Get Jump Address String Value
+    while ('\0' != iLineData[charCount])
+    {
+        jaddrStr[jaddrCount] = iLineData[charCount];
+        charCount++;
+        jaddrCount++;
+    }
+    jaddrStr[jaddrCount]    = '\0';
+    //@ 4. Convert Jump Address Data String to Unsigned Integer
+    jaddrData               = (unsigned int)atoi(jaddrStr);
+    //@ 5. Add Jump Address to Instruction
+    *oInstruction   = *oInstruction | jaddrData;
+}
+
 ////////////////////
 // Make Text File //
 ////////////////////
 void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput)
 {
     FILE*           fp = fopen(oFileName, "w");
-    if (fp == NULL)
+    if (NULL == fp)
     {
         printf("[ERROR] File Open Fail : %s\n", oFileName);
     }
-    if (iInput == I_BOOT_ROM)
+    if (I_BOOT_ROM == iInput)
     {
         unsigned int lineBuffer     = 0;
         unsigned int bytesOffset[4] = {0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000};
@@ -747,83 +801,112 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned 
 //////////////////
 void convert(eInput iInput)
 {
+    //@ 1. Init Local Variable
     unsigned char   lineCount  = 0;     // Text File Line Counter
     bool            error      = false; // File Open Error Flag
-    // getAssembly()
+    
+    //@ 2.  Check User Input
     switch (iInput)
     {
+        //@ 2a. For the I_NONE:
         case I_NONE:
+            //@ 2a1. Print ERROR
             printf("[ERROR] Invalid Input (%d)\n", iInput);
             break;
+        //@ 2b. For the I_BOOT_ROM:
         case I_BOOT_ROM:
+            //@ 2b1. Call getAssembly() and Get Error Flag
             error   = getAssembly("./../../design/memory/boot_rom.txt", assembly, &lineCount);
             break;
+        //@ 2c. For the I_BOOT_LOADER:
         case I_BOOT_LOADER:
+            //@ 2c1. Call getAssembly() and Get Error Flag
             error   = getAssembly("./../boot_loader.txt", assembly, &lineCount);
             break;
+        //@ 2d. For the I_APPLICATION:
         case I_APPLICATION:
+            //@ 2d1. Call getAssembly() and Get Error Flag
             error   = getAssembly("./../application.txt", assembly, &lineCount);
             break;
+        //@ 2e. For the I_DEBUG_MODE:
         case I_DEBUG_MODE:
+            //@ 2e1. Call getAssembly() and Get Error Flag
             error   = getAssembly("./test_case.txt", assembly, &lineCount);
             break;
+        //@ 2f. In All Other Cases:
         default:
+            //@ 2f1. Print ERROR
             printf("[ERROR] Invalid Input (%d)\n", iInput);
             break;
     }
-    // Check File Open ERROR
-    if (error == false)
+    //@ 3. Check Error Flag
+    //@ 3a. If File Open Flag is not Error:
+    if (false == error)
     {
         for (unsigned char line = 0; line < lineCount; line++)
         {
-            // getOpcodeStr()
+            //@ 3a1. Call getOpcodeStr(), and Get OPCODE String Value
             char opcodeStr[OPCODE_STR_LEN] = {0};   // OPCODE Command
             getOpcodeStr(assembly[line], opcodeStr);
             //printf("%s\n", opcodeStr); // DEBUG
-            
+            //@ 3a2. Check OPCODE String Value
+            //@ 3a2a. If OPCODE String is not NOP:
             if (0 != strcmp(opcodeStr, "nop\0"))
             {
                 //printf("Before : %08x\n", instruction[line]); // DEBUG
-                // getOpcodeAndTypeAndFunct()
+                //@ 3a2a1. Get OPCODE & OPCODE Type & FUNCT CODE
                 getOpcodeAndTypeAndFunct(opcodeStr, &instruction[line], &opcodeType[line]);
             }
+            //@ 3a2b. In All Other Cases:
             else
             {
+                //@ 3a2b1. Set OPCODE TYPE for TYPE_NOP
                 opcodeType[line] = TYPE_NOP;
             }
             //printf("After1  : %08x\n", instruction[line]);   // DEBUG
+            //@ 3a3. Check OPCODE Type
             switch(opcodeType[line])
             {
+                //@ 3a3a. For the TYPE_NONE:
                 case TYPE_NONE:
+                    //@ 3a3a1. Print ERROR
                     printf("[ERROR] Could Not Find OPCODE Type, (Line %d)");
                     printf(" : %s\n", line, assembly[line]);
                     break;
+                //@ 3a3b. For the TYPE_R:
                 case TYPE_R:
-                    getRd(assembly[line], &instruction[line]);
-                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    //@ 3a3b1. Call getRdOrRs() and Get Rd or Rs Register
+                    getRdOrRs(assembly[line], &instruction[line]);
+                    //@ 3a3b2. Check OPCODE String Value
+                    //@ 3a3b2a. If OPCODE is not JUMP:
+                    if (0 != strcmp(opcodeStr, "jr\0"))
+                    {
+                        //@ 3a3b2a1. Call getRtRs() and Get rt and rs Register
+                        getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    }
                     //printf("After2  : %08x\n", instruction[line]);   // DEBUG
                     break;
+                //@ 3a3c. For the TYPE_SHIFT:
                 case TYPE_SHIFT:
+                    //@ 3a3c1. TBD
                     printf("SHIFT Event (line %d)\n", line + 1);
-                    // TBD
                     break;
+                //@ 3a3d. For the TYPE_I orTYPE_LW or TYPE_SW:
                 case TYPE_I:
-                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                    getImm(assembly[line], opcodeType[line], &instruction[line]);
-                    break;
                 case TYPE_LW:
-                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
-                    getImm(assembly[line], opcodeType[line], &instruction[line]);
-                    break;
                 case TYPE_SW:
+                    //@ 3a3d1. Get rt and rs Register, and Imm  Data
                     getRtRs(assembly[line], opcodeType[line], &instruction[line]);
                     getImm(assembly[line], opcodeType[line], &instruction[line]);
                     break;
+                //@ 3a3e. For the TYPE_J:
                 case TYPE_J:
-                    printf("JUMP Event (line %d)\n", line + 1);
-                    // TBD
+                    //@ 3a3e1. TBD
+                    getJaddr(assembly[line], &instruction[line]);
                     break;
+                //@ 3a3f. For the TYPE_NOP:
                 case TYPE_NOP:
+                    //@ 3a3f1. Do Nothing
                     // Do - Nothing
                     break;
                 default:
@@ -831,28 +914,31 @@ void convert(eInput iInput)
             }
             //printf("[%d] After1  : %08x\n", line+1, instruction[line]);   // DEBUG
         }
+        //@ 3a4. Check User Input Again and Call setHexTextFile()
         switch (iInput)
         {
-            case 0:
+            case I_NONE:
                 break;
-            case 1:
+            case I_BOOT_ROM:
                 setHexTextFile("./../../design/memory/boot_rom.mem", instruction, lineCount, iInput);
                 break;
-            case 2:
+            case I_BOOT_LOADER:
                 setHexTextFile("./../boot_loader.mem", instruction, lineCount, iInput);
                 break;
-            case 3:
+            case I_APPLICATION:
                 setHexTextFile("./../application.mem", instruction, lineCount, iInput);
                 break;
-            case 4:
+            case I_DEBUG_MODE:
                 setHexTextFile("./test_case.mem", instruction, lineCount, iInput);
                 break;
             default:
                 break;
         }
     }
+    //@ 3b. In All Other Cases:
     else
     {
+        // 3b1. Print "Converting Fail" Info
         printf("Fail Converting...\nquit\n");
     }
 }
