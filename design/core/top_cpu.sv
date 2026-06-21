@@ -236,7 +236,7 @@ module top_cpu #(
         .i_regwrite     (w_wb_regwrite),
         .i_rd_reg1      (w_id_dec_rs),
         .i_rd_reg2      (w_id_dec_rt),
-        .i_wr_reg       (w_wb_regdst_mux_reg),
+        .i_wr_reg       (w_wb_regdst_jal_mux_reg),
         .i_wr_data      (w_wb_memtoreg_mux_data),
         .o_rd_data1     (w_id_reg_rdata1),
         .o_rd_data2     (w_id_reg_rdata2)
@@ -517,7 +517,7 @@ module top_cpu #(
         .i_ctr          ({w_wb_ctr_memtoreg, (w_wb_ctr_jump == 2'b11)}),
         .i_i00          (w_wb_alu_out),
         .i_i01          (w_wb_pc_addr),
-        .i_i11          (w_wb_ctr_jump),    // never happend
+        .i_i11          (w_wb_pc_addr),    // NEVER Happend
         .i_i10          (i_d_mem_data),
         .o_o            (w_wb_memtoreg_mux_data)
     );
