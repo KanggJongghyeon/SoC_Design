@@ -38,10 +38,12 @@ module top_cpu #(
     //////////
     wire                                w_if_i_mem_en;                      // I-MEM  Enable
     wire [ADDR_BIT - 1:0]               w_if_pc_addr;                       // PC     ADDR (IF)
-    wire [ADDR_BIT - 1:0]               w_id_pc_addr;                       // PC     ADDR (EX)
-    wire [ADDR_BIT - 1:0]               w_ex_jump_mux_addr;                 // Branch ADDR or Jump ADDR ([Warning] Hazard)
+    wire [ADDR_BIT - 1:0]               w_id_pc_addr;                       // PC     ADDR (ID)
+    wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                       // PC     ADDR (EX)
+    wire [ADDR_BIT - 1:0]               w_mem_pc_addr;                      // PC     ADDR (MEM)
+    wire [ADDR_BIT - 1:0]               w_wb_pc_addr;                       // PC     ADDR (WB)
     wire [ADDR_BIT - 1:0]               w_if_add4_addr;                     // PC     ADDR + 4 (IF)
-    wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                       // PC     ADDR + 4 (EX)
+    wire [ADDR_BIT - 1:0]               w_ex_jump_mux_addr;                 // Branch ADDR or Jump ADDR ([Warning] Hazard)
     wire [DATA_BIT - OPCODE_BIT - 1:0]  w_id_dec_jaddr;                     // Jump   ADDR (by Decoder)
     wire [DATA_BIT - OPCODE_BIT + 1:0]  w_id_shift_left2_dec_jaddr;         // Jump   ADDR (by Decoder) >> 2
     wire [DATA_BIT - 1:0]               w_id_jump_addr;                     // Jump   ADDR (ID)
@@ -72,7 +74,7 @@ module top_cpu #(
     wire                                w_id_memtoreg;                      // MemtoReg     Flag (ID)
     wire                                w_ex_memtoreg;                      // MemtoReg     Flag (EX)
     wire                                w_mem_memtoreg;                     // MemtoReg     Flag (MEM)
-    wire                                w_wb_memtoreg;                      // MemtoReg     Flag (WB)
+    wire                                w_wb_ctr_memtoreg;                  // MemtoReg     Flag (WB)
     wire                                w_id_regwrite;                      // RegWrite     Flag (ID)
     wire                                w_ex_regwrite;                      // RegWrite     Flag (EX)
     wire                                w_mem_regwrite;                     // RegWrite     Flag (MEM)
@@ -85,13 +87,16 @@ module top_cpu #(
     wire                                w_mem_memwrite;                     // MemWrite     Flag (MEM)
     wire [1:0]                          w_id_branch;                        // Branch       Flag (ID)
     wire [1:0]                          w_ex_branch;                        // Branch       Flag (EX)
-    wire                                w_id_jump;                          // Jump         Flag (ID)
-    wire                                w_ex_ctr_jump;                      // Jump         Flag (EX)
+    wire [1:0]                          w_id_jump;                          // Jump         Flag (ID)
+    wire [1:0]                          w_ex_ctr_jump;                      // Jump         Flag (EX)
+    wire [1:0]                          w_mem_jump;                         // Jump         Flag (MEM)
+    wire [1:0]                          w_wb_ctr_jump;                      // Jump         Flag (MEM)
     wire                                w_id_sign_extend;                   // SignExtend   Flag (ID)
     wire [3:0]                          w_ex_alu_ctr;                       // ALUOpB
     wire [REG_BIT - 1:0]                w_ex_regdst_mux_reg;                // rt or rd Register (EX)
     wire [REG_BIT - 1:0]                w_mem_regdst_mux_reg;               // rt or rd Register (MEM)
     wire [REG_BIT - 1:0]                w_wb_regdst_mux_reg;                // rt or rd Register (WB)
+    wire [REG_BIT - 1:0]                w_wb_regdst_jal_mux_reg;            // rt or rd or $ra Register (WB)
     wire [DATA_BIT - 1:0]               w_id_reg_rdata1;                    // Registers RDATA1 (ID)
     wire [DATA_BIT - 1:0]               w_ex_reg_rdata1;                    // Registers RDATA1 (EX) 
     wire [DATA_BIT - 1:0]               w_id_reg_rdata2;                    // Registers RDATA2 (ID)
@@ -206,6 +211,7 @@ module top_cpu #(
         .OPCODE_BIT     (OPCODE_BIT)
     ) u_control_unit (
         .i_opcode       (w_id_dec_opcode),
+        .i_funct        (w_id_dec_funct),
         .o_regdst       (w_id_regdst),
         .o_alusrc       (w_id_ctr_alusrc),
         .o_memtoreg     (w_id_memtoreg),
@@ -322,12 +328,14 @@ module top_cpu #(
     );
     
     /* I-MEM RADDR Decision MUX (Jump MUX) */
-    mux21 #(
+    mux41 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_jump_mux (
         .i_ctr          (w_ex_ctr_jump),
-        .i_i0           (w_ex_branch_mux_addr),
-        .i_i1           (w_ex_jump_addr[ADDR_BIT - 1:0]),
+        .i_i00          (w_ex_branch_mux_addr),             // branch
+        .i_i01          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // j
+        .i_i11          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // jal
+        .i_i10          (w_ex_reg_rdata1),                  // jr
         .o_o            (w_ex_jump_mux_addr)
     );
 
@@ -426,22 +434,26 @@ module top_cpu #(
     ) u_ex_mem_bridge (
         .clk                (clk),
         .rst_n              (rst_n),
+        .i_pc_addr          (w_ex_pc_addr),
         .i_rt               (w_ex_dec_rt),
         .i_wr_reg           (w_ex_regdst_mux_reg),
         .i_memtoreg         (w_ex_memtoreg),
         .i_regwrite         (w_ex_ctr_regwrite),
         .i_memread          (w_ex_memread),
         .i_memwrite         (w_ex_memwrite),
+        .i_jump             (w_ex_ctr_jump),
         .i_reg_rdata2       (w_ex_reg_rdata2),
         .i_alu_out          (w_ex_alu_out),
         .i_fw_ctr_wdata_2c  (w_ex_fw_ctr_wdata_2c),
         .i_wdata_fw_mux_data(w_ex_wdata_fw_mux_data_2c),
+        .o_pc_addr          (w_mem_pc_addr),
         .o_rt               (w_mem_dec_rt),
         .o_wr_reg           (w_mem_regdst_mux_reg),
         .o_memtoreg         (w_mem_memtoreg),
         .o_regwrite         (w_mem_regwrite),
         .o_memread          (w_mem_memread),
         .o_memwrite         (w_mem_memwrite),
+        .o_jump             (w_mem_jump),
         .o_alu_out          (w_mem_alu_out),
         .o_reg_rdata2       (w_mem_reg_rdata2),
         .o_fw_ctr_wdata_2c  (w_mem_fw_ctr_wdata_2c),
@@ -471,26 +483,42 @@ module top_cpu #(
     ) u_mem_wb_bridge (
         .clk            (clk),
         .rst_n          (rst_n),
+        .i_pc_addr      (w_mem_pc_addr),
         .i_wr_reg       (w_mem_regdst_mux_reg),
         .i_memtoreg     (w_mem_memtoreg),
         .i_regwrite     (w_mem_regwrite),
+        .i_jump         (w_mem_jump),
         .i_alu_out      (w_mem_alu_out),
+        .o_pc_addr      (w_wb_pc_addr),
         .o_wr_reg       (w_wb_regdst_mux_reg),
-        .o_memtoreg     (w_wb_memtoreg),
+        .o_memtoreg     (w_wb_ctr_memtoreg),
         .o_regwrite     (w_wb_regwrite),
+        .o_jump         (w_wb_ctr_jump),
         .o_alu_out      (w_wb_alu_out)
     );
 
 ////////////////////////////////////////
 // WB (Write Result Back to Register) //
 ////////////////////////////////////////
-    /* Registers WDATA Decision MUX (MEMtoREG MUX) */
+    /* WR Register Decision MUX (for jal) */
     mux21 #(
+        .DATA_BIT       (REG_BIT)
+    ) u_regdst_jal_mux (
+        .i_ctr          ((w_wb_ctr_jump == 2'b11)),
+        .i_i0           (w_wb_regdst_mux_reg),
+        .i_i1           ({REG_BIT{1'b1}}),          // $ra
+        .o_o            (w_wb_regdst_jal_mux_reg)
+    );  
+
+    /* Registers WDATA Decision MUX (MEMtoREG MUX) */
+    mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_memtoreg_mux (
-        .i_ctr          (w_wb_memtoreg),
-        .i_i0           (w_wb_alu_out),
-        .i_i1           (i_d_mem_data),
+        .i_ctr          ({w_wb_ctr_memtoreg, (w_wb_ctr_jump == 2'b11)}),
+        .i_i00          (w_wb_alu_out),
+        .i_i01          (w_wb_pc_addr),
+        .i_i11          (w_wb_ctr_jump),    // never happend
+        .i_i10          (i_d_mem_data),
         .o_o            (w_wb_memtoreg_mux_data)
     );
 
@@ -540,7 +568,7 @@ module top_cpu #(
     assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
     assign w_ex_sign_extend_branch_addr = w_ex_shift_left2_sign_extend_const[DATA_BIT - 1:0];
     assign w_ex_ctr_branch              = ((w_ex_branch == 2'b01) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == 2'b10) && (w_ex_alu_zero == 1'b0));
-    assign w_ex_flush                   = w_ex_ctr_branch | w_ex_ctr_jump;
+    assign w_ex_flush                   = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != 2'b00);
 
     assign o_i_mem_en                   = w_if_i_mem_en;
     assign o_i_mem_addr                 = w_if_pc_addr;

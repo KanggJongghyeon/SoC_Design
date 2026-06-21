@@ -98,12 +98,12 @@ module id_ex #(
     input   wire                        i_memwrite,     
     input   wire    [1:0]               i_branch,       
     input   wire    [2:0]               i_aluop,        
-    input   wire                        i_jump,         
+    input   wire    [1:0]               i_jump,         
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_sign_extend,  
     output  wire    [1:0]               o_branch,       
-    output  wire                        o_jump,         
+    output  wire    [1:0]               o_jump,         
     output  wire    [DATA_BIT - 1:0]    o_jump_addr,    
     output  wire    [2:0]               o_aluop,        
     output  wire    [5:0]               o_funct,        
@@ -123,11 +123,11 @@ module id_ex #(
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
-    reg [2:0]               r_aluop,        r_jump;;
+    reg [2:0]               r_aluop;
     reg                     r_regdst,       r_regwrite;
     reg                     r_alusrc,       r_memtoreg;
     reg                     r_memread,      r_memwrite;     
-    reg [1:0]               r_branch;      
+    reg [1:0]               r_branch,       r_jump;      
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [5:0]               r_funct;
     reg [DATA_BIT - 1:0]    r_reg_rdata1,   r_reg_rdata2;
@@ -147,7 +147,7 @@ module id_ex #(
             r_memwrite      <= 1'b0;
             r_branch        <= 2'b00;
             r_aluop         <= 3'b000;
-            r_jump          <= 1'b0;
+            r_jump          <= 2'b00;
             r_pc_addr       <= {(ADDR_BIT){1'b0}};
             r_funct         <= 6'b000000;
             r_reg_rdata1    <= {(DATA_BIT){1'b0}};
@@ -174,7 +174,7 @@ module id_ex #(
                 r_regwrite  <= 1'b0;
                 r_memwrite  <= 1'b0;
                 r_branch    <= 2'b00;
-                r_jump      <= 1'b0;
+                r_jump      <= 2'b00;
             end
             else begin
                 r_regwrite  <= i_regwrite;
@@ -216,32 +216,38 @@ module ex_mem #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
+    input   wire    [ADDR_BIT - 1:0]    i_pc_addr,
     input   wire    [REG_BIT - 1:0]     i_rt,           
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,     
     input   wire                        i_memread,      
-    input   wire                        i_memwrite,     
+    input   wire                        i_memwrite,
+    input   wire    [1:0]               i_jump,
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_alu_out,  
     input   wire                        i_fw_ctr_wdata_2c,
     input   wire    [DATA_BIT - 1:0]    i_wdata_fw_mux_data,
+    output  wire    [ADDR_BIT - 1:0]    o_pc_addr,
     output  wire    [REG_BIT - 1:0]     o_rt,           
     output  wire    [REG_BIT - 1:0]     o_wr_reg,
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
     output  wire                        o_memread,      
-    output  wire                        o_memwrite,     
+    output  wire                        o_memwrite,
+    output  wire    [1:0]               o_jump,
     output  wire    [DATA_BIT - 1:0]    o_alu_out,      
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,
     output  wire                        o_fw_ctr_wdata_2c,
     output  wire    [DATA_BIT - 1:0]    o_wdata_fw_mux_data
     );
 
+    reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [REG_BIT - 1:0]     r_rt;
     reg [REG_BIT - 1:0]     r_wr_reg;
     reg                     r_memtoreg,     r_regwrite;
     reg                     r_memread,      r_memwrite;
+    reg [1:0]               r_jump;
     reg [DATA_BIT - 1:0]    r_alu_out;
     reg [DATA_BIT - 1:0]    r_reg_rdata2;
     reg                     r_fw_ctr_wdata_2c;
@@ -249,24 +255,28 @@ module ex_mem #(
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
+            r_pc_addr           <= {ADDR_BIT{1'b0}};
             r_rt                <= {REG_BIT{1'b0}};
             r_wr_reg            <= {REG_BIT{1'b0}};
             r_memtoreg          <= 1'b0;
             r_regwrite          <= 1'b0;
             r_memread           <= 1'b0;
             r_memwrite          <= 1'b0;
+            r_jump              <= 2'b00;
             r_alu_out           <= {(DATA_BIT){1'b0}};
             r_reg_rdata2        <= {(DATA_BIT){1'b0}};
             r_fw_ctr_wdata_2c   <= 1'b0;
             r_wdata_fw_mux_data <= {(DATA_BIT){1'b0}};
         end
         else begin
+            r_pc_addr           <= i_pc_addr;
             r_rt                <= i_rt;
             r_wr_reg            <= i_wr_reg;
             r_memtoreg          <= i_memtoreg;
             r_regwrite          <= i_regwrite;
             r_memread           <= i_memread;
             r_memwrite          <= i_memwrite;
+            r_jump              <= i_jump;
             r_alu_out           <= i_alu_out;
             r_reg_rdata2        <= i_reg_rdata2;
             r_fw_ctr_wdata_2c   <= i_fw_ctr_wdata_2c;
@@ -274,12 +284,14 @@ module ex_mem #(
         end
     end
 
+    assign o_pc_addr            = r_pc_addr;
     assign o_rt                 = r_rt;
     assign o_wr_reg             = r_wr_reg;
     assign o_memtoreg           = r_memtoreg;
     assign o_regwrite           = r_regwrite;
     assign o_memread            = r_memread;
     assign o_memwrite           = r_memwrite;
+    assign o_jump               = r_jump;
     assign o_alu_out            = r_alu_out;
     assign o_reg_rdata2         = r_reg_rdata2;
     assign o_fw_ctr_wdata_2c    = r_fw_ctr_wdata_2c;
@@ -297,38 +309,50 @@ module mem_wb #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
+    input   wire    [ADDR_BIT - 1:0]    i_pc_addr,
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire                        i_memtoreg,     
-    input   wire                        i_regwrite,     
-    input   wire    [DATA_BIT - 1:0]    i_alu_out,      
+    input   wire                        i_regwrite,
+    input   wire    [1:0]               i_jump,
+    input   wire    [DATA_BIT - 1:0]    i_alu_out,
+    output  wire    [ADDR_BIT - 1:0]    o_pc_addr,
     output  wire    [REG_BIT - 1:0]     o_wr_reg,           
     output  wire                        o_memtoreg,     
-    output  wire                        o_regwrite,     
+    output  wire                        o_regwrite,
+    output  wire    [1:0]               o_jump,
     output  wire    [DATA_BIT - 1:0]    o_alu_out       
     );
     
+    reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [REG_BIT - 1:0]     r_wr_reg;
     reg                     r_memtoreg,     r_regwrite;
+    reg [1:0]               r_jump;
     reg [DATA_BIT - 1:0]    r_alu_out;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
+            r_pc_addr       <= {ADDR_BIT{1'b0}};
             r_wr_reg        <= {REG_BIT{1'b0}};
             r_memtoreg      <= 1'b0;
             r_regwrite      <= 1'b0;
+            r_jump          <= 2'b00;
             r_alu_out       <= {(DATA_BIT){1'b0}};
         end
         else begin
+            r_pc_addr       <= i_pc_addr;
             r_wr_reg        <= i_wr_reg;
             r_memtoreg      <= i_memtoreg;
             r_regwrite      <= i_regwrite;
+            r_jump          <= i_jump;
             r_alu_out       <= i_alu_out;
         end
     end
 
+    assign o_pc_addr        = r_pc_addr;
     assign o_wr_reg         = r_wr_reg;
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
+    assign o_jump           = r_jump;
     assign o_alu_out        = r_alu_out;
 
 endmodule

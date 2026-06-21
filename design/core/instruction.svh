@@ -22,8 +22,8 @@
 `define OP_RTYPE    6'b000000   // 0
 // sll / srl is RTYPE and $rs is not used, funct is zero, Only used "shamt"
 `define OP_REGIMM   6'b000001   // 1
-`define OP_J        6'b000010   // 2
-`define OP_JAL      6'b000011   // 3
+`define OP_J        6'b000010   // 2    j target    (opcode[6] target[26]) : jump_addr = {PC+4[31:28], target, 2'b00}
+`define OP_JAL      6'b000011   // 3    jal target  (opcode[6] target[26]) : jump_addr = {PC+4[31:28], target, 2'b00} + $ra = PC + 4
 `define OP_BEQ      6'b000100   // 4
 `define OP_BNE      6'b000101   // 5
 `define OP_ADDI     6'b001000   // 8
@@ -89,6 +89,11 @@
 `define ALU_CTR_MUL     4'b1101 // 13   MUL,    MULU
 `define ALU_CTR_DIV     4'b1110 // 14   DIV,    DIVU
 `define ALU_CTR_XXX     4'b1111 // 15   Not Defined
+
+// Reg Number
+
+
+
 
 `endif  // INSTRUCTION_SVH
 /*

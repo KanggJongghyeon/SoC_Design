@@ -1,11 +1,17 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
-module tb_top_cpu #(
-    parameter ADDR_BIT  = 32,    
-    parameter DATA_BIT  = 32,
-    parameter LINE_CNTR = 120
-    )();
-    
+module tb_top_cpu();
+
+    // local parameter
+    `ifndef CPU_32BIT
+        localparam ADDR_BIT = 16;
+        localparam DATA_BIT = 16;
+    `else
+        localparam ADDR_BIT = 32;
+        localparam DATA_BIT = 32;
+    `endif  // CPU_32BIT (vivado define option)
+    localparam LINE_CNTR    = 120;
+
     // Global Signal
     reg                     clk;
     reg                     rst_n;
@@ -16,15 +22,14 @@ module tb_top_cpu #(
     reg [DATA_BIT - 1:0]    i_i_mem_data;
     
     // for Loading Boot File
-    string  boot_file_path  = "V:\\SoC_Design\\tb\\boot.txt";
-    string  temp_file_path  = "V:\\SoC_Design\\tb\\test_case\\test_case_x.txt";
-    string                  boot_file;                  // .txt File
+    string  boot_loader_path= ".\\..\\tb\\boot_loader.mem";
+    string  application_path= ".\\..\\tb\\application.mem";    
+    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\test_case\\test_case.mem";
     reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
     initial begin
-        #1;
-        //$sformat (boot_file, boot_file_path);
-        $sformat (boot_file, temp_file_path);
-        $readmemh(boot_file, boot_rom);                 // Store to boot_rom
+        //$readmemh(boot_loader_path, boot_rom);
+        //$readmemh(application_path, boot_rom);
+        $readmemh(debug_mode_path, boot_rom);   // Store to boot_rom
     end
 
     // Clock On
