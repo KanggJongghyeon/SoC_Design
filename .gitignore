@@ -42,6 +42,7 @@ soc_design/
 design/**/*.mem
 design/**/*.txt
 design/top.sv
+design/peripheral/
 
 # tb
 tb/tb_TOP.sv
