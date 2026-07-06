@@ -39,13 +39,11 @@ module noc #(
     wire                    w_axi2apb_wren;
     wire                    w_cache_mem_wren;
     wire                    w_main_mem_wren;
-    wire                    w_aux_mem_wren;
     wire                    w_boot_rom_rden;
     wire                    w_axi2ahb_rden;
     wire                    w_axi2apb_rden;
     wire                    w_cache_mem_rden;
     wire                    w_main_mem_rden;
-    wire                    w_aux_mem_rden;
 
     // Store Previous AWID
     always @ (posedge ACLK or negedge ARESET_N) begin
@@ -144,6 +142,15 @@ module noc #(
         end
     end
 
+    always @ (posedge ACLK or negedge ARESET_N) begin
+        if (~ARESET_N) begin
+             
+        end
+        else begin
+
+        end
+    end
+
     // WADDR DECODER
     addr_decoder #(
         .ADDR_BIT       (AXI.ADDR_BIT)
@@ -154,8 +161,7 @@ module noc #(
         .o_axi2ahb_en   (w_axi2ahb_wren),
         .o_axi2apb_en   (w_axi2apb_wren),
         .o_cache_mem_en (w_cache_mem_wren),
-        .o_main_mem_en  (w_main_mem_wren),
-        .o_aux_mem_en   (w_aux_mem_wren)
+        .o_main_mem_en  (w_main_mem_wren)
     );
 
     // RADDR DECODER
@@ -168,8 +174,7 @@ module noc #(
         .o_axi2ahb_en   (w_axi2ahb_rden),
         .o_axi2apb_en   (w_axi2apb_rden),
         .o_cache_mem_en (w_cache_mem_rden),
-        .o_main_mem_en  (w_main_mem_rden),
-        .o_aux_mem_en   (w_aux_mem_rden)
+        .o_main_mem_en  (w_main_mem_rden)
     );
 
     assign AXI.AWREADY  = r_awready;
