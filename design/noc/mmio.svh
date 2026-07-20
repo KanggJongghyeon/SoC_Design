@@ -28,4 +28,8 @@
 //`define MMIO_INTERRUPT  TBD
 `endif  // CPU_32BIT
 
+//`define NOC_DEBUG
+`define NOC_SINGLE_MASTER
+//`define NOC_MULTI_MASTER
+
 `endif  // MMIO_SVH

@@ -13,7 +13,6 @@ module cpu_axi_master #(
     input   wire    [DATA_BIT - 1:0]    i_cpu_data, // Store(sw)
     output  wire    [DATA_BIT - 1:0]    o_cpu_data, // Load (lw)
     // axi if
-    input   wire                        AXREQUEST
     AXI5.MASTER                         AXI
     );
 

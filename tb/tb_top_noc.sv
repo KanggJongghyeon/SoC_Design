@@ -129,15 +129,4 @@ module tb_top_noc();
         .o_cpu_data     ()
     );
 
-    // BOOT ROM
-    BOOT_ROM #(
-        .ADDR_BIT       (ADDR_BIT),
-        .DATA_BIT       (DATA_BIT)
-    ) u_boot_rom (
-        .clk            (clk),
-        .i_en           (),
-        .i_addr         (),
-        .o_data         ()
-    );
-
 endmodule
