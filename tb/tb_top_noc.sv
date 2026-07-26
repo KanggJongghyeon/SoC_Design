@@ -1,5 +1,8 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
+`define BOOT_LOADER
+`define APPLICATION
+`define DEBUG_MODE
 module tb_top_noc(); 
     
     // local parameter
@@ -21,17 +24,27 @@ module tb_top_noc();
     reg                     i_i_mem_en, i_i_mem_wren;
     reg [ADDR_BIT - 1:0]    i_i_mem_addr;
     reg [DATA_BIT - 1:0]    i_i_mem_data;
+    reg [ADDR_BIT - 1:0]    i_mem_addr;
     
     // for Loading Text File
-    string  boot_loader_path= ".\\..\\tb\\boot_loader.mem";
-    string  application_path= ".\\..\\tb\\application.mem";    
+    string  boot_loader_path= ".\\..\\..\\..\\..\\..\\tb\\boot_loader.mem";
+    string  application_path= ".\\..\\..\\..\\..\\..\\tb\\application.mem";    
     string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\test_case\\test_case.mem";
-    reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
+
+    reg [DATA_BIT - 1:0]    nand_flash0    [0:LINE_CNTR - 1];  // boot_loader.mem File Memory
+    reg [DATA_BIT - 1:0]    nand_flash1 [0:LINE_CNTR - 1];  // application.mem File Memory
+    reg [DATA_BIT - 1:0]    nand_flash2 [0:LINE_CNTR - 1];  // test_case.mem File Memory
     
     initial begin
-        //$readmemh(boot_loader_path, boot_rom);
-        //$readmemh(application_path, boot_rom);
-        $readmemh(debug_mode_path, boot_rom);   // Store to boot_rom
+        `ifdef BOOT_LOADER
+        $readmemh(boot_loader_path, nand_flash0);
+        `endif  // BOOT_LOADER
+        `ifdef APPLICATION
+        $readmemh(application_path, nand_flash1);
+        `endif  // APPLICATION
+        `ifdef DEBUG_MODE
+        $readmemh(debug_mode_path, nand_flash2);
+        `endif  // DEBUG_MODE
     end
 
     // Clock On
@@ -41,16 +54,36 @@ module tb_top_noc();
     end
 
     // Test Code
-    // I-MEM <= BOOT ROM
+    // I-MEM <= {BOOT ROM, NAND_FLASH0, NAND_FLASH1}
+    integer boot_rom_addr, debug_mode_addr, application_addr;
     initial begin
         #0  rst_n = 1'b0;
         #0  i_i_mem_en = 1'b0; i_i_mem_wren = 1'b0; i_i_mem_addr = {ADDR_BIT{1'b0}}; i_i_mem_data = {DATA_BIT{1'b0}};
         #10 i_i_mem_en = 1'b1; i_i_mem_wren = 1'b1;
-        for (integer addr = 0; addr < LINE_CNTR; addr = addr + 1) begin
-            i_i_mem_addr = 4 * addr;
-            i_i_mem_data = boot_rom[addr];
+        #0  i_mem_addr = {ADDR_BIT{1'b0}};
+        `ifdef BOOT_LOADER
+        for (boot_rom_addr = i_mem_addr; boot_rom_addr < LINE_CNTR; boot_rom_addr = boot_rom_addr + 1) begin
+            i_i_mem_addr = 4 * boot_rom_addr;
+            i_i_mem_data = nand_flash0[boot_rom_addr];
             #(`CLOCK_RATE);
         end
+        #0 i_mem_addr = i_mem_addr + LINE_CNTR;
+        `endif  // BOOT_LOADER
+        `ifdef DEBUG_MODE
+        for (debug_mode_addr = i_mem_addr; debug_mode_addr < i_mem_addr + LINE_CNTR; debug_mode_addr = debug_mode_addr + 1) begin
+            i_i_mem_addr = 4 * debug_mode_addr;
+            i_i_mem_data = nand_flash2[debug_mode_addr - i_mem_addr];
+            #(`CLOCK_RATE);
+        end
+        #0 i_mem_addr = i_mem_addr + LINE_CNTR;
+        `endif  // DEBUG_MODE
+        `ifdef APPLICATION 
+        for (application_addr = i_mem_addr; application_addr < i_mem_addr + LINE_CNTR; application_addr = application_addr + 1) begin
+            i_i_mem_addr = 4 * application_addr;
+            i_i_mem_data = nand_flash1[application_addr - i_mem_addr];
+            #(`CLOCK_RATE);
+        end
+        `endif  // APPLICATION
         #0  i_i_mem_en = 1'b0; i_i_mem_wren = 1'b0; i_i_mem_addr = {ADDR_BIT{1'b0}}; i_i_mem_data = {DATA_BIT{1'b0}};
         #10 rst_n = 1'b1;
         #(4 * LINE_CNTR / `CLOCK_RATE);
