@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 `define CLOCK_RATE 2
-`define BOOT_LOADER
+//`define BOOT_LOADER
 `define APPLICATION
 `define DEBUG_MODE
 module tb_top_noc(); 
@@ -83,10 +83,11 @@ module tb_top_noc();
             i_i_mem_data = nand_flash1[application_addr - i_mem_addr];
             #(`CLOCK_RATE);
         end
+        #0 i_mem_addr = i_mem_addr + LINE_CNTR;
         `endif  // APPLICATION
         #0  i_i_mem_en = 1'b0; i_i_mem_wren = 1'b0; i_i_mem_addr = {ADDR_BIT{1'b0}}; i_i_mem_data = {DATA_BIT{1'b0}};
         #10 rst_n = 1'b1;
-        #(4 * LINE_CNTR / `CLOCK_RATE);
+        #(4 * i_mem_addr / `CLOCK_RATE);
         #10 rst_n = 1'b0;
         #10 $finish;
     end
