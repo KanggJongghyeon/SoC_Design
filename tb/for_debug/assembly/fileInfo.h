@@ -1,7 +1,7 @@
 #ifndef FILE_INFO_H
 #define FILE_INFO_H
 
-// Input File Info
+// File Info
 #define MAX_LINE                1000
 #define MAX_LEN                 50
 #define BOOT_ROM_SIZE           1024
@@ -14,7 +14,7 @@
 #define APPLICATION_MEM_PATH    "./../../application.mem"
 #define DEBUG_MODE_MEM_PATH     "./../debug_mode.mem"
 
-// Input enum
+// File enum
 typedef enum
 {
     I_NONE,         // 0
