@@ -6,13 +6,13 @@
 module tb_top_noc(); 
     
     // local parameter
-    `ifndef CPU_32BIT
+    `ifndef XILINX_CPU_32BIT
         localparam ADDR_BIT = 16;
         localparam DATA_BIT = 16;
     `else
         localparam ADDR_BIT = 32;
         localparam DATA_BIT = 32;
-    `endif  // CPU_32BIT (vivado define option)
+    `endif  // XILINX_CPU_32BIT (vivado define option)
     localparam  AXI5_ID_BIT = 12;
     localparam  LINE_CNTR   = 120;
 
@@ -29,7 +29,7 @@ module tb_top_noc();
     // for Loading Text File
     string  boot_loader_path= ".\\..\\..\\..\\..\\..\\tb\\boot_loader.mem";
     string  application_path= ".\\..\\..\\..\\..\\..\\tb\\application.mem";    
-    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\test_case\\test_case.mem";
+    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\for_debug\\debug_mode.mem";
 
     reg [DATA_BIT - 1:0]    nand_flash0    [0:LINE_CNTR - 1];  // boot_loader.mem File Memory
     reg [DATA_BIT - 1:0]    nand_flash1 [0:LINE_CNTR - 1];  // application.mem File Memory

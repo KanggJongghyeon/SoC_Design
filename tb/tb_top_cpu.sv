@@ -22,9 +22,9 @@ module tb_top_cpu();
     reg [DATA_BIT - 1:0]    i_i_mem_data;
     
     // for Loading Boot File
-    string  boot_loader_path= ".\\..\\tb\\boot_loader.mem";
-    string  application_path= ".\\..\\tb\\application.mem";    
-    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\test_case\\test_case.mem";
+    string  boot_loader_path= ".\\..\\..\\..\\..\\..\\tb\\boot_loader.mem";
+    string  application_path= ".\\..\\..\\..\\..\\..\\tb\\application.mem";    
+    string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\for_debug\\debug_mode.mem";
     reg [DATA_BIT - 1:0]    boot_rom [0:LINE_CNTR - 1]; // .txt File Memory
     initial begin
         //$readmemh(boot_loader_path, boot_rom);
