@@ -1,4 +1,4 @@
-#include "convert.h"
+#include "assembly.h"
 /////////////////////
 // Global Variable //
 /////////////////////
@@ -816,22 +816,22 @@ void convert(eInput iInput)
         //@ 2b. For the I_BOOT_ROM:
         case I_BOOT_ROM:
             //@ 2b1. Call getAssembly() and Get Error Flag
-            error   = getAssembly("./../../design/memory/boot_rom.txt", assembly, &lineCount);
+            error   = getAssembly(BOOT_ROM_TEXT_PATH, assembly, &lineCount);
             break;
         //@ 2c. For the I_BOOT_LOADER:
         case I_BOOT_LOADER:
             //@ 2c1. Call getAssembly() and Get Error Flag
-            error   = getAssembly("./../boot_loader.txt", assembly, &lineCount);
+            error   = getAssembly(BOOT_LOADER_TEXT_PATH, assembly, &lineCount);
             break;
         //@ 2d. For the I_APPLICATION:
         case I_APPLICATION:
             //@ 2d1. Call getAssembly() and Get Error Flag
-            error   = getAssembly("./../application.txt", assembly, &lineCount);
+            error   = getAssembly(APPLICATION_TEXT_PATH, assembly, &lineCount);
             break;
         //@ 2e. For the I_DEBUG_MODE:
         case I_DEBUG_MODE:
             //@ 2e1. Call getAssembly() and Get Error Flag
-            error   = getAssembly("./test_case.txt", assembly, &lineCount);
+            error   = getAssembly(DEBUG_MODE_TEXT_PATH, assembly, &lineCount);
             break;
         //@ 2f. In All Other Cases:
         default:
@@ -920,16 +920,16 @@ void convert(eInput iInput)
             case I_NONE:
                 break;
             case I_BOOT_ROM:
-                setHexTextFile("./../../design/memory/boot_rom.mem", instruction, lineCount, iInput);
+                setHexTextFile(BOOT_ROM_MEM_PATH, instruction, lineCount, iInput);
                 break;
             case I_BOOT_LOADER:
-                setHexTextFile("./../boot_loader.mem", instruction, lineCount, iInput);
+                setHexTextFile(BOOT_LOADER_MEM_PATH, instruction, lineCount, iInput);
                 break;
             case I_APPLICATION:
-                setHexTextFile("./../application.mem", instruction, lineCount, iInput);
+                setHexTextFile(APPLICATION_MEM_PATH, instruction, lineCount, iInput);
                 break;
             case I_DEBUG_MODE:
-                setHexTextFile("./test_case.mem", instruction, lineCount, iInput);
+                setHexTextFile(DEBUG_MODE_MEM_PATH, instruction, lineCount, iInput);
                 break;
             default:
                 break;
