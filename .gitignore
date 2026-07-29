@@ -49,12 +49,6 @@ tb/tb_TOP.sv
 tb/**/*.txt
 tb/**/*.mem
 
-# TEST_CASE
-tb/test_case/convert.o
-tb/test_case/main.o
-tb/test_case/main.exe
-tb/test_case/old_test_case/
-
 # Linking Folder
 SOC설계및실습(청강).lnk
 컴퓨터구조론교안.lnk
