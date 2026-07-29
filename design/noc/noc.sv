@@ -55,12 +55,12 @@ module noc #(
     reg [2:0]                       r_axi2apb_arsize;
     reg [1:0]                       r_axi2apb_arburst;
 
-    `ifdef NOC_DEBUG
+    `ifdef XILINX_NOC_DEBUG
     // Data Buffer for Debug
     reg [ADDR_BIT - 1:0]            buf_waddr   [0:BUF_SIZE - 1];
     reg [DATA_BIT - 1:0]            buf_wdata   [0:BUF_SIZE - 1];
     reg [ADDR_BIT - 1:0]            buf_raddr   [0:BUF_SIZE - 1];
-    `endif // NOC_DEBUG
+    `endif // XILINX_NOC_DEBUG
     
     // for Previous AxID Store
     reg [AXI_NOC.ID_BIT - 1:0]      r_x1_awid;
@@ -110,11 +110,11 @@ module noc #(
     // AW Channel Logic
     always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
-            `ifdef NOC_DEBUG
+            `ifdef XILINX_NOC_DEBUG
             for (buf_idx = 0; buf_idx < BUF_SIZE; buf_idx = buf_idx + 1) begin
                 buf_waddr[buf_idx]  <= {ADDR_BIT{1'b0}};
             end
-            `endif // NOC_DEBUG
+            `endif // XILINX_NOC_DEBUG
             r_axi2apb_awvalid       <= 1'b0;
             r_axi2apb_awid          <= {AXI_AXI2APB.ID_BIT{1'b0}};
             r_axi2apb_awaddr        <= {ADDR_BIT{1'b0}};
@@ -124,10 +124,10 @@ module noc #(
         end
         else begin
             if (AXI_NOC.AWVALID == 1'b1) begin
-                `ifdef NOC_DEBUG
+                `ifdef XILINX_NOC_DEBUG
                 buf_waddr[AXI_NOC.AWID[BUF_ADDR_BIT - 1:0]] <= AXI_NOC.AWADDR;  // Suppose Single Burst
-                `endif // NOC_DEBUG
-                `ifdef NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_DEBUG
+                `ifdef XILINX_NOC_SINGLE_MASTER
                 //if (w_boot_rom_wren == 1'b1) begin
 
                 //end
@@ -148,7 +148,7 @@ module noc #(
                 //else if (w_main_mem_wren == 1'b1) begin
 
                 //end
-                `endif // NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_SINGLE_MASTER
             end
         end
     end
@@ -156,11 +156,11 @@ module noc #(
     // W Channel Logic
      always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
-            `ifdef NOC_DEBUG
+            `ifdef XILINX_NOC_DEBUG
             for (buf_idx = 0; buf_idx < BUF_SIZE; buf_idx = buf_idx + 1) begin
                 buf_wdata[buf_idx]  <= {DATA_BIT{1'b0}};
             end
-            `endif // NOC_DEBUG
+            `endif // XILINX_NOC_DEBUG
             r_axi2apb_wvalid        <= 1'b0;
             r_axi2apb_wdata         <= {DATA_BIT{1'b0}};
             r_axi2apb_wstrb         <= {AXI_AXI2APB.ID_BIT{1'b0}};
@@ -168,10 +168,10 @@ module noc #(
         end
         else begin
             if (AXI_NOC.WVALID == 1'b1) begin
-                `ifdef NOC_DEBUG
+                `ifdef XILINX_NOC_DEBUG
                 buf_wdata[r_x1_awid[BUF_ADDR_BIT - 1:0]] <= AXI_NOC.WDATA;
                 `endif // NOC_DEUBG
-                `ifdef NOC_SINGLE_MASTER
+                `ifdef XILINX_NOC_SINGLE_MASTER
                 //if (w_boot_rom_wren == 1'b1) begin
 
                 //end
@@ -190,7 +190,7 @@ module noc #(
                 //else if (w_main_mem_wren == 1'b1) begin
 
                 //end
-                `endif // NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_SINGLE_MASTER
             end
         end
     end
@@ -216,11 +216,11 @@ module noc #(
     // AR Channel Logic
     always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
-            `ifdef NOC_DEBUG
+            `ifdef XILINX_NOC_DEBUG
             for (buf_idx = 0; buf_idx < BUF_SIZE; buf_idx = buf_idx + 1) begin
                 buf_raddr[buf_idx]  <= {ADDR_BIT{1'b0}};
             end
-            `endif // NOC_DEBUG
+            `endif // XILINX_NOC_DEBUG
             r_axi2apb_arvalid       <= 1'b0;
             r_axi2apb_arid          <= {AXI_AXI2APB.ID_BIT{1'b0}};
             r_axi2apb_araddr        <= {ADDR_BIT{1'b0}};
@@ -230,10 +230,10 @@ module noc #(
         end
         else begin
             if (AXI_NOC.ARVALID == 1'b1) begin
-                `ifdef NOC_DEBUG
+                `ifdef XILINX_NOC_DEBUG
                 buf_raddr[AXI_NOC.ARID[BUF_ADDR_BIT - 1:0]] <= AXI_NOC.ARADDR;
                 `endif
-                `ifdef NOC_SINGLE_MASTER
+                `ifdef XILINX_NOC_SINGLE_MASTER
                 //if (w_boot_rom_wren == 1'b1) begin
 
                 //end
@@ -254,7 +254,7 @@ module noc #(
                 //else if (w_main_mem_wren == 1'b1) begin
 
                 //end
-                `endif // NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_SINGLE_MASTER
             end
         end
     end
@@ -272,12 +272,12 @@ module noc #(
             if (AXI_NOC.ARVALID == 1'b1) begin
                 r_noc_rvalid<= 1'b1;
                 r_noc_rid   <= AXI_NOC.ARID;
-                `ifdef NOC_DEBUG
+                `ifdef XILINX_NOC_DEBUG
                 r_noc_rdata <= buf_wdata[AXI_NOC.ARID[BUF_ADDR_BIT - 1:0]];
-                `endif // NOC_DEBUG
-                `ifdef NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_DEBUG
+                `ifdef XILINX_NOC_SINGLE_MASTER
                 r_noc_rdata <= AXI_AXI2APB.RDATA;
-                `endif // NOC_SINGLE_MASTER
+                `endif // XILINX_NOC_SINGLE_MASTER
                 r_noc_rlast <= 1'b1;    // Suppose Single Burst
             end
             else begin

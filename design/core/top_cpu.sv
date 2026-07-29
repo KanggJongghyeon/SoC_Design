@@ -25,13 +25,13 @@ module top_cpu #(
     /////////////////////
     //localparam OPCODE_BIT   = (DATA_BIT == 32) ? 6 : 4; // {32-Bit CPU : 6, 16-Bit CPU : 4}
     //localparam REG_BIT      = (DATA_BIT == 32) ? 5 : 2; // {32-Bit CPU : 5, 16-Bit CPU : 2} 
-    `ifndef CPU_32BIT
+    `ifndef XILINX_CPU_32BIT
         localparam OPCODE_BIT   = 4;
         localparam REG_BIT      = 2;
     `else
         localparam OPCODE_BIT   = 6;
         localparam REG_BIT      = 5;
-    `endif  // CPU_32BIT (Vivado Define Option)
+    `endif  // XILINX_CPU_32BIT (Vivado Define Option)
 
     //////////
     // wire //

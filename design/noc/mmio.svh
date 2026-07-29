@@ -2,7 +2,7 @@
 `define MMIO_SVH
 
 // 32-Bit System
-`ifndef CPU_32BIT
+`ifndef XILINX_CPU_32BIT
 `define MMIO_BOOT_ROM   16'h0000
 `define MMIO_TIMER      16'h0A00
 `define MMIO_UART       16'h0B00
@@ -26,10 +26,6 @@
 `define MMIO_MAIN_MEM   32'h3000_0000
 `define MMIO_AUX_MEM    32'h8000_0000
 //`define MMIO_INTERRUPT  TBD
-`endif  // CPU_32BIT
-
-//`define NOC_DEBUG
-`define NOC_SINGLE_MASTER
-//`define NOC_MULTI_MASTER
+`endif  // XILINX_CPU_32BIT
 
 `endif  // MMIO_SVH
