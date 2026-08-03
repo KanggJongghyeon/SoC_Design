@@ -5,8 +5,9 @@
 #define MAX_LINE            1000U
 #define MAX_LEN             50U
 #define MAX_LEN_HEX         8U                
-#define LINE_FEED           0x0A    // \n
-#define CARRIAGE_RETURN     0x0D    // \r
+#define LINE_FEED           0x0A    // UNICODE of '\n'
+#define CARRIAGE_RETURN     0x0D    // UNICODE of '\r'
+#define FILE_ERROR          255U    // ERROR VALUE
 
 // File Path
 #define BOOT_LOADER_MEM_PATH    "mem_file/boot_loader.mem"
