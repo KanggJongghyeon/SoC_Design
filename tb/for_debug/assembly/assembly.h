@@ -40,7 +40,7 @@ void getJaddr(char* iLineData, unsigned int* oInstruction);
 // Make Text File
 void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput);
 
-// Convert main
+// Assembly main
 void convert(eInput iInput);
 
 /*

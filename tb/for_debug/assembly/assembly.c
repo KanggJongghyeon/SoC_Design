@@ -797,7 +797,7 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned 
 }
 
 //////////////////
-// Convert Main //
+// Assembly Main //
 //////////////////
 void convert(eInput iInput)
 {
@@ -811,6 +811,7 @@ void convert(eInput iInput)
         //@ 2a. For the I_NONE:
         case I_NONE:
             //@ 2a1. Print ERROR
+            error   = true;
             printf("[ERROR] Invalid Input (%d)\n", iInput);
             break;
         //@ 2b. For the I_BOOT_ROM:

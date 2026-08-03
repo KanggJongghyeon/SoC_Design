@@ -9,11 +9,12 @@ int main()
     printf("[1] for Boot Loader File    \n");
     printf("[2] for Application File    \n");
     printf("----------------------------\n");
-    
+   
+    printf(": ");
     scanf("%d", &input);
     input = (eInput)input; 
 
-    disassembly(input);
+    convert(input);
     
     return 0;
 }
