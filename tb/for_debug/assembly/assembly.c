@@ -228,7 +228,6 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
     {
         *oInstruction   = (unsigned int)OP_SLTIU;
         *oInstruction   = *oInstruction << 26;
-
         *oOpcodeType    = TYPE_I;  
     }
     else if (0 == strcmp(iOpcodeStr, "andi\0"))
@@ -945,6 +944,6 @@ void convert(eInput iInput)
     }
 }
 
-//////////////////////////////////////
-// Path : .\tb\TEST_CASE\convert.c //
-//////////////////////////////////////
+//////////////////////////////////////////////
+// Path : .\tb\for_debug\assembly\convert.c //
+//////////////////////////////////////////////
