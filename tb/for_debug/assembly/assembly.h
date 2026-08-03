@@ -1,5 +1,5 @@
-#ifndef COVNERT_H
-#define CONVERT_H
+#ifndef ASSEMBLY_H
+#define ASSEMBLY_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +11,7 @@
 // Global Variable
 static char         assembly[MAX_LINE][MAX_LEN];// assembly <= File Data
 static unsigned int instruction[MAX_LINE];      // hex      <= assembly 
-static eOpcodeType  opcodeType[MAX_LINE];       // OPCODE TYPE Storage
+static eOpcodeType  opcodeType[MAX_LINE];       // OPCODE Type per Line
 
 // Load Assembly File
 bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char* oCount);
@@ -61,4 +61,4 @@ opcode  rs      rt      imm
 
 */
 
-#endif
+#endif  // ASSEMBLY_H

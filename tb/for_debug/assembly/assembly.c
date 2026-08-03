@@ -836,6 +836,7 @@ void convert(eInput iInput)
         //@ 2f. In All Other Cases:
         default:
             //@ 2f1. Print ERROR
+            error   = true;
             printf("[ERROR] Invalid Input (%d)\n", iInput);
             break;
     }
