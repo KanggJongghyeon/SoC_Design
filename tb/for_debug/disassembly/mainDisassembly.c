@@ -13,7 +13,7 @@ int main()
     scanf("%d", &input);
     input = (eInput)input; 
 
-    convert(input);
+    disassembly(input);
     
     return 0;
 }
@@ -21,4 +21,3 @@ int main()
 /////////////////////////////////////////////////////////
 // Path : .\tb\for_debug\disassembly\mainDisassembly.c //
 /////////////////////////////////////////////////////////
-
