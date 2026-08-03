@@ -1,17 +1,18 @@
 @echo off
 
 REM INIT
-if exist disAssembly.o          del disAssembly.o
-if exist mainDisassembly.o      del mainDisassembly.o
-if exist mainDisassembly.exe    del mainDisassembly.exe
+if not exist obj                    mkdir obj
+if exist obj\disassembly.o          del obj\disassembly.o
+if exist obj\mainDisassembly.o      del obj\mainDisassembly.o
+if exist obj\mainDisassembly.exe    del obj\mainDisassembly.exe
 
 REM COMPILE
-gcc -c disAssembly.c
-gcc -c mainDisassembly.c
+gcc -c disassembly.c -o obj\disassembly.o
+gcc -c mainDisassembly.c -o obj\mainDisassembly.o
 
 REM LINK
-gcc disAssembly.o mainDisassembly.o -o mainDisassembly.exe
+gcc obj\disassembly.o obj\mainDisassembly.o -o obj\mainDisassembly.exe
 
 REM EXECUTE
-mainDisassembly.exe
+obj\mainDisassembly.exe
 
