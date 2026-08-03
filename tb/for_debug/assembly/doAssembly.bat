@@ -1,16 +1,17 @@
 @echo off
 
 REM INIT
-if exist assembly.o         del assembly.o
-if exist mainAssembly.o     del mainAssembly.o
-if exist mainAssembly.exe   del mainAssembly.exe
+if not exist obj                mkdir obj
+if exist obj\assembly.o         del obj\assembly.o
+if exist obj\mainAssembly.o     del obj\mainAssembly.o
+if exist obj\mainAssembly.exe   del obj\mainAssembly.exe
 
 REM COMPILE
-gcc -c assembly.c
-gcc -c mainAssembly.c
+gcc -c assembly.c -o obj\assembly.o
+gcc -c mainAssembly.c -o obj\mainAssembly.o
 
 REM LINK
-gcc assembly.o mainAssembly.o -o mainAssembly.exe
+gcc obj\assembly.o obj\mainAssembly.o -o obj\mainAssembly.exe
 
 REM EXECUTE
-mainAssembly.exe
+obj\mainAssembly.exe
