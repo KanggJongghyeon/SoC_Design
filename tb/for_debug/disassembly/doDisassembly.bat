@@ -15,4 +15,3 @@ gcc obj\disassembly.o obj\mainDisassembly.o -o obj\mainDisassembly.exe
 
 REM EXECUTE
 obj\mainDisassembly.exe
-
