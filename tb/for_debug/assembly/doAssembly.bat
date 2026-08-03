@@ -7,8 +7,8 @@ if exist obj\mainAssembly.o     del obj\mainAssembly.o
 if exist obj\mainAssembly.exe   del obj\mainAssembly.exe
 
 REM COMPILE
-gcc -c assembly.c -o obj\assembly.o
-gcc -c mainAssembly.c -o obj\mainAssembly.o
+gcc -DNDEBUG -c assembly.c -o obj\assembly.o
+gcc -DNDEBUG -c mainAssembly.c -o obj\mainAssembly.o
 
 REM LINK
 gcc obj\assembly.o obj\mainAssembly.o -o obj\mainAssembly.exe
