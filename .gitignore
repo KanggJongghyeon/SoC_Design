@@ -48,6 +48,7 @@ design/peripheral/
 tb/tb_TOP.sv
 tb/**/*.txt
 tb/**/*.mem
+obj/
 
 # Linking Folder
 SOC설계및실습(청강).lnk
