@@ -3,9 +3,9 @@
 // Global Variable //
 /////////////////////
 // Init Global Variable
-static unsigned int instructiono[MAX_LINE]          = {0};
-static char         disassembly[MAX_LINE][MAX_LEN]  = {0};
-static eOpcodeType  opcodeType[MAX_LINE]            = {TYPE_NONE};
+static unsigned int instructiono[MAX_LINE]  = {0};
+static char*        disassembly[MAX_LINE]   = {0};
+static eOpcodeType  opcodeType[MAX_LINE]    = {TYPE_NONE};
 
 /////////////////////
 // Get OPCODE Type //
@@ -70,10 +70,10 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
         case OP_ADDIU:
         case OP_SLTI: 
         case OP_SLTIU:
-        case OP_ANDI: 
+        case OP_ANDI:
         case OP_ORI:  
         case OP_XORI: 
-        case OP_LUI:  
+        case OP_LUI: 
             //@ 2b1. Set OPCODE Type to TYPE_I
             oOpcodeType = TYPE_I;
             break;
@@ -86,27 +86,32 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
         //@ 2d. For the OP_LW:
         case OP_LW:
             //@ 2d1. Set OPCODE Type to TYPE_LW
+            #ifndef NDEBUG
+            printf("OP_LW\n");
+            #endif // NDEBUG
             oOpcodeType = TYPE_LW;
+            break;
         //@ 2e. For the OP_SW:
         case OP_SW:
             //@ 2e1. Set OPCODE Type to TYPE_SW
             oOpcodeType = TYPE_SW;
+            break;
         //@ 2f. In All Other Cases:
         default:
             //@ 2f1. Print ERROR LOG and Set OPCODE Type to TYPE_NOP
-            printf("[ERROR] Unknown OPCODE (%02x)\n", iOpcode);
+            printf("[ERROR] Unknown OPCODE (0x%02x)(=%d)\n", iOpcode, iOpcode);
             oOpcodeType = TYPE_NOP;
             break;
     }
 
-    return oOpcodeType
+    return oOpcodeType;
 }
 
 
 ////////////////
 // Get OPCODE //
 ////////////////
-void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcodeType *oOpcodeType)
+void getOpcode(unsigned int *iInstruction, char **oDisassembly, eOpcodeType *oOpcodeType)
 {
     //@ 1. Init Local Variable
     unsigned char   instructionCount    = 0;            // Instruction Count
@@ -116,7 +121,7 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
 
     //@ 2. Check Instruction Count
     //@ 2a. If Current Count is End of Instruction Line:
-    while ('/0' != iInstruction[instructionCount])
+    while ('\0' != iInstruction[instructionCount])
     {   
         //@ 2a1. Check Instruction
         //@ 2a1a. If Instruction is 0x00000000:
@@ -125,6 +130,7 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
             //@ 2a1a1. Store "nop" into Disassembly Array
             oOpcodeType[instructionCount] = TYPE_NOP;
             strcpy(oDisassembly[instructionCount], nop);
+            printf("sibal %s\n", oDisassembly[instructionCount]);
         }
         //@ 2a1b. In All Other Cases:
         else
@@ -144,7 +150,8 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
             //@ 2a1b2b. In All Other Cases:
             else
             {
-
+                //@ 2a1b2b1. Store OPCODE String into Disassembly Array
+                getOpcodeStr(opcode, functCode, oDisassembly[instructionCount]);
             }
         }
         instructionCount++;
@@ -154,7 +161,7 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
 //////////////////////////////////////
 // Convert Hexa Alphabet to Integer //
 //////////////////////////////////////
-unsigned char convertAlphabetCharToInteger(char iChar)
+unsigned int convertAlphabetCharToInteger(char iChar)
 {
     //@ 1. Init Local Variable
     unsigned int oInteger;
@@ -222,8 +229,8 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned char
     bool            endOfBuffer     = false;    // Flag of End of Buffer
     unsigned int    bufferIdx       = 0;        // Buffer Index
     unsigned int    instructionIdx  = 0;        // Instruction Index
-    unsigned char   charCount       = 0;        // Character Counter per File Line
-    unsigned char   alphabetInt     = 0;        // Output Value of convertAlphabetCharToInteger()
+    unsigned int    charCount       = 0;        // Character Counter per File Line
+    unsigned int    alphabetInt     = 0;        // Output Value of convertAlphabetCharToInteger()
 
     //@ 2. Check File Pointer
     //@ 2a. If File Pointer is NULL:
@@ -279,8 +286,8 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned char
                 //@ 2b6a1a1a. If Current Character is not Alphabet:
                 if (10 > (unsigned int)(fileBuffer[bufferIdx + charCount] - '0'))
                 {
-                    //@ 2b6a1a1a1. Convert Character to Integer and Save to Instruction Array
-                    oInstruction[instructionIdx] |= (unsigned int)((fileBuffer[bufferIdx + charCount] - '0') << mem32LineShift[(bufferIdx + charCount) % 10]);
+                    //@ 2b6a1a1a1. Convert Character to Integer Calling getShiftLeftConstatnt() and Save to Instruction Array
+                    oInstruction[instructionIdx] |= (unsigned int)((fileBuffer[bufferIdx + charCount] - '0') << getShiftLeftConstant((bufferIdx + charCount)));
                 }
                 //@ 2b6a1a1b. In All Other Cases:
                 else
@@ -289,13 +296,13 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned char
                     alphabetInt = convertAlphabetCharToInteger(fileBuffer[bufferIdx + charCount]);
                     //@ 2b6a1a1b2. Check Alphabet
                     //@ 2b6a1a1b2a. If Alphabet is not between 'a'('A') and 'f'('F'):
-                    if ((unsigned char)FILE_ERROR == alphabetInt)
+                    if ((unsigned int)FILE_ERROR == alphabetInt)
                     {
                         // 2b6a1a1b2a1. Set File Error Flag to Positive
                         oFileError = true;
                     }
-                    //@ 2b6a1a1b3. Store Alphabet Data to Instruction Array
-                    oInstruction[instructionIdx] |= (unsigned int)(alphabetInt << mem32LineShift[(bufferIdx + charCount) % 10]);
+                    //@ 2b6a1a1b3. Call getShiftLeftConstant() and Store Alphabet Data to Instruction Array
+                    oInstruction[instructionIdx] |= alphabetInt << getShiftLeftConstant((bufferIdx + charCount));
                 }
                 //@ 2b6a1a2. Go to 2b6a1
             }
@@ -381,7 +388,7 @@ void convert(eInput iInput)
             break;
     }
     #ifndef NDEBUG
-    printf("MEM File Line (%d)\n", lineCount);
+    printf("Number of MEM File Line (%d)\n", lineCount);
     #endif  // NDEBUG
 
 

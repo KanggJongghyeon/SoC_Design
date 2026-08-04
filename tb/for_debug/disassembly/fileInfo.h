@@ -23,7 +23,4 @@ typedef enum
     I_APPLICATION,  // 2
 } eInput;
 
-// File Info for 32 Bit Memory File
-static unsigned int mem32LineShift[8]  = {28, 24, 20, 16, 12, 8, 4, 0};
-
 #endif
