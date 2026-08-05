@@ -74,7 +74,8 @@ typedef enum
     TYPE_LW,    // 4
     TYPE_SW,    // 5
     TYPE_J,     // 6
-    TYPE_NOP    // 7
+    TYPE_BRANCH,// 7
+    TYPE_NOP    // 8
 } eOpcodeType;
 
 typedef enum
