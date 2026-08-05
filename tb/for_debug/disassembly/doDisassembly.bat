@@ -8,9 +8,9 @@ if exist obj\mainDisassembly.o      del obj\mainDisassembly.o
 if exist obj\mainDisassembly.exe    del obj\mainDisassembly.exe
 
 REM COMPILE
-gcc -c array.c -o obj\array.o
-gcc -c disassembly.c -o obj\disassembly.o
-gcc -c mainDisassembly.c -o obj\mainDisassembly.o
+gcc -DNDEBUG -c array.c -o obj\array.o
+gcc -DNDEBUG -c disassembly.c -o obj\disassembly.o
+gcc -DNDEBUG -c mainDisassembly.c -o obj\mainDisassembly.o
 
 REM LINK
 gcc obj\array.o obj\disassembly.o obj\mainDisassembly.o -o obj\mainDisassembly.exe
