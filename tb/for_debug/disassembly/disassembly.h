@@ -7,21 +7,36 @@
 #include "array.h"
 
 // Global Variable
-static unsigned int instruction[MAX_LINE];  // MEM Data Integer 
-static char*        disassembly[MAX_LINE];  // Disassembly Data
-static eOpcodeType  opcodeType[MAX_LINE];   // OPCODE Type per Line
+static unsigned int instruction[MAX_LINE];          // MEM Data Integer 
+static char         disassembly[MAX_LINE][MAX_LEN]; // Disassembly Data
+static eOpcodeType  opcodeType[MAX_LINE];           // OPCODE Type per Line
+
+// Generate Assembly File
+void genAsm(const char *iOutFile, char (*oDisassembly)[MAX_LEN], unsigned int oCount);
+
+// Disassemble R-Type
+void disassembleRType(unsigned int instructionLine, char *oDisassemblyLine);
+
+// Disassemble Shift-Type
+void disassembleShiftType(unsigned int instructionLine, char *oDisassemblyLine);
+
+// Disassemble I-Type
+void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpcodeType iOpcodeType);
+
+// Disassemble J-Type
+void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine);
 
 // Get OPCODE Type
 eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode);
 
 // Get OPCODE
-void getOpcode(unsigned int *iInstruction, char **oDisassembly, eOpcodeType *oOpcodeType);
+void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcodeType *oOpcodeType, unsigned int iTotalLine);
 
 // Convert Hexa Alphabet to Integer
 unsigned int convertAlphabetCharToInteger(char iChar);
 
 // Get Instruction from Memory File
-bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned char *oCount);
+bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int *oCount);
 
 // Disassembly main
 void convert(eInput iInput);

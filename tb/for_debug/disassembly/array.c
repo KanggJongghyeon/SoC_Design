@@ -93,7 +93,7 @@ static const char* functCodeStr[MAX_OPCODE_NUM] =
     "srlv\0",   // 6
     "srav\0",   // 7
     "jr\0",     // 8
-    TBD,        // 9        
+    "jalr\0",   // 9        
     TBD,        // 10        
     TBD,        // 11      
     TBD,        // 12        
@@ -108,8 +108,8 @@ static const char* functCodeStr[MAX_OPCODE_NUM] =
     TBD,        // 21
     TBD,        // 22
     TBD,        // 23
-    "mul\0",    // 24
-    "mulu\0",   // 25
+    "mult\0",   // 24
+    "multu\0",  // 25
     "div\0",    // 26
     "divu\0",   // 27
     TBD,        // 28
@@ -150,6 +150,42 @@ static const char* functCodeStr[MAX_OPCODE_NUM] =
     TBD         // 63
 };
 
+static const char* registersStr[MAX_REG_NUM] =
+{
+    "$zero\0",  // 0
+    "$at\0",    // 1
+    "$v0\0",    // 2
+    "$v1\0",    // 3
+    "$a0\0",    // 4
+    "$a1\0",    // 5
+    "$a2\0",    // 6
+    "$a3\0",    // 7
+    "$t0\0",    // 8
+    "$t1\0",    // 9
+    "$t2\0",    // 10
+    "$t3\0",    // 11
+    "$t4\0",    // 12
+    "$t5\0",    // 13
+    "$t6\0",    // 14
+    "$t7\0",    // 15
+    "$s0\0",    // 16
+    "$s1\0",    // 17
+    "$s2\0",    // 18
+    "$s3\0",    // 19
+    "$s4\0",    // 10
+    "$s5\0",    // 21
+    "$s6\0",    // 22
+    "$s7\0",    // 23
+    "$t8\0",    // 24
+    "$t9\0",    // 25
+    "$k0\0",    // 26
+    "$k1\0",    // 27
+    "$gp\0",    // 28
+    "$sp\0",    // 29
+    "$fp\0",    // 30
+    "$ra\0",    // 31
+};
+
 /////////////////////////////
 // Get Shift Left Constant //
 /////////////////////////////
@@ -170,25 +206,36 @@ unsigned int getShiftLeftConstant(unsigned int iInput)
 ////////////////////////////////
 // Get OPCODE Character Array //
 ////////////////////////////////
-void getOpcodeStr(eOpcode iOpcode, eFunctCode iFunctCode, char* oOpcodeStr)
+void getOpcodeStr(eOpcode iOpcode, eFunctCode iFunctCode, char *oOpcodeStr)
 {
     //@ 1. Check OPCODE Type
     //@ 1a. If OPCODE is R-Type:
     if (OP_RTYPE == iOpcode)
     {
         //@ 1a1. Set OPCODE String Using FUNCT CODE Table
-        //strcpy(oOpcodeStr, functCodeStr[iFunctCode]);   
-        oOpcodeStr = (char*)functCodeStr[iFunctCode];
+        strcpy(oOpcodeStr, functCodeStr[iFunctCode]);   
+        //*oOpcodeStr = (char*)functCodeStr[iFunctCode];
     }
     //@ 1b. In All Other Cases:
     else
     {
         //@ 1b1. Set OPCODE String Using OPCODE Table
-        //strcpy(oOpcodeStr, opcodeStr[iOpcode]);
-        oOpcodeStr = (char*)opcodeStr[iOpcode];
+        strcpy(oOpcodeStr, opcodeStr[iOpcode]);
+        //*oOpcodeStr = (char*)opcodeStr[iOpcode];
     }
+}
 
-    #ifndef NDEBUG
-    printf("OPCODE String %s\n", oOpcodeStr);
-    #endif  // NDEBUG
+///////////////////////////////////
+// Get Registers Character Array //
+///////////////////////////////////
+char* getRegistersStr(eRegisters iRegisters)
+{
+    //@ 1. Init Local Variable
+    char* oRegisters = NULL;
+
+    //@ 2. Set Registers String Using Registers Table
+    //strcpy(oRegisters, registersStr[iRegisters]);
+    oRegisters = (char*)registersStr[iRegisters];
+
+    return oRegisters;
 }
