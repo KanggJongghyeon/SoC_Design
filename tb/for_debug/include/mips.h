@@ -1,6 +1,7 @@
 #ifndef MIPS_H
 #define MIPS_H
 
+#define MAX_REG_NUM     32
 #define MAX_OPCODE_NUM  64
 #define OPCODE_STR_LEN  7
 #define REG_STR_LEN     6
@@ -87,10 +88,11 @@ typedef enum
     FUNCT_SRLV  = 6,
     FUNCT_SRAV  = 7,
     FUNCT_JR    = 8,
+    FUNCT_JALR  = 9,
     FUNCT_MFHI  = 16,
     FUNCT_MFLO  = 18,
-    FUNCT_MUL   = 24,
-    FUNCT_MULU  = 25,
+    FUNCT_MULT  = 24,
+    FUNCT_MULTU = 25,
     FUNCT_DIV   = 26,
     FUNCT_DIVU  = 27,
     FUNCT_ADD   = 32,
