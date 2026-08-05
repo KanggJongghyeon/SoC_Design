@@ -96,6 +96,11 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
         *oInstruction   = (unsigned int)FUNCT_JR;
         *oOpcodeType    = TYPE_R;
     }
+    else if (0 == strcmp(iOpcodeStr, "jalr\0"))
+    {
+        *oInstruction   = (unsigned int)FUNCT_JALR;
+        *oOpcodeType    = TYPE_R;
+    }
     else if (0 == strcmp(iOpcodeStr, "mfhi\0"))
     {
         *oInstruction   = (unsigned int)FUNCT_MFHI;
@@ -106,14 +111,14 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
         *oInstruction   = (unsigned int)FUNCT_MFLO;
         *oOpcodeType    = TYPE_R;
     }
-    else if (0 == strcmp(iOpcodeStr, "mul\0"))
+    else if (0 == strcmp(iOpcodeStr, "mult\0"))
     {
-        *oInstruction   = (unsigned int)FUNCT_MUL;
+        *oInstruction   = (unsigned int)FUNCT_MULT;
         *oOpcodeType    = TYPE_R;
     }
-    else if (0 == strcmp(iOpcodeStr, "mulu\0"))
+    else if (0 == strcmp(iOpcodeStr, "multu\0"))
     {
-        *oInstruction   = (unsigned int)FUNCT_MULU;
+        *oInstruction   = (unsigned int)FUNCT_MULTU;
         *oOpcodeType    = TYPE_R;
     }
     else if (0 == strcmp(iOpcodeStr, "div\0"))
