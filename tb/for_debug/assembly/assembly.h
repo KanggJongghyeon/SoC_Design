@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "./../include/mips.h"
+#include "./../common/mips.h"
 #include "textFileInfo.h"
 
 // Global Variable

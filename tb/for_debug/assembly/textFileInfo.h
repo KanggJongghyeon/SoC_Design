@@ -1,5 +1,5 @@
-#ifndef FILE_INFO_H
-#define FILE_INFO_H
+#ifndef TEXT_FILE_INFO_H
+#define TEXT_FILE_INFO_H
 
 // File Info
 #define MAX_LINE                1000
@@ -24,4 +24,4 @@ typedef enum
     I_DEBUG_MODE    // 4
 } eInput;
 
-#endif
+#endif  // TEXT_FILE_INFO_H
