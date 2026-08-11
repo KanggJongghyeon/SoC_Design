@@ -194,7 +194,7 @@ unsigned int getShiftLeftConstant(unsigned int iInput)
     //@ 1. Init Local Variable
     unsigned int oShiftLeft = 0;
     //@ 2. Set Output Data Using Shift Left Array 
-    oShiftLeft = mem32LineShiftLeft[iInput % 10];
+    oShiftLeft = mem32LineShiftLeft[iInput % (MAX_LEN_HEX + OS_OFFSET)];
     
     #ifndef NDEBUG
     printf("bufferIndex (%d) ShiftLeft (%d)\n", iInput, oShiftLeft);    

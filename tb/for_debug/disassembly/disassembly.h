@@ -2,8 +2,8 @@
 #define DISASSEMBLY_H
 
 #include <stdbool.h>
-#include "./../include/mips.h"
-#include "fileInfo.h"
+#include "./../common/mips.h"
+#include "memFileInfo.h"
 #include "array.h"
 
 // Global Variable

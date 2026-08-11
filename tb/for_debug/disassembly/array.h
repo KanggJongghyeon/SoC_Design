@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "./../include/mips.h"
-#include "fileInfo.h"
+#include "./../common/mips.h"
+#include "memFileInfo.h"
 
 // Global Macro
-#define TBD "XXX\0" // To-Be-Determined
+#define TBD ("XXX\0")   // To-Be-Determined
 
 // Global Variable      
 static const unsigned int   mem32LineShiftLeft[MAX_LEN_HEX];    // Shift Left Array

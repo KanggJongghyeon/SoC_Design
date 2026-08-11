@@ -594,12 +594,12 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int 
         fread(fileBuffer, 1, bufferSize, filePointer);
         fileBuffer[bufferSize] = '\0';
         
-        //#ifndef NDEBUG
+        #ifndef NDEBUG
         for (unsigned int bufferCount = 0; bufferCount < bufferSize; bufferCount++)
         {
             printf("%d : %02x\n", bufferCount, fileBuffer[bufferCount]);
         }
-        //#endif  // NDEBUG
+        #endif  // NDEBUG
 
         //@ 2b6. Check Enf of Buffer Flag
         //@ 2b6a. If Flag is Negative
@@ -634,22 +634,40 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int 
                 //@ 2b6a1a2. Go to 2b6a1
             }
             
+            #ifndef NDEBUG
+            printf("[%d] : Buffer Index = %d\n", instructionIdx, bufferIdx);
+            #endif  // NDEBUG
+
             //@ 2b6a2. Check Current File Data Buffer's Character
-            //@ 2b6a2a. If Current Character is not CARRIAGE RETURN UNICODE('\r') and is not LINE FEED UNICODE('\n'):
-            while ((CARRIAGE_RETURN != fileBuffer[bufferIdx]) && (LINE_FEED != fileBuffer[(bufferIdx + 1)]))
+            #ifndef CRLF_FLAG   // Case 0 : Memory File Made by Linux
+            //@ 2b6a2a. If Current Character is not LINE FEED UNICODE('\n'):
+            while (LINE_FEED != fileBuffer[bufferIdx])
             {
                 //@ 2b6a2a1. Add 1 to Buffer Index
                 bufferIdx++;
                 //@ 2b6a2a2. Go to 2b6a2
             }
 
-            //@ 2b6a3. Add 2 to Buffer Index and Add 1 to Instruction Index
-            bufferIdx = bufferIdx + 2;
+            //@ 2b6a3. Add Buffer Index and Instruction Index
+            bufferIdx = bufferIdx + 1;  // Jump Only LF
             instructionIdx++;
+            #else   // CRLF_FLAG    // Case 1 : Memory File Made by Windows
+            //@ 2b6a2a. If Current Character is not LINE FEED UNICODE('\n') or Next Characetr is not Carriage Return('\r'):
+            while ((CARRIAGE_RETURN != fileBuffer[bufferIdx]) || (LINE_FEED != fileBuffer[(bufferIdx + 1)]))
+            {
+                //@ 2b6a2a1. Add 1 to Buffer Index
+                bufferIdx++;
+                //@ 2b6a2a2. Go to 2b6a2
+            }
+
+            //@ 2b6a3. Add Buffer Index and Instruction Index
+            bufferIdx = bufferIdx + 2;  // Jump CR and LF
+            instructionIdx++;
+            #endif  // CRLF_FLAG
 
             //@ 2b6a4. Check Buffer Index
             //@ 2b6a4a. If Buffer Index is bigger than Buffer Size:
-            if ((bufferIdx + 10) > bufferSize)
+            if ((bufferIdx + MAX_LEN_HEX) > bufferSize)
             {
                 //@ 2b6a4a1. Set End of Buffer Flag to Positive
                 endOfBuffer = true;
@@ -659,12 +677,12 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int 
         oInstruction[instructionIdx]    = '\0';
         *oCount                         = instructionIdx;
         
-        //#ifndef NDEBUG
+        #ifndef NDEBUG
         for (unsigned short instructionCount = 0; instructionCount < instructionIdx; instructionCount++)
         {
             printf("%d %08x\n", instructionCount, oInstruction[instructionCount]);
         }        
-        //#endif  // NDEBUG
+        #endif  // NDEBUG
     }
     
     //@ 3. Free Allocating File Data Buffer's Memory
