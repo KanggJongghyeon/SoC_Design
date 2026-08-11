@@ -31,11 +31,13 @@ void genAsm(const char *iOutFile, char (*oDisassembly)[MAX_LEN], unsigned int oC
         {
             fprintf(filePointer, "%s\n", &oDisassembly[count][0]);
         }
+        
+        //@ 2b2. Print INFO Log
+        printf("[INFO] Create %s Complete\n", iOutFile);
     }
 
-    //@ 3. Close File and Print INFO Log
+    //@ 3. Close File
     fclose(filePointer);
-    printf("[INFO] Create %s Complete\n", iOutFile);
 }
 
 ////////////////////////
@@ -380,7 +382,7 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
                 //@ 2a1d. In All Other Cases:
                 default:
                     //@ 2a1d1. Print ERROR LOG and Set OPCODE TYPE to TYPE_NOP
-                    printf("[ERROR] Unknown OPCODE (%02x)\n", iOpcode);
+                    printf("[ERROR] Unknown FUNCT CODE (0x%02x)(=%d)\n", iFunctCode, iFunctCode);
                     oOpcodeType = TYPE_NOP;
                     break;
             }
@@ -468,7 +470,7 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
             {
                 //@ 2a1b2a1. Print ERROR LOG and Store "nop" into Disassembly Array
                 strcpy(oDisassembly[instructionCount], nop);
-                printf("So Set \"nop\" in [%d] line", (instructionCount + 1));
+                printf("So Set \"nop\" in instruction[%d] line\n", instructionCount);
             }
             //@ 2a1b2b. In All Other Cases:
             else
@@ -592,12 +594,12 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int 
         fread(fileBuffer, 1, bufferSize, filePointer);
         fileBuffer[bufferSize] = '\0';
         
-        #ifndef NDEBUG
+        //#ifndef NDEBUG
         for (unsigned int bufferCount = 0; bufferCount < bufferSize; bufferCount++)
         {
             printf("%d : %02x\n", bufferCount, fileBuffer[bufferCount]);
         }
-        #endif  // NDEBUG
+        //#endif  // NDEBUG
 
         //@ 2b6. Check Enf of Buffer Flag
         //@ 2b6a. If Flag is Negative
@@ -657,12 +659,12 @@ bool getInstruction(const char *iFile, unsigned int *oInstruction, unsigned int 
         oInstruction[instructionIdx]    = '\0';
         *oCount                         = instructionIdx;
         
-        #ifndef NDEBUG
+        //#ifndef NDEBUG
         for (unsigned short instructionCount = 0; instructionCount < instructionIdx; instructionCount++)
         {
             printf("%d %08x\n", instructionCount, oInstruction[instructionCount]);
         }        
-        #endif  // NDEBUG
+        //#endif  // NDEBUG
     }
     
     //@ 3. Free Allocating File Data Buffer's Memory

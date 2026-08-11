@@ -10,10 +10,10 @@
 #define FILE_ERROR          255U    // ERROR VALUE
 
 // File Path
-#define BOOT_LOADER_MEM_PATH    "mem_file/boot_loader.mem"
-#define APPLICATION_MEM_PATH    "mem_file/application.mem"
-#define BOOT_LOADER_TEXT_PATH   "text_file/boot_loader.txt"
-#define APPLICATION_TEXT_PATH   "text_file/application.txt"
+#define BOOT_LOADER_MEM_PATH    "memFile/bootLoader.mem"
+#define APPLICATION_MEM_PATH    "memFile/application.mem"
+#define BOOT_LOADER_TEXT_PATH   "textFile/bootLoader.txt"
+#define APPLICATION_TEXT_PATH   "textFile/application.txt"
 
 // File Input enum
 typedef enum
