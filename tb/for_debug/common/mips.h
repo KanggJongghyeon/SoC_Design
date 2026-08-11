@@ -1,12 +1,12 @@
 #ifndef MIPS_H
 #define MIPS_H
 
-#define MAX_REG_NUM     32
-#define MAX_OPCODE_NUM  64
-#define OPCODE_STR_LEN  7
-#define REG_STR_LEN     6
-#define IMM_STR_LEN     7
-#define JADDR_STR_LEN   9
+#define MAX_REG_NUM     (32)
+#define MAX_OPCODE_NUM  (64)
+#define OPCODE_STR_LEN  (7)
+#define REG_STR_LEN     (6)
+#define IMM_STR_LEN     (7)
+#define JADDR_STR_LEN   (9)
 
 typedef enum 
 {
