@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "./../include/mips.h"
-#include "fileInfo.h"
+#include "textFileInfo.h"
 
 // Global Variable
 static char         assembly[MAX_LINE][MAX_LEN];// assembly <= File Data
