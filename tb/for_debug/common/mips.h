@@ -61,10 +61,29 @@ typedef enum
     OP_ORI      = 13,
     OP_XORI     = 14,
     OP_LUI      = 15,
+    OP_LB       = 32,
+    OP_LH       = 33,
     OP_LW       = 35,
+    OP_LBU      = 36,
+    OP_LHU      = 37,
+    OP_SB       = 40,
+    OP_SH       = 41,
     OP_SW       = 43,
     OP_NONE     = 64
 } eOpcode;
+
+typedef enum
+{
+    REGIMM_BLTZ     = 0,    // < 0, Branch
+    REGIMM_BGEZ     = 1,    // >= 0, Branch
+    REGIMM_BLTZL    = 2,    // < 0, If trueBranch and Not Flush,
+    REGIMM_BGEZL    = 3,
+    REGIMM_BLTZAL   = 16,
+    REGIMM_BGEZAL   = 17,
+    REGIMM_BLTZALL  = 18,
+    REGIMM_BGEZALL  = 19,
+    REGIMM_NONE     = 32
+} eRegimm;
 
 typedef enum 
 {
@@ -72,11 +91,12 @@ typedef enum
     TYPE_R,     // 1
     TYPE_SHIFT, // 2
     TYPE_I,     // 3
-    TYPE_LW,    // 4
-    TYPE_SW,    // 5
+    TYPE_LOAD,  // 4
+    TYPE_STORE, // 5
     TYPE_J,     // 6
     TYPE_BRANCH,// 7
-    TYPE_NOP    // 8
+    TYPE_REGIMM,// 8
+    TYPE_NOP    // 9
 } eOpcodeType;
 
 typedef enum
