@@ -33,9 +33,32 @@
 `define OP_ANDI     6'b001100   // 12
 `define OP_ORI      6'b001101   // 13
 `define OP_XORI     6'b001110   // 14
-`define OP_LUI      6'b001111   // 15 $rs is not used, Upper to Constant Lower 16 bit all zero
+`define OP_LUI      6'b001111   // 15 $rs is not used, Upper to Constant Lower 16 bit all zero (lui rt, imm <=> lui_rs_rt_imm)
+`define OP_LB       6'b100000   // 32 Load Byte
+`define OP_LH       6'b100001   // 33 Load Half-Word
 `define OP_LW       6'b100011   // 35
+`define OP_LBU      6'b100100   // 36 Load Byte Unsigned
+`define OP_LHU      6'b100101   // 37 Load Half-Word Unsigned
+`define OP_SB       6'b101000   // 40 Store Byte
+`define OP_SH       6'b101001   // 41 Stroe Byte Unsigned
 `define OP_SW       6'b101011   // 43
+
+/* REGIMM (defined by rt Register)
+opcode_rs_rt_imm <=> regimm rs, imm
+BLTZ    = Branch Less Than Zero
+BGEZ    = Branch Greater Than Zero
+BLTZL   = Branch Less Than Zero Likely
+BLTZAL  = Branch Less Than Zero and Link
+BLTZALL = Branch Less Than Zero and Link Likely
+*/
+`define REGIMM_BLTZ     5'b00000// 0
+`define REGIMM_BGEZ     5'b00001// 1
+`define REGIMM_BLTZL    5'b00010// 2
+`define REGIMM_BGEZL    5'b00011// 3
+`define REGIMM_BLTZAL   5'b10000// 16
+`define REGIMM_BGEZAL   5'b10001// 17  
+`define REGIMM_BLTZALL  5'b10010// 18
+`define REGIMM_BGEZALL  5'b10011// 19
 
 // INSTRUCTION FUNCTION CODE
 `define FUNCT_SLL   6'b000000   // 0
@@ -45,6 +68,7 @@
 `define FUNCT_SRLV  6'b000110   // 6
 `define FUNCT_SRAV  6'b000111   // 7
 `define FUNCT_JR    6'b001000   // 8
+`define FUNCT_JALR  6'b001001   // 9
 `define FUNCT_MFHI  6'b010000   // 16
 `define FUNCT_MFLO  6'b010010   // 18
 `define FUNCT_MUL   6'b011000   // 24
@@ -55,7 +79,7 @@
 `define FUNCT_ADDU  6'b100001   // 33
 `define FUNCT_SUB   6'b100010   // 34
 `define FUNCT_SUBU  6'b100011   // 35
-`define FUNCT_AND 6'b100100   // 36
+`define FUNCT_AND   6'b100100   // 36
 `define FUNCT_OR    6'b100101   // 37
 `define FUNCT_XOR   6'b100110   // 38
 `define FUNCT_NOR   6'b100111   // 39
