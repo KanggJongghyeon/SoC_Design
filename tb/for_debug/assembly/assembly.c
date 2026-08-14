@@ -264,13 +264,13 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
     {
         *oInstruction   = (unsigned int)OP_LW;
         *oInstruction   = *oInstruction << 26;
-        *oOpcodeType    = TYPE_LW;  
+        *oOpcodeType    = TYPE_LOAD;  
     }
     else if (0 == strcmp(iOpcodeStr, "sw\0"))
     {
         *oInstruction   = (unsigned int)OP_SW;
         *oInstruction   = *oInstruction << 26;
-        *oOpcodeType    = TYPE_SW;  
+        *oOpcodeType    = TYPE_STORE;  
     }
     else
     {
@@ -603,9 +603,9 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
             *oInstruction   = *oInstruction | rtNumber;
             *oInstruction   = *oInstruction | rsNumber;            
             break;
-        //@ 3d. For the TYPE_LW or TYPE_SW:
-        case TYPE_LW:
-        case TYPE_SW:
+        //@ 3d. For the TYPE_LOAD or TYPE_STORE:
+        case TYPE_LOAD:
+        case TYPE_STORE:
             //@ 3d1. Get Rt and Rs Register
             while (',' != iLineData[charCount])
             {
@@ -691,9 +691,9 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
                 }
             }
             break;
-        //@ 3b. For the TYPE_LW or TYPE_SW:
-        case TYPE_LW:
-        case TYPE_SW:
+        //@ 3b. For the TYPE_LOAD or TYPE_STORE:
+        case TYPE_LOAD:
+        case TYPE_STORE:
             charCount++;
             //@ 3b1. Get Imm String
             while ('(' != iLineData[charCount])
@@ -897,10 +897,10 @@ void convert(eInput iInput)
                     //@ 3a3c1. TBD
                     printf("SHIFT Event (line %d)\n", line + 1);
                     break;
-                //@ 3a3d. For the TYPE_I orTYPE_LW or TYPE_SW:
+                //@ 3a3d. For the TYPE_I orTYPE_LOAD or TYPE_STORE:
                 case TYPE_I:
-                case TYPE_LW:
-                case TYPE_SW:
+                case TYPE_LOAD:
+                case TYPE_STORE:
                     //@ 3a3d1. Get rt and rs Register, and Imm  Data
                     getRtRs(assembly[line], opcodeType[line], &instruction[line]);
                     getImm(assembly[line], opcodeType[line], &instruction[line]);
