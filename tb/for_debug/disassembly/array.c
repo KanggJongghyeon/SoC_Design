@@ -2,6 +2,7 @@
 /////////////////////
 // Global Variable //
 /////////////////////
+// Shift Left Array
 static const unsigned int mem32LineShiftLeft[MAX_LEN_HEX] = 
 {
     28, 
@@ -14,10 +15,11 @@ static const unsigned int mem32LineShiftLeft[MAX_LEN_HEX] =
     0
 };
 
+// OPCODE STR
 static const char* opcodeStr[MAX_OPCODE_NUM] =
 {
     '\0',       // 0    Specify at functCodeStr (R-Type)
-    "bgezal\0", // 1    Modify-Required, It distinguished by $rt {bltz, bgez, bltzal, bgezal ...}
+    "bgezal\0", // 1    Specify at regImmStr, "bgezal" is Default Value    
     "j\0",      // 2
     "jal\0",    // 3 
     "beq\0",    // 4
@@ -48,16 +50,16 @@ static const char* opcodeStr[MAX_OPCODE_NUM] =
     TBD,        // 29
     TBD,        // 30
     TBD,        // 31
-    TBD,        // 32
-    TBD,        // 33
+    "lb\0",     // 32
+    "lh\0",     // 33
     TBD,        // 34
     "lw\0",     // 35
-    TBD,        // 36
-    TBD,        // 37
+    "lbu\0",    // 36
+    "lhu\0",    // 37
     TBD,        // 38
     TBD,        // 39
-    TBD,        // 40
-    TBD,        // 41
+    "sb",       // 40
+    "sh",       // 41
     TBD,        // 42
     "sw\0",     // 43
     TBD,        // 44
@@ -82,6 +84,7 @@ static const char* opcodeStr[MAX_OPCODE_NUM] =
     TBD         // 63
 };
 
+// OPCODE STR (for R-Type)
 static const char* functCodeStr[MAX_OPCODE_NUM] =
 {
     "sll\0",    // 0
@@ -150,6 +153,44 @@ static const char* functCodeStr[MAX_OPCODE_NUM] =
     TBD         // 63
 };
 
+// OPCODE STR (for REGIMM)
+static const char* regimmStr[MAX_OPCODE_NUM] =
+{
+    "bltz\0",   // 0
+    "bgez\0",   // 1
+    "bltzl\0",  // 2
+    "bgezl\0",  // 3
+    TBD,        // 4
+    TBD,        // 5
+    TBD,        // 6
+    TBD,        // 7
+    TBD,        // 8
+    TBD,        // 9
+    TBD,        // 10
+    TBD,        // 11
+    TBD,        // 12
+    TBD,        // 13
+    TBD,        // 14
+    TBD,        // 15
+    "bltzal\0", // 16
+    "bgezal\0", // 17
+    "bltzall\0",// 18
+    "bgezall\0",// 19
+    TBD,        // 20
+    TBD,        // 21
+    TBD,        // 22
+    TBD,        // 23
+    TBD,        // 24
+    TBD,        // 25
+    TBD,        // 26
+    TBD,        // 27
+    TBD,        // 28
+    TBD,        // 29
+    TBD,        // 30
+    TBD,        // 31
+};
+
+// Registers STR
 static const char* registersStr[MAX_REG_NUM] =
 {
     "$zero\0",  // 0
@@ -223,6 +264,15 @@ void getOpcodeStr(eOpcode iOpcode, eFunctCode iFunctCode, char *oOpcodeStr)
         strcpy(oOpcodeStr, opcodeStr[iOpcode]);
         //*oOpcodeStr = (char*)opcodeStr[iOpcode];
     }
+}
+
+///////////////////////////////////////
+// Get REGIMM OPCODE Character Array //
+///////////////////////////////////////
+void getRegimmOpcodeStr(eRegimm iRegimm, char *oOpcodeStr)
+{
+    //@ 1. Set OPCODE String Using REGIMM Table
+    strcpy(oOpcodeStr, regimmStr[iRegimm]);
 }
 
 ///////////////////////////////////

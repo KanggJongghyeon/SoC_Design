@@ -3,7 +3,7 @@
 // Global Variable //
 /////////////////////
 // Init Global Variable
-static unsigned int instructiono[MAX_LINE]          = {0};
+static unsigned int instruction[MAX_LINE]           = {0};
 static char         disassembly[MAX_LINE][MAX_LEN]  = {0};
 static eOpcodeType  opcodeType[MAX_LINE]            = {TYPE_NONE};
 
@@ -156,11 +156,11 @@ void disassembleShiftType(unsigned int instructionLine, char *oDisassemblyLine)
 void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpcodeType iOpcodeType)
 {
     /* I-Type Disassembling Rule 
-    <HEX <=> ASM> : except branch, lw/sw
+    <HEX <=> ASM> : except branch, load/store
         <opcode_rs_rt_imm <=> opcode rt, rs, imm>
     <HEX <=> ASM> : branch
         <opcode_rs_rt_imm <=> opcode rs, rt, imm>
-    <HEX <=> ASM> : lw/sw
+    <HEX <=> ASM> : load/store
         <opcode_rs_rt_imm <=> opcode rt, imm(rs)>
      */
 
@@ -198,8 +198,8 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
         strcat(oDisassemblyLine, commaSpace);
         strcat(oDisassemblyLine, immStr);
     }
-    //@ 3b. If OPCODE Type is TYPE_LW/SW:
-    else if ((TYPE_LW == iOpcodeType) || (TYPE_SW == iOpcodeType))
+    //@ 3b. If OPCODE Type is TYPE_LOAD/STORE:
+    else if ((TYPE_LOAD == iOpcodeType) || (TYPE_STORE == iOpcodeType))
     {
         //@ 3b1. Compute Register Number and Get Register String                             
         rs      = (eRegisters)((instructionLine & 0x03E00000) >> 21);   // 0000_00ss_sss0_0000_0000_0000_0000_0000
@@ -327,6 +327,41 @@ void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine)
     #endif  // NDEBUG
 }
 
+void disassembleRegimmType(unsigned int instructionLine, char *oDisassemblyLine)
+{
+    /* REGIMM-Type Disassembling Rule 
+    <HEX <=> ASM> : except branch, load/store
+        <opcode_rs_rt_imm <=> opcode rs, imm>
+     */
+
+    //@ 1. Init Local Variable
+    const char* space               = " \0";    // SPACE
+    const char* commaSpace          = ", \0";   // COMMA-SPACE
+    eRegisters  rs                  = R_NONE;   // Register Number
+    char*       rsStr               = NULL;     // Register String
+    short       imm                 = 0;        // Imm Data
+    char        immStr[IMM_STR_LEN] = {0};      // Imm String
+
+    //@ 2. Compute rs Register Number and Get Register String                                                       
+    rs      = (eRegisters)((instructionLine & 0x03E00000) >> 21);// 0000_00ss_sss0_0000_0000_0000_0000_0000
+    rsStr   = getRegistersStr(rs);
+
+    //@ 3. Compute Imm Data and Convert to String
+    imm     = (short)(instructionLine & 0x0000FFFF);
+    snprintf(&immStr[0], sizeof(immStr), "%d", imm);
+
+    //@ 4. Make Disassembly Text
+    strcat(oDisassemblyLine, space);
+    strcat(oDisassemblyLine, rsStr);
+    strcat(oDisassemblyLine, commaSpace);
+    strcat(oDisassemblyLine, immStr);
+
+    //#ifndef NDEBUG
+    printf("REGIMM-Type : %s\n", &oDisassemblyLine[0]);
+    //#endif  // NDEBUG    
+
+}
+
 /////////////////////
 // Get OPCODE Type //
 /////////////////////
@@ -387,8 +422,7 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
                     break;
             }
             break;
-        //@ 2b. For the OP_REGIMM/ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI:
-        case OP_REGIMM:
+        //@ 2b. For the ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI:
         case OP_ADDI: 
         case OP_ADDIU:
         case OP_SLTI: 
@@ -406,15 +440,21 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
             //@ 2c1. Set OPCODE Type to TYPE_J
             oOpcodeType = TYPE_J;
             break;
-        //@ 2d. For the OP_LW:
+        //@ 2d. For the OP_LB/LH/LW/LBU/LHU:
+        case OP_LB:
+        case OP_LH:
         case OP_LW:
-            //@ 2d1. Set OPCODE Type to TYPE_LW
-            oOpcodeType = TYPE_LW;
+        case OP_LBU:
+        case OP_LHU:
+            //@ 2d1. Set OPCODE Type to TYPE_LOAD
+            oOpcodeType = TYPE_LOAD;
             break;
-        //@ 2e. For the OP_SW:
+        //@ 2e. For the OP_SB/SH/SW:
+        case OP_SB:
+        case OP_SH:
         case OP_SW:
-            //@ 2e1. Set OPCODE Type to TYPE_SW
-            oOpcodeType = TYPE_SW;
+            //@ 2e1. Set OPCODE Type to TYPE_STORE
+            oOpcodeType = TYPE_STORE;
             break;
         //@ 2f. For the OP_BEQ/BNE:
         case OP_BEQ:  
@@ -422,9 +462,14 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
             //@ 2f1. Set OPCODE Type to TYPE_BRANCH
             oOpcodeType = TYPE_BRANCH;
             break;
-        //@ 2g. In All Other Cases:
+        //@ 2g. For the OP_REGIMM:
+        case OP_REGIMM:
+            //@ 2g1. Set OPCODE Type to TYPE_REGIMM
+            oOpcodeType = TYPE_REGIMM;
+            break;
+        //@ 2h. In All Other Cases:
         default:
-            //@ 2g1. Print ERROR LOG and Set OPCODE Type to TYPE_NOP
+            //@ 2h1. Print ERROR LOG and Set OPCODE Type to TYPE_NOP
             printf("[ERROR] Unknown OPCODE (0x%02x)(=%d)\n", iOpcode, iOpcode);
             oOpcodeType = TYPE_NOP;
             break;
@@ -444,6 +489,8 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
     eOpcode         opcode              = OP_NONE;      // OPCODE
     eFunctCode      functCode           = FUNCT_NONE;   // FUNCT CODE
     char*           nop                 = "nop\0";      // NOP
+    char*           error               = "error\0";    // ERROR
+    eRegimm         regimm              = REGIMM_NONE;  // REGIMM Type OPCODE
 
     //@ 2. Check Instruction Count
     //@ 2a. If Current Count is End of Instruction Line:
@@ -469,13 +516,20 @@ void getOpcode(unsigned int *iInstruction, char (*oDisassembly)[MAX_LEN], eOpcod
             if (TYPE_NOP == oOpcodeType[instructionCount])
             {
                 //@ 2a1b2a1. Print ERROR LOG and Store "nop" into Disassembly Array
-                strcpy(oDisassembly[instructionCount], nop);
-                printf("So Set \"nop\" in instruction[%d] line\n", instructionCount);
+                strcpy(oDisassembly[instructionCount], error);
+                printf("So Set \"error\" in instruction[%d] line\n", instructionCount);
             }
-            //@ 2a1b2b. In All Other Cases:
+            //@ 2a1b2b. If OPCODE Type is TYPE_REGIMM
+            else if (TYPE_REGIMM == oOpcodeType[instructionCount])
+            {
+                //@ 2a1b2b1. Compute rt Register for Decide REGIMM OPCODE and Store OPCODE String into Disassembly Array
+                regimm  = (eRegimm)((*(instruction + instructionCount) & 0x001F0000) >> 16);   // rt Register can decide regimm opcode 
+                getRegimmOpcodeStr(regimm, &oDisassembly[instructionCount][0]);
+            }
+            //@ 2a1b2c. In All Other Cases:
             else
             {
-                //@ 2a1b2b1. Store OPCODE String into Disassembly Array
+                //@ 2a1b2c1. Store OPCODE String into Disassembly Array
                 getOpcodeStr(opcode, functCode, &oDisassembly[instructionCount][0]);
             }
         }
@@ -759,21 +813,25 @@ void convert(eInput iInput)
                 case TYPE_SHIFT:
                     disassembleShiftType(instruction[line], &disassembly[line][0]);
                     break;
-                //@ 3a2d. For the TYPE_I/BRANCH/LW/SW:
+                //@ 3a2d. For the TYPE_I/BRANCH/LOAD/STORE:
                 case TYPE_I:
                 case TYPE_BRANCH:
-                case TYPE_LW:
-                case TYPE_SW:
+                case TYPE_LOAD:
+                case TYPE_STORE:
                     disassembleIType(instruction[line], &disassembly[line][0], opcodeType[line]);
                     break;
                 //@ 3a2e. For the TYPE_J:
                 case TYPE_J:
                     disassembleJType(instruction[line], &disassembly[line][0]);
                     break;
-                //@ 3a2f. In All Other Cases:
+                //@ 3a2f. For the TYPE_REGIMM:
+                case TYPE_REGIMM:
+                    disassembleRegimmType(*(instruction + line), &disassembly[line][0]);
+                    break;
+                //@ 3a2g. In All Other Cases:
                 case TYPE_NOP:
                 default:
-                    //@ 3a2f1. Do-Nothing
+                    //@ 3a2g1. Do-Nothing
                     break;
             }
         }

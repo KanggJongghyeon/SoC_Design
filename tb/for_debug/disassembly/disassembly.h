@@ -26,6 +26,9 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
 // Disassemble J-Type
 void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine);
 
+// Disassemble REGIMM-Type
+void disassembleRegimmType(unsigned int insturctionLine, char *oDisassemblyLine);
+
 // Get OPCODE Type
 eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode);
 
