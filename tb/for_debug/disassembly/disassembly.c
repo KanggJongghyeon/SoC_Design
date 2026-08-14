@@ -356,9 +356,9 @@ void disassembleRegimmType(unsigned int instructionLine, char *oDisassemblyLine)
     strcat(oDisassemblyLine, commaSpace);
     strcat(oDisassemblyLine, immStr);
 
-    //#ifndef NDEBUG
+    #ifndef NDEBUG
     printf("REGIMM-Type : %s\n", &oDisassemblyLine[0]);
-    //#endif  // NDEBUG    
+    #endif  // NDEBUG    
 
 }
 
