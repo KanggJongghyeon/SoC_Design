@@ -14,7 +14,7 @@ module tb_top_noc();
         localparam DATA_BIT = 32;
     `endif  // XILINX_CPU_32BIT (vivado define option)
     localparam  AXI5_ID_BIT = 12;
-    localparam  LINE_CNTR   = 120;
+    localparam  LINE_CNTR   = 1000;
 
     // Global Signal
     reg                     clk;
@@ -31,7 +31,7 @@ module tb_top_noc();
     string  application_path= ".\\..\\..\\..\\..\\..\\tb\\application.mem";    
     string  debug_mode_path = ".\\..\\..\\..\\..\\..\\tb\\for_debug\\debug_mode.mem";
 
-    reg [DATA_BIT - 1:0]    nand_flash0    [0:LINE_CNTR - 1];  // boot_loader.mem File Memory
+    reg [DATA_BIT - 1:0]    nand_flash0 [0:LINE_CNTR - 1];  // boot_loader.mem File Memory
     reg [DATA_BIT - 1:0]    nand_flash1 [0:LINE_CNTR - 1];  // application.mem File Memory
     reg [DATA_BIT - 1:0]    nand_flash2 [0:LINE_CNTR - 1];  // test_case.mem File Memory
     

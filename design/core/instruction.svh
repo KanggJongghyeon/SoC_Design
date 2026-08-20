@@ -43,11 +43,11 @@
 `define OP_SH       6'b101001   // 41 Stroe Byte Unsigned
 `define OP_SW       6'b101011   // 43
 
-/* REGIMM (defined by rt Register)
+/* 32-Bit REGIMM (defined by rt Register)
 opcode_rs_rt_imm <=> regimm rs, imm
-BLTZ    = Branch Less Than Zero
-BGEZ    = Branch Greater Than Zero
-BLTZL   = Branch Less Than Zero Likely
+BLTZ    = Branch Less Than Zero     (rs <  0)
+BGEZ    = Branch Greater Than Zero  (rs >= 0)
+BLTZL   = Branch Less Than Zero Likely  (branch not taken, => flush next instruction)
 BLTZAL  = Branch Less Than Zero and Link
 BLTZALL = Branch Less Than Zero and Link Likely
 */
@@ -87,23 +87,25 @@ BLTZALL = Branch Less Than Zero and Link Likely
 `define FUNCT_SLTU  6'b101011   // 43
 
 // Ctrl Unit => ALU Control (1 Bit Extansion) <= My Rule
-`define ALUOP_ADD   3'b000  // 0    LW,      SW,     ADDI,   ADDIU
-`define ALUOP_SUB   3'b001  // 1    BEQ,     BNE
-`define ALUOP_RTYPE 3'b010  // 2    R-TYPE
-`define ALUOP_SLTI  3'b011  // 3    SLTI,    SLTIU
-`define ALUOP_ANDI  3'b100  // 4    ANDI
-`define ALUOP_ORI   3'b101  // 5    ORI
-`define ALUOP_XORI  3'b110  // 6    XORI
-`define ALUOP_LUI   3'b111  // 7    LUI
+`define ALUOP_ADD   4'b0000 // 0    LOAD,   STORE,  ADDI,   ADDIU
+`define ALUOP_SUB   4'b0001 // 1    BEQ,    BNE,    BLT,    BGE
+`define ALUOP_RTYPE 4'b0010 // 2    R-TYPE
+`define ALUOP_SLTI  4'b0011 // 3    SLTI,   SLTIU
+`define ALUOP_ANDI  4'b0100 // 4    ANDI
+`define ALUOP_ORI   4'b0101 // 5    ORI
+`define ALUOP_XORI  4'b0110 // 6    XORI
+`define ALUOP_LUI   4'b0111 // 7    LUI
+`define ALUOP_BZ    4'b1000 // 8    BLTZ,   BGEZ
+`define ALUOP_XXX   4'b1111 // 15   Not Defined
 
 // ALU CONTROL Output Signal
 `define ALU_CTR_AND     4'b0000 // 0    AND,    ANDI
 `define ALU_CTR_OR      4'b0001 // 1    OR,     ORI
-`define ALU_CTR_ADD     4'b0010 // 2    ADD,    ADDI,   ADDIU,  LW,     SW
+`define ALU_CTR_ADD     4'b0010 // 2    ADD,    ADDI,   ADDIU,  LOAD,   STORE
 `define ALU_CTR_XOR     4'b0011 // 3    XOR,    XORI
 `define ALU_CTR_LUI     4'b0100 // 4    LUI
 `define ALU_CTR_MFHI    4'b0101 // 5    MFHI
-`define ALU_CTR_SUB     4'b0110 // 6    SUB,    BEQ,    BNE,
+`define ALU_CTR_SUB     4'b0110 // 6    SUB,    BEQ,    BNE,    BLT,    BGE
 `define ALU_CTR_SLT     4'b0111 // 7    SLT,    SLTU,   SLTI,   SLTIU
 `define ALU_CTR_MFLO    4'b1000 // 8    MFLO
 `define ALU_CTR_SLL     4'b1001 // 9    SLL,    SLLV
@@ -112,7 +114,7 @@ BLTZALL = Branch Less Than Zero and Link Likely
 `define ALU_CTR_NOR     4'b1100 // 12   NOR,    NORI
 `define ALU_CTR_MUL     4'b1101 // 13   MUL,    MULU
 `define ALU_CTR_DIV     4'b1110 // 14   DIV,    DIVU
-`define ALU_CTR_XXX     4'b1111 // 15   Not Defined
+`define ALU_CTR_BZ      4'b1111 // 15   BLTZ,   BGEZ 
 
 // Reg Number
 

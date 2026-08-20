@@ -10,7 +10,7 @@ module tb_top_cpu();
         localparam ADDR_BIT = 32;
         localparam DATA_BIT = 32;
     `endif  // CPU_32BIT (vivado define option)
-    localparam LINE_CNTR    = 120;
+    localparam LINE_CNTR    = 1000;
 
     // Global Signal
     reg                     clk;

@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "ctr_unit.svh"
 module top_cpu #(
     parameter ADDR_BIT = 8,
     parameter DATA_BIT = 32
@@ -65,8 +66,8 @@ module top_cpu #(
     wire [5:0]                          w_id_dec_funct;                     // Decoded FUNCT CODE (ID)
     wire [5:0]                          w_ex_dec_funct;                     // Decoded FUNCT CODE (EX)
     wire [(DATA_BIT / 2) - 1:0]         w_id_dec_const;                     // Decoded Constant
-    wire [2:0]                          w_id_aluop;                         // ALUOpA (ID)
-    wire [2:0]                          w_ex_aluop;                         // ALUOpA (EX)
+    wire [3:0]                          w_id_aluop;                         // ALUOpA (ID)
+    wire [3:0]                          w_ex_aluop;                         // ALUOpA (EX)
     wire                                w_id_regdst;                        // RegDst       Flag (ID)
     wire                                w_ex_ctr_regdst;                    // RegDst       Flag (EX)
     wire                                w_id_ctr_alusrc;                    // ALUSrc       Flag (ID)
@@ -85,8 +86,8 @@ module top_cpu #(
     wire                                w_id_memwrite;                      // MemWrite     Flag (ID)
     wire                                w_ex_memwrite;                      // MemWrite     Flag (EX)
     wire                                w_mem_memwrite;                     // MemWrite     Flag (MEM)
-    wire [1:0]                          w_id_branch;                        // Branch       Flag (ID)
-    wire [1:0]                          w_ex_branch;                        // Branch       Flag (EX)
+    wire [2:0]                          w_id_branch;                        // Branch       Flag (ID)
+    wire [2:0]                          w_ex_branch;                        // Branch       Flag (EX)
     wire [1:0]                          w_id_jump;                          // Jump         Flag (ID)
     wire [1:0]                          w_ex_ctr_jump;                      // Jump         Flag (EX)
     wire [1:0]                          w_mem_jump;                         // Jump         Flag (MEM)
@@ -107,8 +108,9 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_ex_alu_out;                       // ALU Output (EX)
     wire [DATA_BIT - 1:0]               w_mem_alu_out;                      // ALU Output (MEM)
     wire [DATA_BIT - 1:0]               w_wb_alu_out;                       // ALU Output (WB)
-    wire                                w_ex_alu_carry_out;                 // ALU Carry Out
-    wire                                w_ex_alu_zero;                      // ALU Zero  Out
+    wire                                w_ex_alu_carry_out;                 // ALU Carry    Out
+    wire                                w_ex_alu_zero;                      // ALU Zero     Out
+    wire                                w_ex_alu_negative;                  // ALU Negative Out
     wire [DATA_BIT - 1:0]               w_ex_hi;                            // HIGH Register in MUL/DIV Unit
     wire [DATA_BIT - 1:0]               w_ex_lo;                            // LOW  Register in MUL/DIV Unit
     wire [ADDR_BIT - 1:0]               w_ex_branch_mux_addr;               // PC ADDR + 4 or Branch ADDR
@@ -208,10 +210,12 @@ module top_cpu #(
     /* Control Unit */
     ctr_unit #(
         .DATA_BIT       (DATA_BIT),
-        .OPCODE_BIT     (OPCODE_BIT)
+        .OPCODE_BIT     (OPCODE_BIT),
+        .REG_BIT        (REG_BIT)
     ) u_control_unit (
         .i_opcode       (w_id_dec_opcode),
         .i_funct        (w_id_dec_funct),
+        .i_rt           (w_id_dec_rt),
         .o_regdst       (w_id_regdst),
         .o_alusrc       (w_id_ctr_alusrc),
         .o_memtoreg     (w_id_memtoreg),
@@ -335,7 +339,7 @@ module top_cpu #(
         .i_i00          (w_ex_branch_mux_addr),             // branch
         .i_i01          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // j
         .i_i11          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // jal
-        .i_i10          (w_ex_reg_rdata1),                  // jr
+        .i_i10          (w_ex_reg_rdata1),                  // jr, jral
         .o_o            (w_ex_jump_mux_addr)
     );
 
@@ -392,7 +396,8 @@ module top_cpu #(
         .i_aluop        (w_ex_alu_ctr),
         .o_out          (w_ex_alu_out),
         .o_carry        (w_ex_alu_carry_out),
-        .o_zero         (w_ex_alu_zero)
+        .o_zero         (w_ex_alu_zero),
+        .o_negative     (w_ex_alu_negative)
     );
 
     /* WDATA Decision MUX (2 Cycle) */
@@ -567,8 +572,8 @@ module top_cpu #(
     /* Assign wire */
     assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
     assign w_ex_sign_extend_branch_addr = w_ex_shift_left2_sign_extend_const[DATA_BIT - 1:0];
-    assign w_ex_ctr_branch              = ((w_ex_branch == 2'b01) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == 2'b10) && (w_ex_alu_zero == 1'b0));
-    assign w_ex_flush                   = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != 2'b00);
+    assign w_ex_ctr_branch              = ((w_ex_branch == `BRANCH_BEQ) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == `BRANCH_BNE) && (w_ex_alu_zero == 1'b0)) || ((w_ex_branch == `BRANCH_BLT) && (w_ex_alu_negative == 1'b1)) || ((w_ex_branch == `BRANCH_BGE) && (w_ex_alu_negative == 1'b0));
+    assign w_ex_flush                   = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
 
     assign o_i_mem_en                   = w_if_i_mem_en;
     assign o_i_mem_addr                 = w_if_pc_addr;

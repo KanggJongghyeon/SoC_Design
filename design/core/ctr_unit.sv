@@ -2,93 +2,131 @@
 // Path : .\design\core\ctr_unit.sv //
 //////////////////////////////////////
 `include "instruction.svh"
+`include "ctr_unit.svh"
 `timescale 1ns / 1ps
 module ctr_unit #(
-    parameter DATA_BIT   = 16,
-    parameter OPCODE_BIT = 4
+    parameter DATA_BIT  = 16,
+    parameter OPCODE_BIT= 4,
+    parameter REG_BIT   = 5
     )(
     input  wire [OPCODE_BIT - 1:0]  i_opcode,
     input  wire [5:0]               i_funct,    // Add because of jr
+    input  wire [REG_BIT - 1:0]     i_rt,       // Add Because of REGIMM OPCODE 
     output wire                     o_regdst,
     output wire                     o_alusrc,
     output wire                     o_memtoreg,
     output wire                     o_regwrite,
     output wire                     o_memread,
     output wire                     o_memwrite,
-    output wire [1:0]               o_branch,   // {00 : none, 01 : beq, 10 : bne,  11 : Reserved}
-    output wire [2:0]               o_aluop,
-    output wire [1:0]               o_jump,     // {00 : none, 01 : j,   10 : jr,   11 : jal}
+    output wire [2:0]               o_branch,   
+    output wire [3:0]               o_aluop,
+    output wire [1:0]               o_jump,     // {00 : none, 01 : j,   10 : jr, jral,     11 : jal}
     output wire                     o_sign_extend,
     output wire                     o_arbiter_req,
     input  wire                     i_arbiter_gnt
     );
 
     reg         r_regdst, r_alusrc, r_memtoreg, r_regwrite, r_memread, r_memwrite, r_sign_extend;
-    reg [1:0]   r_branch, r_jump;
-    reg [2:0]   r_aluop;
+    reg [1:0]   r_jump;
+    reg [2:0]   r_branch;
+    reg [3:0]   r_aluop;
 
     always @ (*) begin
         case(i_opcode)
             `OP_RTYPE   : begin // 6'd0
-                if (i_funct != `FUNCT_JR) begin
-                    r_regdst        = 1'b1;
-                    r_alusrc        = 1'b0;
-                    r_memtoreg      = 1'b0;
-                    r_regwrite      = 1'b1;
-                    r_memread       = 1'b0;
-                    r_memwrite      = 1'b0;
-                    r_branch        = 2'b00;
-                    r_aluop         = `ALUOP_RTYPE;
-                    r_jump          = 2'b00;
-                    r_sign_extend   = 1'b0;
-                end
-                else begin  // jr
+                r_alusrc        = 1'b0;
+                r_memtoreg      = 1'b0;
+                r_memread       = 1'b0;
+                r_memwrite      = 1'b0;
+                r_branch        = `BRANCH_NONE;
+                r_aluop         = `ALUOP_RTYPE;
+                r_sign_extend   = 1'b0;
+                if (i_funct == `FUNCT_JR) begin
                     r_regdst        = 1'b0;
-                    r_alusrc        = 1'b0;
-                    r_memtoreg      = 1'b0;
                     r_regwrite      = 1'b0;
-                    r_memread       = 1'b0;
-                    r_memwrite      = 1'b0;
-                    r_branch        = 1'b0;
-                    r_aluop         = `ALUOP_RTYPE;
-                    r_jump          = 2'b10;
-                    r_sign_extend   = 1'b0;
+                    r_jump          = `JUMP_JR_AL;
+                end
+                else if (i_funct == `FUNCT_JRAL) begin
+                    r_regdst        = 1'b0;
+                    r_regwrite      = 1'b1;
+                    r_jump          = `JUMP_JR_AL;
+                end
+                else begin
+                    r_regdst        = 1'b1;
+                    r_regwrite      = 1'b1;
+                    r_jump          = `JUMP_NONE;
                 end
             end
             `OP_REGIMM  : begin // 6'd1
-                r_regdst        = r_regdst;
-                r_alusrc        = r_alusrc;
-                r_memtoreg      = r_memtoreg;
-                r_regwrite      = r_regwrite;
-                r_memread       = r_memread;
-                r_memwrite      = r_memwrite;
-                r_branch        = r_branch;
-                r_aluop         = r_aluop;
-                r_jump          = r_jump;
-                r_sign_extend   = r_sign_extend;
+                r_regdst        = 1'b0;
+                r_alusrc        = 1'b0; // don't care
+                r_memtoreg      = 1'b0;
+                r_memread       = 1'b0;
+                r_memwrite      = 1'b0;
+                r_aluop         = `ALUOP_BZ;
+                r_jump          = `JUMP_NONE;
+                r_sign_extend   = 1'b1;
+                case(i_rt)
+                    `REGIMM_BLTZ    : begin
+                        r_regwrite  = 1'b0;
+                        r_branch    = `BRANCH_BLT;
+                    end
+                    `REGIMM_BGEZ    : begin
+                        r_regwrite  = 1'b0;
+                        r_branch    = `BRANCH_BGE;
+                    end
+                    `REGIMM_BLTZL   : begin
+                        r_regwrite  = 1'b0;
+                        r_branch    = `BRANCH_BLT;
+                    end
+                    `REGIMM_BGEZL   : begin
+                        r_regwrite  = 1'b0;
+                        r_branch    = `BRANCH_BGE;
+                    end
+                    `REGIMM_BLTZAL  : begin
+                        r_regwrite  = 1'b1;
+                        r_branch    = `BRANCH_BLT;
+                    end
+                    `REGIMM_BGEZAL  : begin
+                        r_regwrite  = 1'b1;
+                        r_branch    = `BRANCH_BGE;
+                    end
+                    `REGIMM_BLTZALL : begin
+                        r_regwrite  = 1'b1;
+                        r_branch    = `BRANCH_BLT;
+                    end
+                    `REGIMM_BGEZALL : begin
+                        r_regwrite  = 1'b1;
+                        r_branch    = `BRANCH_BGE;
+                    end
+                    default         : begin
+                        r_regwrite  = 1'b0;
+                        r_branch    = `BRANCH_NONE;
+                    end
+                endcase
             end
             `OP_J       : begin // 6'd2
                 r_regdst        = 1'b0; 
-                r_alusrc        = 1'b1; // don't care
+                r_alusrc        = 1'b1;     // don't care
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
-                r_aluop         = 3'b000;  
-                r_jump          = 2'b01;
+                r_branch        = `BRANCH_NONE;
+                r_aluop         = 3'b000;   // don't care  
+                r_jump          = `JUMP_J;
                 r_sign_extend   = 1'b1;
             end
             `OP_JAL     : begin // 6'd3
                 r_regdst        = 1'b0; 
-                r_alusrc        = 1'b1; // don't care
+                r_alusrc        = 1'b1;     // don't care
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
-                r_aluop         = 3'b000;  
-                r_jump          = 2'b11;
+                r_branch        = `BRANCH_NONE;
+                r_aluop         = 3'b000;   // don't care
+                r_jump          = `JUMP_JAL;
                 r_sign_extend   = 1'b1;
             end
             `OP_BEQ   : begin   // 6'd4
@@ -98,9 +136,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b01;
+                r_branch        = `BRANCH_BEQ;
                 r_aluop         = `ALUOP_SUB;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
             `OP_BNE   : begin   // 6'd5
@@ -110,9 +148,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b10;
+                r_branch        = `BRANCH_BNE;
                 r_aluop         = `ALUOP_SUB;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
             `OP_ADDI  : begin   // 6'd8
@@ -122,9 +160,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
             `OP_ADDIU : begin   // 6'd9
@@ -134,9 +172,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
             `OP_SLTI  : begin   // 6'd10
@@ -146,9 +184,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_SLTI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
             `OP_SLTIU : begin   // 6'd11
@@ -158,9 +196,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_SLTI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
             `OP_ANDI  : begin   // 6'd12
@@ -170,9 +208,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ANDI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
             `OP_ORI   : begin   // 6'd13
@@ -182,9 +220,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ORI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
             `OP_XORI    : begin // 6'd14
@@ -194,9 +232,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_XORI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
             `OP_LUI   : begin   // 6'd15
@@ -206,9 +244,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_LUI;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
             `OP_LW    : begin   // 6'd35
@@ -217,9 +255,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b1;
                 r_regwrite      = 1'b1;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
                 if (i_arbiter_gnt) begin
                     r_memread   = 1'b1;
@@ -234,9 +272,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
                 if (i_arbiter_gnt) begin
                     r_memwrite  = 1'b1;
@@ -252,9 +290,9 @@ module ctr_unit #(
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
                 r_memwrite      = 1'b0;
-                r_branch        = 2'b00;
+                r_branch        = `BRANCH_NONE;
                 r_aluop         = 3'b000;
-                r_jump          = 2'b00;
+                r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
         endcase

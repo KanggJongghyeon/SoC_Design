@@ -4,20 +4,20 @@ module alu_ctr #(
     parameter DATA_BIT = 32
     )(
     input  wire [5:0] i_funct,
-    input  wire [2:0] i_aluop,
+    input  wire [3:0] i_aluop,
     output wire [3:0] o_aluop
     );
 
     reg [3:0] r_aluop;
 
     always @ (/*i_funct or i_aluop*/*) begin
-        if (i_aluop == `ALUOP_ADD)      begin   // 3'd0 (LW or SW or ADDI or ADDIU)
+        if (i_aluop == `ALUOP_ADD)      begin   // 4'd0 (LW or SW or ADDI or ADDIU)
             r_aluop = `ALU_CTR_ADD;
         end
-        else if (i_aluop == `ALUOP_SUB) begin   // 3'd1 (BEQ or BNE)
+        else if (i_aluop == `ALUOP_SUB) begin   // 4'd1 (BEQ or BNE or BLT or BGE)
             r_aluop = `ALU_CTR_SUB;
         end
-        else if (i_aluop == `ALUOP_RTYPE) begin // 3'd2 (RTYPE)
+        else if (i_aluop == `ALUOP_RTYPE) begin // 4'd2 (RTYPE)
             case (i_funct)
                 (`FUNCT_SLL)    : begin // 6'd0
                     r_aluop = `ALU_CTR_SLL;
@@ -90,23 +90,26 @@ module alu_ctr #(
                 end
             endcase
         end
-        else if (i_aluop == `ALUOP_SLTI) begin  // 3'd3 (SLTI, SLTIU)
+        else if (i_aluop == `ALUOP_SLTI) begin  // 4'd3 (SLTI, SLTIU)
             r_aluop = `ALU_CTR_SLT;
         end
-        else if (i_aluop == `ALUOP_ANDI) begin  // 3'd4 (ANDI)
+        else if (i_aluop == `ALUOP_ANDI) begin  // 4'd4 (ANDI)
             r_aluop = `ALU_CTR_AND;
         end
-        else if (i_aluop == `ALUOP_ORI) begin   // 3'd5 (ORI)
+        else if (i_aluop == `ALUOP_ORI) begin   // 4'd5 (ORI)
             r_aluop = `ALU_CTR_OR;
         end
-        else if (i_aluop == `ALUOP_XORI) begin  // 3'd6 (XORI)
+        else if (i_aluop == `ALUOP_XORI) begin  // 4'd6 (XORI)
             r_aluop = `ALU_CTR_XOR;
         end
-        else if (i_aluop == `ALUOP_LUI) begin   // 3'd7 (LUI)
+        else if (i_aluop == `ALUOP_LUI) begin   // 4'd7 (LUI)
             r_aluop = `ALU_CTR_LUI;
         end
+        else if (i_aluop == `ALU_BZ) begin      // 4'd8 (BLTZ, BGEZ)
+            r_aluop = `ALU_CTR_BZ;
+        end
         else begin
-            r_aluop = r_aluop;
+            r_aluop = 4'h0;
         end
     end
 
