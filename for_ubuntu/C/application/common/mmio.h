@@ -1,6 +1,6 @@
 #ifndef MMIO_H
 #define MMIO_H
-#include "mips_cpu.h"
+#include "mipsCpu.h"
 
 #ifndef MIPS_CPU_32BIT 
 #define MMIO_BOOT_ROM   0x0000

@@ -1,16 +1,21 @@
 #include <stdlib.h>
 #include <stdint.h>
-#include "mmio.h"
-#include "dma_ctrl.h"
+#include <stdbool.h>
+
+#include "common/mmio.h"
+#include "dmaCtrl/dmaCtrl.h"
+
 int main() 
-{
-    *(volatile uint32_t *)(DMA_VERSION) = 0x20260726;
-    *(volatile uint32_t *)(DMA_SRC_ADDR)= 0x80000000;
-    *(volatile uint32_t *)(DMA_DST_ADDR)= 0x30000000;
-    *(volatile uint32_t *)(DMA_LEN)     = 64U;  // 64 Byte
-    *(volatile uint32_t *)(DMA_CMD)     = DMA_START;
-    
-    //*(volatile uint32_t *)0x00000D04 = 0x00010000;
+{   
+    // AUX Memory WR TEST
+    for (uint16_t i = 0U; i < 200U; i = i + 4U)
+    {
+        *(volatile uint32_t*)(MMIO_AUX_MEM + i) = 0x00000000U + i;
+    }
+
+    // DMA TEST 
+    mainDmaCtrl();
+
     /*
     *(volatile uint32_t *)0x00000D00 = 0x00010000;
     *(volatile uint32_t *)0x00000D04 = 0x00010000;
@@ -41,6 +46,6 @@ int main()
     *(volatile uint32_t *)0x000009FC;
     *(volatile uint32_t *)0x000009FC;
     */
-    //uint32_t val = *ptr;
+
     return 0;
 }
