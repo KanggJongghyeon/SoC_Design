@@ -116,7 +116,8 @@ module top_cpu #(
     wire [ADDR_BIT - 1:0]               w_ex_branch_mux_addr;               // PC ADDR + 4 or Branch ADDR
     wire                                w_ex_ctr_branch;                    // Control Input of Branch MUX
     wire [DATA_BIT - 1:0]               w_i_mem_data;                       // I-MEM DATA
-    wire [ADDR_BIT - 1:0]               w_if_pc_mux_addr;                   // I-MEM RADDR (Next)
+    wire [ADDR_BIT - 1:0]               w_if_pc_mux_addr;                   // I-MEM RADDR (Next) (Not Applied Load Stall)
+    wire [ADDR_BIT - 1:0]               w_if_pc_stall_mux_addr;             // I-MEM RADDR (Next)
     wire                                w_fw_ctr_alu_a_1c;                  // ALU ForwardA Output (1 Cycle)
     wire                                w_fw_ctr_alu_b_1c;                  // ALU ForwardB Output (1 Cycle)
     wire                                w_fw_ctr_alu_a_2c;                  // ALU ForwardA Output (2 Cycle)
@@ -129,29 +130,39 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data;            // WDATA Forward MUX Data
     wire [DATA_BIT - 1:0]               w_ex_wdata_fw_mux_data_2c;          // WDATA Forward MUX Data (2 Cycle) (EX) 
     wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data_2c;         // WDATA Forward MUX Data (2 Cycle) (MEM) 
-    wire                                w_ex_flush;                         // Instruction Flush Sinal
-    wire                                w_load_stall;                       // Load Stall Flag Signal
+    wire                                w_ex_ctr_flush;                     // Instruction Flush Sinal
+    wire                                w_ctr_load_stall;                   // Load Stall Flag Signal
 
 ////////////////////////////////////////
 // IF (Instruction Fetch from Memory) //
 ////////////////////////////////////////
-    /* WR Register Decision MUX (RegDst MUX) */
+    /* PC MUX */
     mux21 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_pc_mux (
-        .i_ctr          (w_ex_flush),
+        .i_ctr          (w_ex_ctr_flush),
         .i_i0           (w_if_add4_addr),
         .i_i1           (w_ex_jump_mux_addr),
         .o_o            (w_if_pc_mux_addr)
     );
     
+    /* PC Stall MUX */
+    mux21 #(
+        .DATA_BIT       (ADDR_BIT)
+    ) u_pc_stall_mux (
+        .i_ctr          (w_ctr_load_stall),
+        .i_i0           (w_if_pc_mux_addr),
+        .i_i1           (w_id_pc_addr),
+        .o_o            (w_if_pc_stall_mux_addr)
+    );
+
     /* Program Counter & Peri Logics */
     pc #(           // Program Counter
         .ADDR_BIT       (ADDR_BIT)
     ) u_pc (
         .clk            (clk),
         .rst_n          (rst_n),
-        .i_n_mem_addr   (w_if_pc_mux_addr),
+        .i_n_mem_addr   (w_if_pc_stall_mux_addr),
         .o_mem_en       (w_if_i_mem_en),
         .o_mem_addr     (w_if_pc_addr)
     );
@@ -170,8 +181,8 @@ module top_cpu #(
     ) u_if_id_bridge(
         .clk            (clk),
         .rst_n          (rst_n),
-        .i_flush        (w_ex_flush),
-        .i_stall        (w_load_stall),
+        .i_flush        (w_ex_ctr_flush),
+        .i_stall        (w_ctr_load_stall),
         .i_i_mem_data   (i_i_mem_data),
         .i_pc_addr      (w_if_pc_addr/*w_if_add4_addr*/),
         .o_i_mem_data   (w_i_mem_data),
@@ -263,7 +274,7 @@ module top_cpu #(
     ) u_id_ex_bridge (
         .clk            (clk),
         .rst_n          (rst_n),
-        .i_flush        (w_ex_flush | w_load_stall),
+        .i_flush        (w_ex_ctr_flush | w_ctr_load_stall),
         .i_pc_addr      (w_id_pc_addr),
         .i_rs           (w_id_dec_rs),
         .i_rt           (w_id_dec_rt),
@@ -519,7 +530,7 @@ module top_cpu #(
     mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_memtoreg_mux (
-        .i_ctr          ({w_wb_ctr_memtoreg, (w_wb_ctr_jump == 2'b11)}),
+        .i_ctr          ({w_wb_ctr_memtoreg, (w_wb_ctr_jump == `JUMP_JAL)}),
         .i_i00          (w_wb_alu_out),
         .i_i01          (w_wb_pc_addr),
         .i_i11          (w_wb_pc_addr),    // NEVER Happend
@@ -566,14 +577,14 @@ module top_cpu #(
         .i_ex_wr_reg    (w_ex_regdst_mux_reg),
         .i_id_rs        (w_id_dec_rs),
         .i_id_rt        (w_id_dec_rt),
-        .o_load_stall   (w_load_stall)
+        .o_load_stall   (w_ctr_load_stall)
     );
 
     /* Assign wire */
     assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
     assign w_ex_sign_extend_branch_addr = w_ex_shift_left2_sign_extend_const[DATA_BIT - 1:0];
     assign w_ex_ctr_branch              = ((w_ex_branch == `BRANCH_BEQ) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == `BRANCH_BNE) && (w_ex_alu_zero == 1'b0)) || ((w_ex_branch == `BRANCH_BLT) && (w_ex_alu_negative == 1'b1)) || ((w_ex_branch == `BRANCH_BGE) && (w_ex_alu_negative == 1'b0));
-    assign w_ex_flush                   = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
+    assign w_ex_ctr_flush               = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
 
     assign o_i_mem_en                   = w_if_i_mem_en;
     assign o_i_mem_addr                 = w_if_pc_addr;

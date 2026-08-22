@@ -2,6 +2,7 @@
 //////////////////
 // IF-ID Bridge //
 //////////////////
+`include "ctr_unit.svh"
 module if_id #(
     parameter ADDR_BIT = 8,
     parameter DATA_BIT = 32
@@ -96,16 +97,16 @@ module id_ex #(
     input   wire                        i_regwrite,     
     input   wire                        i_memread,      
     input   wire                        i_memwrite,     
-    input   wire    [1:0]               i_branch,       
-    input   wire    [2:0]               i_aluop,        
+    input   wire    [2:0]               i_branch,       
+    input   wire    [3:0]               i_aluop,        
     input   wire    [1:0]               i_jump,         
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_sign_extend,  
-    output  wire    [1:0]               o_branch,       
+    output  wire    [2:0]               o_branch,       
     output  wire    [1:0]               o_jump,         
     output  wire    [DATA_BIT - 1:0]    o_jump_addr,    
-    output  wire    [2:0]               o_aluop,        
+    output  wire    [3:0]               o_aluop,        
     output  wire    [5:0]               o_funct,        
     output  wire                        o_alusrc,       
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata1,   
@@ -123,11 +124,12 @@ module id_ex #(
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
-    reg [2:0]               r_aluop;
+    reg [3:0]               r_aluop;
     reg                     r_regdst,       r_regwrite;
     reg                     r_alusrc,       r_memtoreg;
-    reg                     r_memread,      r_memwrite;     
-    reg [1:0]               r_branch,       r_jump;      
+    reg                     r_memread,      r_memwrite;
+    reg [2:0]               r_branch;
+    reg [1:0]               r_jump;      
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [5:0]               r_funct;
     reg [DATA_BIT - 1:0]    r_reg_rdata1,   r_reg_rdata2;
@@ -145,8 +147,8 @@ module id_ex #(
             r_regwrite      <= 1'b0;
             r_memread       <= 1'b0;
             r_memwrite      <= 1'b0;
-            r_branch        <= 2'b00;
-            r_aluop         <= 3'b000;
+            r_branch        <= `BRANCH_NONE;
+            r_aluop         <= 4'h0;
             r_jump          <= 2'b00;
             r_pc_addr       <= {(ADDR_BIT){1'b0}};
             r_funct         <= 6'b000000;
@@ -173,7 +175,7 @@ module id_ex #(
             if (i_flush == 1'b1) begin
                 r_regwrite  <= 1'b0;
                 r_memwrite  <= 1'b0;
-                r_branch    <= 2'b00;
+                r_branch    <= `BRANCH_NONE;
                 r_jump      <= 2'b00;
             end
             else begin

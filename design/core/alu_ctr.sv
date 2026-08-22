@@ -86,7 +86,7 @@ module alu_ctr #(
                     r_aluop = `ALU_CTR_SLT;
                 end
                 default : begin
-                    r_aluop = `ALU_CTR_XXX;
+                    r_aluop = 4'h0;
                 end
             endcase
         end
@@ -105,7 +105,7 @@ module alu_ctr #(
         else if (i_aluop == `ALUOP_LUI) begin   // 4'd7 (LUI)
             r_aluop = `ALU_CTR_LUI;
         end
-        else if (i_aluop == `ALU_BZ) begin      // 4'd8 (BLTZ, BGEZ)
+        else if (i_aluop == `ALUOP_BZ) begin      // 4'd8 (BLTZ, BGEZ)
             r_aluop = `ALU_CTR_BZ;
         end
         else begin

@@ -31,6 +31,12 @@ module ctr_unit #(
     reg [2:0]   r_branch;
     reg [3:0]   r_aluop;
 
+    /*
+    Sign-Extend Rule
+    Zero-Padding : Only andi, ori, xori, nori, ... (Combinational Logic)
+    Sign-Padding : In All Other Cases (Arthimatic Logic ...)
+    */
+
     always @ (*) begin
         case(i_opcode)
             `OP_RTYPE   : begin // 6'd0
@@ -40,13 +46,13 @@ module ctr_unit #(
                 r_memwrite      = 1'b0;
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_RTYPE;
-                r_sign_extend   = 1'b0;
+                r_sign_extend   = 1'b0; // don't care
                 if (i_funct == `FUNCT_JR) begin
                     r_regdst        = 1'b0;
                     r_regwrite      = 1'b0;
                     r_jump          = `JUMP_JR_AL;
                 end
-                else if (i_funct == `FUNCT_JRAL) begin
+                else if (i_funct == `FUNCT_JALR) begin
                     r_regdst        = 1'b0;
                     r_regwrite      = 1'b1;
                     r_jump          = `JUMP_JR_AL;
@@ -175,7 +181,7 @@ module ctr_unit #(
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = `JUMP_NONE;
-                r_sign_extend   = 1'b0;
+                r_sign_extend   = 1'b1;
             end
             `OP_SLTI  : begin   // 6'd10
                 r_regdst        = 1'b0;
@@ -199,7 +205,7 @@ module ctr_unit #(
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_SLTI;
                 r_jump          = `JUMP_NONE;
-                r_sign_extend   = 1'b0;
+                r_sign_extend   = 1'b1;
             end
             `OP_ANDI  : begin   // 6'd12
                 r_regdst        = 1'b0;
@@ -247,7 +253,7 @@ module ctr_unit #(
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_LUI;
                 r_jump          = `JUMP_NONE;
-                r_sign_extend   = 1'b1;
+                r_sign_extend   = 1'b1; // don't care
             end
             `OP_LW    : begin   // 6'd35
                 r_regdst        = 1'b0;
