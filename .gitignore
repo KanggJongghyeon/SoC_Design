@@ -38,13 +38,13 @@ soc_design/
 # Office temp
 ~$*
 
-#design
+# design
 design/**/*.mem
 design/**/*.txt
 design/top.sv
 design/peripheral/
 
-#for_ubuntu
+# for_ubuntu
 for_ubuntu/**/obj/
 
 # tb
@@ -52,6 +52,9 @@ tb/tb_TOP.sv
 tb/**/*.txt
 tb/**/*.mem
 obj/
+
+# verification
+verification/**/__pycache__/
 
 # Linking Folder
 SOC설계및실습(청강).lnk
