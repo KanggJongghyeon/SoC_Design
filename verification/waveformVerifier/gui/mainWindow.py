@@ -93,12 +93,12 @@ class MainWindow(QMainWindow):
             words = load_mem_file(path)
             simulator = MipsSimulator(words, base_pc=base_pc)
             self.trace, reason = simulator.run(self.max_steps.value())
-            self.populate_trace()
+            self.populateTrace()
             self.summary.setText(f"Loaded {len(words)} words · Executed {len(self.trace)} instructions · Stop: {reason}")
         except Exception as exc:
             QMessageBox.critical(self, "Execution error", str(exc))
 
-    def populate_trace(self) -> None:
+    def populateTrace(self) -> None:
         self.trace_table.setRowCount(len(self.trace))
         for row, entry in enumerate(self.trace):
             values = [
@@ -110,7 +110,10 @@ class MainWindow(QMainWindow):
                 self.trace_table.setItem(row, col, QTableWidgetItem(value))
             if entry.register_change or entry.memory_changes:
                 for col in range(self.trace_table.columnCount()):
-                    self.trace_table.item(row, col).setBackground(QColor("#E8F5E9"))
+                    #self.trace_table.item(row, col).setBackground(QColor("#E8F5E9"))
+                    item = self.trace_table.item(row, col)
+                    item.setBackground(QColor("#D9EAD3"))
+                    item.setForeground(QColor("#000000"))
         if self.trace:
             self.trace_table.selectRow(0)
 
@@ -119,20 +122,22 @@ class MainWindow(QMainWindow):
         if not 0 <= row < len(self.trace):
             return
         entry = self.trace[row]
-        changed_register = entry.register_change[0] if entry.register_change else -1
+        changedRegister = entry.register_change[0] if entry.register_change else -1
         for index, value in enumerate(entry.registers):
             items = [QTableWidgetItem(str(index)), QTableWidgetItem(REGISTER_NAMES[index]), QTableWidgetItem(f"0x{value:08X}")]
             for col, item in enumerate(items):
-                if index == changed_register:
+                if index == changedRegister:
                     item.setBackground(QColor("#FFF59D"))
+                    item.setForeground(QColor("#000000"))
                 self.reg_table.setItem(index, col, item)
 
         memory = sorted(entry.memory.items())
         self.mem_table.setRowCount(len(memory))
-        changed_addresses = {address for address, _, _ in entry.memory_changes}
+        changedAddresses = {address for address, _, _ in entry.memory_changes}
         for mem_row, (address, value) in enumerate(memory):
             for col, text in enumerate((f"0x{address:08X}", f"0x{value:02X}")):
                 item = QTableWidgetItem(text)
-                if address in changed_addresses:
+                if address in changedAddresses:
                     item.setBackground(QColor("#FFF59D"))
+                    item.setForeground(QColor("#000000"))
                 self.mem_table.setItem(mem_row, col, item)
