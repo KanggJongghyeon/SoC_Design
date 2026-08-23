@@ -29,18 +29,18 @@ module if_id #(
         end
         else begin
             if (~r_wait_2c_n) begin
-                r_pc_addr       <= i_pc_addr;
                 if (i_flush | r_flushing) begin
                     r_i_mem_data<= {(DATA_BIT){1'b0}};
                 end
                 else if (~i_stall) begin      
                     r_i_mem_data<= i_i_mem_data;
+                    r_pc_addr   <= i_pc_addr;
                 end
             end
-            else begin
-                r_pc_addr       <= {(ADDR_BIT){1'b0}};
-                r_i_mem_data    <= {(DATA_BIT){1'b0}};
-            end
+            //else begin
+            //    r_pc_addr       <= {(ADDR_BIT){1'b0}};
+            //    r_i_mem_data    <= {(DATA_BIT){1'b0}};
+            //end
         end
     end
 

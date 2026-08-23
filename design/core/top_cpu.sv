@@ -24,8 +24,6 @@ module top_cpu #(
     /////////////////////
     // Local Parameter //
     /////////////////////
-    //localparam OPCODE_BIT   = (DATA_BIT == 32) ? 6 : 4; // {32-Bit CPU : 6, 16-Bit CPU : 4}
-    //localparam REG_BIT      = (DATA_BIT == 32) ? 5 : 2; // {32-Bit CPU : 5, 16-Bit CPU : 2} 
     `ifndef XILINX_CPU_32BIT
         localparam OPCODE_BIT   = 4;
         localparam REG_BIT      = 2;
@@ -38,6 +36,7 @@ module top_cpu #(
     // wire //
     //////////
     wire                                w_if_i_mem_en;                      // I-MEM  Enable
+    wire [ADDR_BIT - 1:0]               w_if_i_mem_addr;                    // I-MEM  ADDR
     wire [ADDR_BIT - 1:0]               w_if_pc_addr;                       // PC     ADDR (IF)
     wire [ADDR_BIT - 1:0]               w_id_pc_addr;                       // PC     ADDR (ID)
     wire [ADDR_BIT - 1:0]               w_ex_pc_addr;                       // PC     ADDR (EX)
@@ -152,8 +151,18 @@ module top_cpu #(
     ) u_pc_stall_mux (
         .i_ctr          (w_ctr_load_stall),
         .i_i0           (w_if_pc_mux_addr),
-        .i_i1           (w_id_pc_addr),
+        .i_i1           (w_if_pc_addr),
         .o_o            (w_if_pc_stall_mux_addr)
+    );
+
+    /* I-MEM ADDR MUX */
+    mux21 #(
+        .DATA_BIT       (ADDR_BIT)
+    ) u_i_mem_addr_mux (
+        .i_ctr          (w_ctr_load_stall),
+        .i_i0           (w_if_pc_addr),
+        .i_i1           (w_id_pc_addr),
+        .o_o            (w_if_i_mem_addr)
     );
 
     /* Program Counter & Peri Logics */
@@ -587,7 +596,7 @@ module top_cpu #(
     assign w_ex_ctr_flush               = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
 
     assign o_i_mem_en                   = w_if_i_mem_en;
-    assign o_i_mem_addr                 = w_if_pc_addr;
+    assign o_i_mem_addr                 = w_if_i_mem_addr;
     assign o_d_mem_en                   = w_mem_memwrite | w_mem_memread;
     assign o_d_mem_wren                 = w_mem_memwrite;
     assign o_d_mem_addr                 = w_mem_alu_out[ADDR_BIT - 1:0];

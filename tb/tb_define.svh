@@ -6,7 +6,7 @@
 `define CLOCK_RATE  2   // Reference Clock Rate
 
 //`define BOOT_LOADER     // Flag for Load boot_loader.mem
-//`define APPLICATION     // Flag for Load application.mem
+`define APPLICATION     // Flag for Load application.mem
 `define DEBUG_MODE      // Flag for Load debug_mode.mem
 
 `ifndef XILINX_CPU_32BIT// Vivado define Option 
