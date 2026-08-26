@@ -1,14 +1,19 @@
-from dataclasses    import dataclass, field
-from .mips_decoder  import DecodedInstruction, REGISTER_NAMES, decode, sign_extend_16
+from dataclasses import dataclass, field
+
+from .mips_decoder import DecodedInstruction, REGISTER_NAMES, decode, sign_extend_16
+
 
 MASK32 = 0xFFFFFFFF
+
 
 def u32(value: int) -> int:
     return value & MASK32
 
+
 def s32(value: int) -> int:
     value &= MASK32
     return value - 0x100000000 if value & 0x80000000 else value
+
 
 @dataclass
 class TraceEntry:
@@ -19,9 +24,10 @@ class TraceEntry:
     next_pc: int
     register_change: tuple[int, int, int] | None
     memory_changes: list[tuple[int, int, int]]
+    memory_access: tuple[str, int, int] | None
     registers: tuple[int, ...]
-    memory: dict[int, int]
     note: str = ""
+
 
 @dataclass
 class MipsSimulator:
@@ -82,6 +88,7 @@ class MipsSimulator:
         next_pc = u32(pc + 4)
         reg_change = None
         mem_changes: list[tuple[int, int, int]] = []
+        mem_access: tuple[str, int, int] | None = None
         note = ""
         n = ins.name
         imm_s = sign_extend_16(ins.immediate)
@@ -129,10 +136,10 @@ class MipsSimulator:
         elif n == "mtlo": self.lo = r[ins.rs]
         elif n == "jr": next_pc = r[ins.rs]
         elif n == "jalr":
-            reg_change = self.set_reg(ins.rd or 31, pc + 8)
+            reg_change = self.set_reg(ins.rd or 31, pc + 4)
             next_pc = r[ins.rs]
         elif n in {"j", "jal"}:
-            if n == "jal": reg_change = self.set_reg(31, pc + 8)
+            if n == "jal": reg_change = self.set_reg(31, pc + 4)
             next_pc = ((pc + 4) & 0xF0000000) | (ins.target << 2)
         elif n in {"beq", "bne", "beql", "bnel"}:
             taken = (r[ins.rs] == r[ins.rt]) if n.startswith("beq") else (r[ins.rs] != r[ins.rt])
@@ -147,17 +154,21 @@ class MipsSimulator:
             if taken: next_pc = u32(pc + 4 + (imm_s << 2))
         elif n in {"lb", "lh", "lw", "lbu", "lhu"}:
             size = {"lb": 1, "lbu": 1, "lh": 2, "lhu": 2, "lw": 4}[n]
-            reg_change = self.set_reg(ins.rt, self.read_mem(r[ins.rs] + imm_s, size, n in {"lb", "lh"}))
+            address = u32(r[ins.rs] + imm_s)
+            mem_access = ("load", address, size)
+            reg_change = self.set_reg(ins.rt, self.read_mem(address, size, n in {"lb", "lh"}))
         elif n in {"sb", "sh", "sw"}:
             size = {"sb": 1, "sh": 2, "sw": 4}[n]
-            mem_changes = self.write_mem(r[ins.rs] + imm_s, size, r[ins.rt])
+            address = u32(r[ins.rs] + imm_s)
+            mem_access = ("store", address, size)
+            mem_changes = self.write_mem(address, size, r[ins.rt])
         else:
             raise RuntimeError(f"Unsupported instruction 0x{word:08X} ({n}) at PC 0x{pc:08X}")
 
         self.registers[0] = 0
         self.pc = u32(next_pc)
         return TraceEntry(step, pc, word, ins.assembly, self.pc, reg_change, mem_changes,
-                          tuple(self.registers), dict(self.memory), note)
+                          mem_access, tuple(self.registers), note)
 
     def run(self, max_steps: int = 1000) -> tuple[list[TraceEntry], str]:
         trace: list[TraceEntry] = []
@@ -170,11 +181,13 @@ class MipsSimulator:
                 break
         return trace, reason
 
+
 def format_register_change(change: tuple[int, int, int] | None) -> str:
     if not change:
         return "-"
     index, old, new = change
     return f"{REGISTER_NAMES[index]}: 0x{old:08X} → 0x{new:08X}"
+
 
 def format_memory_changes(changes: list[tuple[int, int, int]]) -> str:
     if not changes:
