@@ -55,6 +55,8 @@ obj/
 
 # verification
 verification/**/__pycache__/
+verification/waveformVerifier/memFile/
+verification/waveformVerifier/tests/
 
 # Linking Folder
 SOC설계및실습(청강).lnk
