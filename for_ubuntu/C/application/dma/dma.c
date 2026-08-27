@@ -4,12 +4,12 @@
 /////////////////////
 // Set SFR Address //
 /////////////////////
-static volatile uint32_t* sfrDmaVersion = (volatile uint32_t*)DMA_VERSION;
-static volatile uint32_t* sfrDmaSrcAddr = (volatile uint32_t*)DMA_SRC_ADDR;
-static volatile uint32_t* sfrDmaDstAddr = (volatile uint32_t*)DMA_DST_ADDR;
-static volatile uint32_t* sfrDmaLength  = (volatile uint32_t*)DMA_LEN;
-static volatile uint32_t* sfrDmaCommand = (volatile uint32_t*)DMA_CMD;      
-static volatile uint32_t* sfrDmaStatus  = (volatile uint32_t*)DMA_STATUS;  
+static volatile uint32_t* sfrDmaVersion = (volatile uint32_t*)MMIO_DMA_VERSION;
+static volatile uint32_t* sfrDmaSrcAddr = (volatile uint32_t*)MMIO_DMA_SRC_ADDR;
+static volatile uint32_t* sfrDmaDstAddr = (volatile uint32_t*)MMIO_DMA_DST_ADDR;
+static volatile uint32_t* sfrDmaLength  = (volatile uint32_t*)MMIO_DMA_LEN;
+static volatile uint32_t* sfrDmaCommand = (volatile uint32_t*)MMIO_DMA_CMD;      
+static volatile uint32_t* sfrDmaStatus  = (volatile uint32_t*)MMIO_DMA_STATUS;  
 
 //////////////
 // Init SFR //
@@ -29,18 +29,39 @@ void dmaInit(void)
 /////////////////////
 void setDmaVersion(void)
 {
-    *sfrDmaVersion  = 0x20260812U;
+    *sfrDmaVersion  = DMA_VERSION;
+}
+
+/////////////////////
+// Get DMA Version //
+/////////////////////
+void getDmaVersion(uint32_t* dmaVersion)
+{
+    *dmaVersion = *(uint32_t*)MMIO_DMA_VERSION;
+}
+
+////////////////////
+// Get DMA Status //
+////////////////////
+void getDmaStatus(uint32_t* dmaStatus)
+{
+    *dmaStatus = *(uint32_t*)MMIO_DMA_STATUS;
 }
 
 /////////////////////////////////
 // Request to DMA Copying Data //
 /////////////////////////////////
-void dmaCopy(uint32_t dst, uint32_t src, uint32_t len)
+void dmaCopy(uint32_t dst, uint32_t src, uint32_t len, uint32_t* done)
 {
-    *sfrDmaSrcAddr = src;
-    *sfrDmaDstAddr = dst;
-    *sfrDmaLength  = len;
-    *sfrDmaCommand = DMA_START;
+    *sfrDmaSrcAddr  = src;
+    *sfrDmaDstAddr  = dst;
+    *sfrDmaLength   = len;
+    *sfrDmaCommand  = DMA_START;
+
+    while (DMA_DONE == *done)
+    {
+        getDmaStatus(done);
+    }
 }
 
 //////////////
@@ -48,7 +69,11 @@ void dmaCopy(uint32_t dst, uint32_t src, uint32_t len)
 //////////////
 void mainDma(void)
 {
+    uint32_t dmaVersion = 0U;
+    uint32_t dmaDone    = 0U;
+
     dmaInit();
     setDmaVersion();
-    dmaCopy((uint32_t)MMIO_MAIN_MEM, (uint32_t)MMIO_AUX_MEM, 64U);
+    getDmaVerison(&dmaVersion);
+    dmaCopy((uint32_t)MMIO_MAIN_MEM, (uint32_t)MMIO_AUX_MEM, 64U, &dmaDone);
 }
