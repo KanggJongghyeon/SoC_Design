@@ -1,6 +1,11 @@
 @echo off
 
+REM Set
+set OS_LINUX=1
+set OS_WINDOWS=2
+
 REM INPUT
+:INPUT
 echo --------Select OS ----------
 echo Press Button {1, 2}
 echo [1] MEM File Made by LINUX
@@ -8,7 +13,14 @@ echo [2] MEM File Made by Windows
 echo ----------------------------
 set /p CRLF_FLAG=: 
 
+if %CRLF_FLAG%==%OS_LINUX% goto INIT
+if %CRLF_FLAG%==%OS_WINDOWS% goto INIT
+
+echo Wrong Input...Try Again
+goto INPUT
+
 REM INIT
+:INIT
 if not exist obj        mkdir obj
 if not exist textFile   mkdir textFile
 
