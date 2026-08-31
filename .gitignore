@@ -51,10 +51,10 @@ for_ubuntu/**/obj/
 tb/tb_TOP.sv
 tb/**/*.txt
 tb/**/*.mem
-old/
-for_debug/**/textFile/
-for_debug/**/memFile/
-for_debug/**/obj/
+tb/old/
+tb/for_debug/**/textFile/
+tb/for_debug/**/memFile/
+tb/for_debug/**/obj/
 
 # verification
 verification/**/__pycache__/
