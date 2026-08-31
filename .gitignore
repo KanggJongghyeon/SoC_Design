@@ -45,7 +45,9 @@ design/top.sv
 design/peripheral/
 
 # for_ubuntu
-for_ubuntu/**/obj/
+for_ubuntu/**/objMips/
+for_ubuntu/**/objWin64/
+for_ubuntu/C/**/buildWin64.bat
 
 # tb
 tb/tb_TOP.sv
