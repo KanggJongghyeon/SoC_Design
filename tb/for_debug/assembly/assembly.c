@@ -508,12 +508,10 @@ unsigned int getRegNumber(char* iRegStr)
     else
     {
         oRegNumber  = R_NONE;
-        #ifndef NDEBUG
         printf("[ERROR] Could Not Find Registers Numbers");
         printf(" : %s\n", iRegStr);
         printf("So Setting to $zero... ");
         printf("It would be overwrite Upper Bit, So Try Again..\n");
-        #endif  // NDEBUG
     }
 
     return (unsigned int)oRegNumber;
@@ -997,10 +995,8 @@ void convert(eInput iInput)
                 //@ 3a3a. For the TYPE_NONE:
                 case TYPE_NONE:
                     //@ 3a3a1. Print ERROR
-                    #ifndef NDEBUG
                     printf("[ERROR] Could Not Find OPCODE Type, (Line %d)", line);
                     printf(" : %s\n", assembly[line]);
-                    #endif  // NDEBUG
                     break;
                 //@ 3a3b. For the TYPE_R:
                 case TYPE_R:
