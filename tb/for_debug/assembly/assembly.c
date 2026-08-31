@@ -59,7 +59,7 @@ void getOpcodeStr(char* iLineData, char* oOpcodeStr)
 ///////////////////////////////////////////////////////////////////////
 // Store OPCODE(6-BIT), FUNCT CODE(6-BIT) Value, and Get OPCODE TYPE //
 ///////////////////////////////////////////////////////////////////////
-void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpcodeType* oOpcodeType)
+void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpcodeType* oOpcodeType, eRegimm* oRegimm)
 {
     if (0 == strcmp(iOpcodeStr, "sll\0"))
     {
@@ -181,11 +181,61 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
         *oInstruction   = (unsigned int)FUNCT_SLTU;
         *oOpcodeType    = TYPE_R;
     }
+    else if (0 == strcmp(iOpcodeStr, "bltz\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;     
+        *oRegimm        = REGIMM_BLTZ;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bgez\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BGEZ;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bltzl\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BLTZL;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bgezl\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BGEZL;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bltzal\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BLTZAL;
+    }
     else if (0 == strcmp(iOpcodeStr, "bgezal\0"))
     {
         *oInstruction   = (unsigned int)OP_REGIMM;
         *oInstruction   = *oInstruction << 26;
-        *oOpcodeType    = TYPE_I;                   // Modify Required
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BGEZAL;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bltzall\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BLTZALL;
+    }
+    else if (0 == strcmp(iOpcodeStr, "bgezall\0"))
+    {
+        *oInstruction   = (unsigned int)OP_REGIMM;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_REGIMM;                   
+        *oRegimm        = REGIMM_BGEZALL;
     }
     else if (0 == strcmp(iOpcodeStr, "j\0"))
     {
@@ -260,15 +310,51 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
         *oInstruction   = *oInstruction << 26;
         *oOpcodeType    = TYPE_I;  
     }
+    else if (0 == strcmp(iOpcodeStr, "lb\0"))
+    {
+        *oInstruction   = (unsigned int)OP_LB;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_LOAD;  
+    }
+    else if (0 == strcmp(iOpcodeStr, "lh\0"))
+    {
+        *oInstruction   = (unsigned int)OP_LH;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_LOAD;  
+    }
     else if (0 == strcmp(iOpcodeStr, "lw\0"))
     {
         *oInstruction   = (unsigned int)OP_LW;
         *oInstruction   = *oInstruction << 26;
         *oOpcodeType    = TYPE_LOAD;  
     }
+    else if (0 == strcmp(iOpcodeStr, "lbu\0"))
+    {
+        *oInstruction   = (unsigned int)OP_LBU;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_LOAD;  
+    }
+    else if (0 == strcmp(iOpcodeStr, "lhu\0"))
+    {
+        *oInstruction   = (unsigned int)OP_LHU;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_LOAD;  
+    }
     else if (0 == strcmp(iOpcodeStr, "sw\0"))
     {
         *oInstruction   = (unsigned int)OP_SW;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_STORE;  
+    }
+    else if (0 == strcmp(iOpcodeStr, "sb\0"))
+    {
+        *oInstruction   = (unsigned int)OP_SB;
+        *oInstruction   = *oInstruction << 26;
+        *oOpcodeType    = TYPE_STORE;  
+    }
+    else if (0 == strcmp(iOpcodeStr, "sh\0"))
+    {
+        *oInstruction   = (unsigned int)OP_SH;
         *oInstruction   = *oInstruction << 26;
         *oOpcodeType    = TYPE_STORE;  
     }
@@ -422,8 +508,12 @@ unsigned int getRegNumber(char* iRegStr)
     else
     {
         oRegNumber  = R_NONE;
+        #ifndef NDEBUG
         printf("[ERROR] Could Not Find Registers Numbers");
         printf(" : %s\n", iRegStr);
+        printf("So Setting to $zero... ");
+        printf("It would be overwrite Upper Bit, So Try Again..\n");
+        #endif  // NDEBUG
     }
 
     return (unsigned int)oRegNumber;
@@ -481,7 +571,7 @@ void getRdOrRs(char* iLineData, unsigned int* oInstruction)
 ///////////////////////////
 // Store rt & rs (5-BIT) //
 ///////////////////////////
-void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction)
+void getRtRs(char* iLineData, eOpcodeType iOpcodeType, eRegimm iRegimm, unsigned int* oInstruction)
 {
     //@ 1. Init Local Variable
     char            charCount           = 0;
@@ -633,7 +723,26 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstructio
             *oInstruction   = *oInstruction | rtNumber;
             *oInstruction   = *oInstruction | rsNumber;
             break;
+        //@ 3e. For the TYPE_REGIMM:
+        case TYPE_REGIMM:
+            //@ 3e1. Get Rs Register
+            while(',' != iLineData[charCount])
+            {
+                rsStr[rsCount] = iLineData[charCount];
+                charCount++;
+                rsCount++;
+            }
+            rsStr[rsCount]  = '\0';
+            //@ 3e2. Get Rs and Rt Register Number
+            rsNumber        = (unsigned int)(getRegNumber(rsStr) << 21);
+            rtNumber        = (unsigned int)(iRegimm << 16);
+            //@ 3e3. Save Rt and Rs Register Number in Instruction
+            *oInstruction   = *oInstruction | rtNumber;
+            *oInstruction   = *oInstruction | rsNumber;
+            break;
+        //@ 3f. In All Other Cases:
         default:
+            //@ 3f1. Do Nothing
             break;
     }
 }
@@ -703,7 +812,19 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
                 immCount++;
             }
             break;
+        //@ 3c. For the TYPE_REGIMM:
+        case TYPE_REGIMM:
+            //@ 3c1. Get Imm String
+            while ('\0' != iLineData[charCount])
+            {
+                immStr[immCount] = iLineData[charCount];
+                charCount++;
+                immCount++;
+            }
+            break;
+        //@ 3d. In All Other Cases:
         default:
+            //@ 3d1. Do Nothing
             break;
     }
     immStr[immCount]    = '\0';
@@ -806,9 +927,9 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned 
 void convert(eInput iInput)
 {
     //@ 1. Init Local Variable
-    unsigned char   lineCount  = 0;     // Text File Line Counter
-    bool            error      = false; // File Open Error Flag
-    
+    unsigned char   lineCount           = 0;            // Text File Line Counter
+    bool            error               = false;        // File Open Error Flag
+    eRegimm         regimm[MAX_LINE]    = {REGIMM_NONE};// for TYPE_REGIMM
     //@ 2.  Check User Input
     switch (iInput)
     {
@@ -861,7 +982,7 @@ void convert(eInput iInput)
             {
                 //printf("Before : %08x\n", instruction[line]); // DEBUG
                 //@ 3a2a1. Get OPCODE & OPCODE Type & FUNCT CODE
-                getOpcodeAndTypeAndFunct(opcodeStr, &instruction[line], &opcodeType[line]);
+                getOpcodeAndTypeAndFunct(opcodeStr, &instruction[line], &opcodeType[line], &regimm[line]);
             }
             //@ 3a2b. In All Other Cases:
             else
@@ -876,8 +997,10 @@ void convert(eInput iInput)
                 //@ 3a3a. For the TYPE_NONE:
                 case TYPE_NONE:
                     //@ 3a3a1. Print ERROR
-                    printf("[ERROR] Could Not Find OPCODE Type, (Line %d)");
-                    printf(" : %s\n", line, assembly[line]);
+                    #ifndef NDEBUG
+                    printf("[ERROR] Could Not Find OPCODE Type, (Line %d)", line);
+                    printf(" : %s\n", assembly[line]);
+                    #endif  // NDEBUG
                     break;
                 //@ 3a3b. For the TYPE_R:
                 case TYPE_R:
@@ -888,7 +1011,7 @@ void convert(eInput iInput)
                     if (0 != strcmp(opcodeStr, "jr\0"))
                     {
                         //@ 3a3b2a1. Call getRtRs() and Get rt and rs Register
-                        getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                        getRtRs(assembly[line], opcodeType[line], regimm[line], &instruction[line]);
                     }
                     //printf("After2  : %08x\n", instruction[line]);   // DEBUG
                     break;
@@ -902,7 +1025,7 @@ void convert(eInput iInput)
                 case TYPE_LOAD:
                 case TYPE_STORE:
                     //@ 3a3d1. Get rt and rs Register, and Imm  Data
-                    getRtRs(assembly[line], opcodeType[line], &instruction[line]);
+                    getRtRs(assembly[line], opcodeType[line], regimm[line], &instruction[line]);
                     getImm(assembly[line], opcodeType[line], &instruction[line]);
                     break;
                 //@ 3a3e. For the TYPE_J:
@@ -910,10 +1033,15 @@ void convert(eInput iInput)
                     //@ 3a3e1. TBD
                     getJaddr(assembly[line], &instruction[line]);
                     break;
-                //@ 3a3f. For the TYPE_NOP:
+                //@ 3a3f. For the TYPE_REGIMM:
+                case TYPE_REGIMM:
+                    //@ 3a3f1. Get rs Register, and Imm  Data
+                    getRtRs(assembly[line], opcodeType[line], regimm[line], &instruction[line]);
+                    getImm(assembly[line], opcodeType[line], &instruction[line]);
+                    break;
+                //@ 3a3g. For the TYPE_NOP:
                 case TYPE_NOP:
-                    //@ 3a3f1. Do Nothing
-                    // Do - Nothing
+                    //@ 3a3g1. Do Nothing
                     break;
                 default:
                     break;

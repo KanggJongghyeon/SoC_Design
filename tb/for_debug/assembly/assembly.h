@@ -20,7 +20,7 @@ bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char
 void getOpcodeStr(char* iLineData, char* oOpcodeStr);
 
 // Store OPCODE(6-BIT), FUNCT CODE(6-BIT), and Get OPCODE TYPE
-void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpcodeType* oOpcodeType);
+void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpcodeType* oOpcodeType, eRegimm* oRegimm);
 
 // Get Registers' Number
 unsigned int getRegNumber(char* iRegStr);
@@ -29,7 +29,7 @@ unsigned int getRegNumber(char* iRegStr);
 void getRdOrRs(char* iLineData, unsigned int* oInstruction);
 
 // Store rt(5-BIT), rs(5-BIT)
-void getRtRs(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);
+void getRtRs(char* iLineData, eOpcodeType iOpcodeType, eRegimm iRegimm, unsigned int* oInstruction);
 
 // Store Imm(16-BIT) Data
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);

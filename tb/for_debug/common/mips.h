@@ -48,7 +48,7 @@ typedef enum
 typedef enum 
 {
     OP_RTYPE    = 0,
-    OP_REGIMM   = 1,
+    OP_REGIMM   = 1,    // {regimm} rs, imm / rt is just distingush for regimm type
     OP_J        = 2,
     OP_JAL      = 3,
     OP_BEQ      = 4,
@@ -60,7 +60,7 @@ typedef enum
     OP_ANDI     = 12,
     OP_ORI      = 13,
     OP_XORI     = 14,
-    OP_LUI      = 15,
+    OP_LUI      = 15,   // lui rt, imm
     OP_LB       = 32,
     OP_LH       = 33,
     OP_LW       = 35,
@@ -96,7 +96,8 @@ typedef enum
     TYPE_J,     // 6
     TYPE_BRANCH,// 7
     TYPE_REGIMM,// 8
-    TYPE_NOP    // 9
+    TYPE_LUI,   // 9
+    TYPE_NOP    // 10
 } eOpcodeType;
 
 typedef enum
