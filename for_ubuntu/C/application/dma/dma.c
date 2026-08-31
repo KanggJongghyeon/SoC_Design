@@ -74,6 +74,6 @@ void mainDma(void)
 
     dmaInit();
     setDmaVersion();
-    getDmaVerison(&dmaVersion);
+    getDmaVersion(&dmaVersion);
     dmaCopy((uint32_t)MMIO_MAIN_MEM, (uint32_t)MMIO_AUX_MEM, 64U, &dmaDone);
 }
