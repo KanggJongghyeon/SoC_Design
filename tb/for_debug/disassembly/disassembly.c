@@ -70,7 +70,7 @@ void disassembleRType(unsigned int instructionLine, char *oDisassemblyLine)
     rtStr   = getRegistersStr(rt);
     rdStr   = getRegistersStr(rd);
 
-    //@ 4. Make Disassembly Text
+    //@ 4. Make Assembly Text
     strcat(oDisassemblyLine, space);
     strcat(oDisassemblyLine, rdStr);
     strcat(oDisassemblyLine, commaSpace);
@@ -136,7 +136,7 @@ void disassembleShiftType(unsigned int instructionLine, char *oDisassemblyLine)
         r3Str   = &rsStr[0];
     }
     
-    //@ 5. Make Disassembly Text
+    //@ 5. Make Assembly Text
     strcat(oDisassemblyLine, space);
     strcat(oDisassemblyLine, rdStr);
     strcat(oDisassemblyLine, commaSpace);
@@ -162,6 +162,8 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
         <opcode_rs_rt_imm <=> opcode rs, rt, imm>
     <HEX <=> ASM> : load/store
         <opcode_rs_rt_imm <=> opcode rt, imm(rs)>
+    <HEX <=> ASM> : lui
+        <opcode_rs_rt_imm <=> opcode, rt, imm>
      */
 
     //@ 1. Init Local Variable
@@ -190,7 +192,7 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
         rsStr   = getRegistersStr(rs);
         rtStr   = getRegistersStr(rt);
 
-        //@ 3b2. Make Disassembly Text
+        //@ 3b2. Make Assembly Text
         strcat(oDisassemblyLine, space);
         strcat(oDisassemblyLine, rtStr);
         strcat(oDisassemblyLine, commaSpace);
@@ -207,7 +209,7 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
         rsStr   = getRegistersStr(rs);
         rtStr   = getRegistersStr(rt);
 
-        //@ 3b2. Make Disassembly Text
+        //@ 3b2. Make Assembly Text
         strcat(oDisassemblyLine, space);
         strcat(oDisassemblyLine, rtStr);
         strcat(oDisassemblyLine, commaSpace);
@@ -225,10 +227,23 @@ void disassembleIType(unsigned int instructionLine, char *oDisassemblyLine, eOpc
         rsStr   = getRegistersStr(rs);
         rtStr   = getRegistersStr(rt);
 
-        //@ 3c2. Make Disassembly Text
+        //@ 3c2. Make Assembly Text
         strcat(oDisassemblyLine, space);
         strcat(oDisassemblyLine, rsStr);
         strcat(oDisassemblyLine, commaSpace);
+        strcat(oDisassemblyLine, rtStr);
+        strcat(oDisassemblyLine, commaSpace);
+        strcat(oDisassemblyLine, immStr);
+    }
+    //@ 3d. If OPCODE Type is TYPE_LUI:
+    else if (TYPE_LUI == iOpcodeType)
+    {
+        //@ 3d1. Compute Register Number and Get Register String
+        rt      = (eRegisters)((instructionLine & 0x001F0000) >> 16);   // 0000_0000_000t_tttt_0000_0000_0000_0000
+        rtStr   = getRegistersStr(rt);
+
+        //@ 3d2. Make Assemly Text
+        strcat(oDisassemblyLine, space);
         strcat(oDisassemblyLine, rtStr);
         strcat(oDisassemblyLine, commaSpace);
         strcat(oDisassemblyLine, immStr);
@@ -280,7 +295,7 @@ void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine)
         funct = (eFunctCode)(instructionLine & 0x0000003F);
         if (FUNCT_JR == funct)
         {
-            //@ 2a2a1. Make Disassembly Text
+            //@ 2a2a1. Make Assembly Text
             strcat(&oDisassemblyLine[0], space);
             strcat(&oDisassemblyLine[0], rsStr);            
         }
@@ -292,7 +307,7 @@ void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine)
             rd  = (eRegisters)((instructionLine & 0x0000F800) >> 11);   // 0000_0000_0000_0000_dddd_d000_0000_0000
             if (R_RA == rd)
             {
-                //@ 2a2b1a1. Make Disassembly Text
+                //@ 2a2b1a1. Make Assembly Text
                 strcat(&oDisassemblyLine[0], space);
                 strcat(&oDisassemblyLine[0], rsStr);   
             }
@@ -302,7 +317,7 @@ void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine)
                 //@ 2a2b1b1. Get rd Register String
                 rdStr   = getRegistersStr(rd);
 
-                //@ 2a2b1b2. Make Disassembly Text
+                //@ 2a2b1b2. Make Assembly Text
                 strcat(&oDisassemblyLine[0], space);
                 strcat(&oDisassemblyLine[0], rdStr);   
                 strcat(&oDisassemblyLine[0], commaSpace);
@@ -317,7 +332,7 @@ void disassembleJType(unsigned int instructionLine, char *oDisassemblyLine)
         jImm    = (instructionLine & 0x03FFFFFF);
         snprintf(&jImmStr[0], sizeof(jImmStr), "%u", jImm);
 
-        //@ 2b2. Make Disassembly Text
+        //@ 2b2. Make Assembly Text
         strcat(&oDisassemblyLine[0], space);
         strcat(&oDisassemblyLine[0], jImmStr);
     }
@@ -350,7 +365,7 @@ void disassembleRegimmType(unsigned int instructionLine, char *oDisassemblyLine)
     imm     = (short)(instructionLine & 0x0000FFFF);
     snprintf(&immStr[0], sizeof(immStr), "%d", imm);
 
-    //@ 4. Make Disassembly Text
+    //@ 4. Make Assembly Text
     strcat(oDisassemblyLine, space);
     strcat(oDisassemblyLine, rsStr);
     strcat(oDisassemblyLine, commaSpace);
@@ -422,7 +437,7 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
                     break;
             }
             break;
-        //@ 2b. For the ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI/LUI:
+        //@ 2b. For the ADDI/ADDIU/SLTI/SLTIU/ANDI/ORI/XORI:
         case OP_ADDI: 
         case OP_ADDIU:
         case OP_SLTI: 
@@ -430,7 +445,6 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
         case OP_ANDI:
         case OP_ORI:  
         case OP_XORI: 
-        case OP_LUI: 
             //@ 2b1. Set OPCODE Type to TYPE_I
             oOpcodeType = TYPE_I;
             break;
@@ -467,9 +481,14 @@ eOpcodeType getOpcodeType(eOpcode iOpcode, eFunctCode iFunctCode)
             //@ 2g1. Set OPCODE Type to TYPE_REGIMM
             oOpcodeType = TYPE_REGIMM;
             break;
-        //@ 2h. In All Other Cases:
+        //@ 2h. For the OP_LUI:
+        case OP_LUI:
+            //@ 2h1. Set OPCODE Type to TYPE_LUI
+            oOpcodeType = TYPE_LUI;
+            break;
+        //@ 2i. In All Other Cases:
         default:
-            //@ 2h1. Print ERROR LOG and Set OPCODE Type to TYPE_NOP
+            //@ 2i1. Print ERROR LOG and Set OPCODE Type to TYPE_NOP
             printf("[ERROR] Unknown OPCODE (0x%02x)(=%d)\n", iOpcode, iOpcode);
             oOpcodeType = TYPE_NOP;
             break;
@@ -813,11 +832,12 @@ void convert(eInput iInput)
                 case TYPE_SHIFT:
                     disassembleShiftType(instruction[line], &disassembly[line][0]);
                     break;
-                //@ 3a2d. For the TYPE_I/BRANCH/LOAD/STORE:
+                //@ 3a2d. For the TYPE_I/BRANCH/LOAD/STORE/LUI:
                 case TYPE_I:
                 case TYPE_BRANCH:
                 case TYPE_LOAD:
                 case TYPE_STORE:
+                case TYPE_LUI:
                     disassembleIType(instruction[line], &disassembly[line][0], opcodeType[line]);
                     break;
                 //@ 3a2e. For the TYPE_J:
@@ -831,24 +851,27 @@ void convert(eInput iInput)
                 //@ 3a2g. In All Other Cases:
                 case TYPE_NOP:
                 default:
-                    //@ 3a2g1. Do-Nothing
+                    //@ 3a2g1. Do Nothing
                     break;
             }
         }
         
-        //@ 3a3. Check User Input Again and Call ...()
+        //@ 3a3. Check User Input Again
         switch (iInput)
         {
             //@ 3a3a. For the I_BOOT_LOADER:
             case I_BOOT_LOADER:
+                //@ 3a3a1. Generate Assembly
                 genAsm(&BOOT_LOADER_TEXT_PATH[0], &disassembly[0], lineCount);
                 break;
             //@ 3a3b. For the I_APPLICATION:
             case I_APPLICATION:
+                //@ 3a3b1. Generate Assembly
                 genAsm(&APPLICATION_TEXT_PATH[0], &disassembly[0], lineCount);
                 break;
             //@ 3a3c. In All Other Cases:
             default:
+                //@ 3a3c1. Do Nothing
                 break;
         }
     }
