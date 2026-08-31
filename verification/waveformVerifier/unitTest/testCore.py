@@ -1,7 +1,7 @@
 import unittest
 from core.mips_simulator import MipsSimulator
 
-class UnitTest(unittest.TestCase):
+class TestCore(unittest.TestCase):
     def testArithmeticAndStoreAndLoad(self):
         # addiu $t0,$zero,5; addiu $t1,$zero,7; addu $t2,$t0,$t1;
         # sw $t2,0x100($zero); lw $t3,0x100($zero)
