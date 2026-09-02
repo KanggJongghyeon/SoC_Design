@@ -4,24 +4,43 @@
 /////////////////////
 // Set SFR Address //
 /////////////////////
-static volatile uint32_t* sfrDmaVersion = (volatile uint32_t*)MMIO_DMA_VERSION;
-static volatile uint32_t* sfrDmaSrcAddr = (volatile uint32_t*)MMIO_DMA_SRC_ADDR;
-static volatile uint32_t* sfrDmaDstAddr = (volatile uint32_t*)MMIO_DMA_DST_ADDR;
-static volatile uint32_t* sfrDmaLength  = (volatile uint32_t*)MMIO_DMA_LEN;
-static volatile uint32_t* sfrDmaCommand = (volatile uint32_t*)MMIO_DMA_CMD;      
-static volatile uint32_t* sfrDmaStatus  = (volatile uint32_t*)MMIO_DMA_STATUS;  
+#ifndef NMIPS
+static volatile int32_t* sfrDmaVersion  = (volatile int32_t*)MMIO_DMA_VERSION;
+static volatile int32_t* sfrDmaSrcAddr  = (volatile int32_t*)MMIO_DMA_SRC_ADDR;
+static volatile int32_t* sfrDmaDstAddr  = (volatile int32_t*)MMIO_DMA_DST_ADDR;
+static volatile int32_t* sfrDmaLength   = (volatile int32_t*)MMIO_DMA_LEN;
+static volatile int32_t* sfrDmaCommand  = (volatile int32_t*)MMIO_DMA_CMD;      
+static volatile int32_t* sfrDmaStatus   = (volatile int32_t*)MMIO_DMA_STATUS;  
+#else   // NMIPS
+static volatile int32_t sfrWin64DmaVersion  = 0;
+static volatile int32_t sfrWin64DmaSrcAddr  = 0;
+static volatile int32_t sfrWin64DmaDstAddr  = 0;
+static volatile int32_t sfrWin64DmaLength   = 0;
+static volatile int32_t sfrWin64DmaCommand  = 0;
+static volatile int32_t sfrWin64DmaStatus   = 0;
+#endif  // NMIPS
 
 //////////////
 // Init SFR //
 //////////////
 void dmaInit(void)
 {                   
-    *sfrDmaVersion  = 0U;
-    *sfrDmaSrcAddr  = 0U; 
-    *sfrDmaDstAddr  = 0U;
-    *sfrDmaLength   = 0U;
-    *sfrDmaCommand  = 0U;
-    //*sfrDmaStatus   = 0U; // SW Read-Only
+    #ifndef NMIPS
+    *sfrDmaVersion  = 0;
+    *sfrDmaSrcAddr  = 0; 
+    *sfrDmaDstAddr  = 0;
+    *sfrDmaLength   = 0;
+    *sfrDmaCommand  = 0;
+    //*sfrDmaStatus   = 0; // SW Read-Only
+    #else   // NMIPS
+    sfrWin64DmaVersion  = 0;
+    sfrWin64DmaSrcAddr  = 0;
+    sfrWin64DmaDstAddr  = 0;
+    sfrWin64DmaLength   = 0;
+    sfrWin64DmaCommand  = 0;
+    sfrWin64DmaStatus   = 0;
+    #endif  // NMIPS
+
 }
 
 /////////////////////
@@ -29,7 +48,11 @@ void dmaInit(void)
 /////////////////////
 void setDmaVersion(void)
 {
+    #ifndef NMIPS
     *sfrDmaVersion  = DMA_VERSION;
+    #else   // NMIPS
+    sfrWin64DmaVersion  = DMA_VERSION;
+    #endif  //NMIPS
 }
 
 /////////////////////
@@ -37,15 +60,36 @@ void setDmaVersion(void)
 /////////////////////
 void getDmaVersion(uint32_t* dmaVersion)
 {
+    #ifndef NMIPS
     *dmaVersion = *(uint32_t*)MMIO_DMA_VERSION;
+    #else   // NMIPS
+    *dmaVersion = sfrWin64DmaVersion;
+    printf("DMA VERSION         (0x%08x)\n", sfrWin64DmaVersion);
+    #endif  // NMIPS
 }
+
+#ifdef NMIPS
+/////////////////////////////////////////
+// Set DMA Status (Only Used in Win64) //
+/////////////////////////////////////////
+void setDmaStatus(void)
+{
+    sfrWin64DmaStatus = DMA_DONE;
+}
+#endif  // NMIPS
 
 ////////////////////
 // Get DMA Status //
 ////////////////////
 void getDmaStatus(uint32_t* dmaStatus)
 {
+    #ifndef NMIPS
     *dmaStatus = *(uint32_t*)MMIO_DMA_STATUS;
+    #else   // NMIPS
+    *dmaStatus = sfrWin64DmaStatus;
+    printf("DMA Status Register (0x%08x)\n", sfrWin64DmaStatus);
+    #endif  // NMIPS
+
 }
 
 /////////////////////////////////
@@ -53,6 +97,7 @@ void getDmaStatus(uint32_t* dmaStatus)
 /////////////////////////////////
 void dmaCopy(uint32_t dst, uint32_t src, uint32_t len, uint32_t* done)
 {
+    #ifndef NMIPS
     *sfrDmaSrcAddr  = src;
     *sfrDmaDstAddr  = dst;
     *sfrDmaLength   = len;
@@ -62,6 +107,15 @@ void dmaCopy(uint32_t dst, uint32_t src, uint32_t len, uint32_t* done)
     {
         getDmaStatus(done);
     }
+    #else   // NMIPS
+    sfrWin64DmaSrcAddr  = src;
+    sfrWin64DmaDstAddr  = dst;
+    sfrWin64DmaLength   = len;
+    sfrWin64DmaCommand  = DMA_START;
+
+    setDmaStatus();
+    getDmaStatus(done);
+    #endif  // NMIPS
 }
 
 //////////////
