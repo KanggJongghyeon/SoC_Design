@@ -50,7 +50,7 @@ function automatic t_memory_buffer load_mem_file (
             $fclose(file_discriptor);
         end
         //@ 3. Allocate Output Buffer Array
-        o_buffer_array  = new[o_line_count * `WORD_BYTES];
+        o_buffer_array  = new[o_line_count * `STRB_BIT];
         //@ 4. Re-Open Memory File
         file_discriptor = $fopen(i_file_path, "r");
 
@@ -64,11 +64,11 @@ function automatic t_memory_buffer load_mem_file (
             if (status != 0) begin
                 //@ 5a2a1. Copy Temporary Buffer to Output Buffer Array
                 integer bytes;
-                for (bytes = 0; bytes < `WORD_BYTES; bytes = bytes + 1) begin
+                for (bytes = 0; bytes < `STRB_BIT; bytes = bytes + 1) begin
                     o_buffer_array[index + bytes] = temp_buffer[(`BYTE_SIZE * bytes) +: `BYTE_SIZE]; 
                 end
-                //@ 5a2a2. Add Output Buffer Array's Index as WORD_BYTES
-                index = index + `WORD_BYTES;
+                //@ 5a2a2. Add Output Buffer Array's Index as STRB_BIT
+                index = index + `STRB_BIT;
             end
             //@ 5a3. Go to 5.
         end

@@ -16,7 +16,6 @@
 `define ADDR_BIT    32
 `define DATA_BIT    32
 `endif  // XILINX_CPU_32BIT
-
-`define WORD_BYTES  (`DATA_BIT / `BYTE_SIZE)
+`define STRB_BIT    (`DATA_BIT / `BYTE_SIZE)
 
 `endif  // TB_DEFINE_SVH
