@@ -6,9 +6,11 @@ module tb_top_cpu();
     `ifndef CPU_32BIT
         localparam ADDR_BIT = 16;
         localparam DATA_BIT = 16;
+        localparam STRB_BIT = 2; 
     `else
         localparam ADDR_BIT = 32;
         localparam DATA_BIT = 32;
+        localparam STRB_BIT = 4;
     `endif  // CPU_32BIT (vivado define option)
     localparam LINE_CNTR    = 1000;
 
@@ -65,12 +67,14 @@ module tb_top_cpu();
     wire [ADDR_BIT - 1:0]   w_i_mem_addr;
     wire [ADDR_BIT - 1:0]   w_d_mem_addr;
     wire [DATA_BIT - 1:0]   w_d_mem_wdata;
+    wire [STRB_BIT - 1:0]   w_d_mem_wstrb;
     wire                    w_arbiter_req;
 
     // CPU
     top_cpu #(              
         .ADDR_BIT           (ADDR_BIT),
-        .DATA_BIT           (DATA_BIT)
+        .DATA_BIT           (DATA_BIT),
+        .STRB_BIT           (STRB_BIT)
     ) u_cpu_top (
         .clk                (clk),
         .rst_n              (rst_n),
@@ -82,33 +86,36 @@ module tb_top_cpu();
         .o_d_mem_wren       (w_d_mem_wren),
         .o_d_mem_addr       (w_d_mem_addr),
         .o_d_mem_data       (w_d_mem_wdata),
+        .o_d_mem_strb       (w_d_mem_wstrb),
         .o_arbiter_req      (w_arbiter_req),
         .i_arbiter_gnt      (1'b1)
     );
 
     // I-MEM
     SDRAM #(
-        .ADDR_SIZE          (ADDR_BIT),
-        .DATA_SIZE          (DATA_BIT)
+        .ADDR_BIT           (ADDR_BIT),
+        .DATA_BIT           (DATA_BIT)
     ) u_inst_mem (
         .clk                (clk),
         .i_en               (w_i_mem_en     | i_i_mem_en),
         .i_wren             (i_i_mem_wren),
         .i_addr             (w_i_mem_addr   | i_i_mem_addr),
         .i_data             (i_i_mem_data),
+        .i_strb             ({STRB_BIT{1'b1}}),
         .o_data             (w_i_mem_rdata)
     );
 
     // D-MEM
     SDRAM #(
-        .ADDR_SIZE          (ADDR_BIT),
-        .DATA_SIZE          (DATA_BIT)
+        .ADDR_BIT           (ADDR_BIT),
+        .DATA_BIT           (DATA_BIT)
     ) u_data_mem (
         .clk                (clk),
         .i_en               (w_d_mem_en),
         .i_wren             (w_d_mem_wren),
         .i_addr             (w_d_mem_addr),
         .i_data             (w_d_mem_wdata),
+        .i_strb             (w_d_mem_wstrb),
         .o_data             (w_d_mem_rdata)
     );
 

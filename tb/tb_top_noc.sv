@@ -61,9 +61,9 @@ module tb_top_noc();
         #10 i_i_mem_en = 1'b1; i_i_mem_wren = 1'b1;
         #0  i_mem_addr = {`ADDR_BIT{1'b0}};
         `ifdef BOOT_LOADER
-        for (boot_loader_addr = i_mem_addr; boot_loader_addr < (4 * boot_loader_line); boot_loader_addr = boot_loader_addr + `WORD_BYTES) begin
+        for (boot_loader_addr = i_mem_addr; boot_loader_addr < (4 * boot_loader_line); boot_loader_addr = boot_loader_addr + `STRB_BIT) begin
             i_i_mem_addr = boot_loader_addr;
-            for (byte_index = 0; byte_index < `WORD_BYTES; byte_index = byte_index + 1) begin
+            for (byte_index = 0; byte_index < `STRB_BIT; byte_index = byte_index + 1) begin
                 i_i_mem_data[(byte_index * `BYTE_SIZE)+:`BYTE_SIZE] = nand_flash0[boot_loader_addr - i_mem_addr + byte_index];
             end
             #(`CLOCK_RATE);
@@ -71,9 +71,9 @@ module tb_top_noc();
         #0 i_mem_addr = i_mem_addr + (4 * boot_loader_line);
         `endif  // BOOT_LOADER
         `ifdef DEBUG_MODE
-        for (debug_mode_addr = i_mem_addr; debug_mode_addr < (i_mem_addr + (4 * debug_mode_line)); debug_mode_addr = debug_mode_addr + `WORD_BYTES) begin
+        for (debug_mode_addr = i_mem_addr; debug_mode_addr < (i_mem_addr + (4 * debug_mode_line)); debug_mode_addr = debug_mode_addr + `STRB_BIT) begin
             i_i_mem_addr = debug_mode_addr;
-            for (byte_index = 0; byte_index < `WORD_BYTES; byte_index = byte_index + 1) begin
+            for (byte_index = 0; byte_index < `STRB_BIT; byte_index = byte_index + 1) begin
                 i_i_mem_data[(byte_index * `BYTE_SIZE)+:`BYTE_SIZE] = nand_flash2[debug_mode_addr - i_mem_addr + byte_index];
             end
             #(`CLOCK_RATE);
@@ -81,9 +81,9 @@ module tb_top_noc();
         #0 i_mem_addr = i_mem_addr + (4 * debug_mode_line);
         `endif  // DEBUG_MODE
         `ifdef APPLICATION 
-        for (application_addr = i_mem_addr; application_addr < (i_mem_addr + (4 * application_line)); application_addr = application_addr + `WORD_BYTES) begin
+        for (application_addr = i_mem_addr; application_addr < (i_mem_addr + (4 * application_line)); application_addr = application_addr + `STRB_BIT) begin
             i_i_mem_addr = application_addr;
-            for (byte_index = 0; byte_index < `WORD_BYTES; byte_index = byte_index + 1) begin
+            for (byte_index = 0; byte_index < `STRB_BIT; byte_index = byte_index + 1) begin
                 i_i_mem_data[(byte_index * `BYTE_SIZE)+:`BYTE_SIZE] = nand_flash1[application_addr - i_mem_addr + byte_index];
             end
             #(`CLOCK_RATE);
@@ -92,7 +92,7 @@ module tb_top_noc();
         `endif  // APPLICATION
         #0  i_i_mem_en = 1'b0; i_i_mem_wren = 1'b0; i_i_mem_addr = {`ADDR_BIT{1'b0}}; i_i_mem_data = {`DATA_BIT{1'b0}};
         #10 rst_n = 1'b1;
-        #((i_mem_addr / `WORD_BYTES) * `CLOCK_RATE);
+        #((i_mem_addr / `STRB_BIT) * `CLOCK_RATE);
         #10 rst_n = 1'b0;
         #10 $finish;
     end
@@ -106,25 +106,28 @@ module tb_top_noc();
     wire [`ADDR_BIT - 1:0]  w_i_mem_addr;
     wire [`ADDR_BIT - 1:0]  w_d_mem_addr;
     wire [`DATA_BIT - 1:0]  w_d_mem_wdata;
+    wire [`STRB_BIT - 1:0]  w_d_mem_wstrb;
     wire                    w_arbiter_req;
 
     // I-MEM
     SDRAM #(
-        .ADDR_SIZE          (`ADDR_BIT),
-        .DATA_SIZE          (`DATA_BIT)
+        .ADDR_BIT           (`ADDR_BIT),
+        .DATA_BIT           (`DATA_BIT)
     ) u_inst_mem (
         .clk                (clk),
         .i_en               (w_i_mem_en     | i_i_mem_en),
         .i_wren             (i_i_mem_wren),
         .i_addr             (w_i_mem_addr   | i_i_mem_addr),
         .i_data             (i_i_mem_data),
+        .i_strb             ({`STRB_BIT{1'b1}}),
         .o_data             (w_i_mem_rdata)
     );
 
     // CPU
     top_cpu #(              
         .ADDR_BIT           (`ADDR_BIT),
-        .DATA_BIT           (`DATA_BIT)
+        .DATA_BIT           (`DATA_BIT),
+        .STRB_BIT           (`STRB_BIT)
     ) u_cpu_top (
         .clk                (clk),
         .rst_n              (rst_n),
@@ -136,20 +139,22 @@ module tb_top_noc();
         .o_d_mem_wren       (w_d_mem_wren),
         .o_d_mem_addr       (w_d_mem_addr),
         .o_d_mem_data       (w_d_mem_wdata),
+        .o_d_mem_strb       (w_d_mem_wstrb),
         .o_arbiter_req      (w_arbiter_req),
         .i_arbiter_gnt      (1'b1)
     );
 
     // D-MEM
     SDRAM #(
-        .ADDR_SIZE          (`ADDR_BIT),
-        .DATA_SIZE          (`DATA_BIT)
+        .ADDR_BIT           (`ADDR_BIT),
+        .DATA_BIT           (`DATA_BIT)
     ) u_data_mem (
         .clk                (clk),
         .i_en               (w_d_mem_en),
         .i_wren             (w_d_mem_wren),
         .i_addr             (w_d_mem_addr),
         .i_data             (w_d_mem_wdata),
+        .i_strb             (w_d_mem_wstrb),
         .o_data             (w_d_mem_rdata)
     );
 
@@ -165,6 +170,7 @@ module tb_top_noc();
         .i_cpu_wren         (w_d_mem_wren),
         .i_cpu_addr         (w_d_mem_addr),
         .i_cpu_data         (w_d_mem_wdata),
+        .i_cpu_strb         (w_d_mem_wstrb),
         .o_cpu_data         ()
     );
 

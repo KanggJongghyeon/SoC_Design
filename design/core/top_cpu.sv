@@ -1,8 +1,9 @@
 `timescale 1ns / 1ps
 `include "ctr_unit.svh"
 module top_cpu #(
-    parameter ADDR_BIT = 8,
-    parameter DATA_BIT = 32
+    parameter ADDR_BIT  = 8,
+    parameter DATA_BIT  = 32,
+    parameter STRB_BIT  = 4
     )(
     input   wire                    clk,            // Global
     input   wire                    rst_n,          // Global
@@ -16,6 +17,7 @@ module top_cpu #(
     output  wire                    o_d_mem_wren,   // to   D-MEM
     output  wire [ADDR_BIT - 1:0]   o_d_mem_addr,   // to   D-MEM
     output  wire [DATA_BIT - 1:0]   o_d_mem_data,   // to   D-MEM
+    output  wire [STRB_BIT - 1:0]   o_d_mem_strb,   // to   D-MEM
     
     output  wire                    o_arbiter_req,  // to   Arbiter
     input   wire                    i_arbiter_gnt   // from Arbiter
