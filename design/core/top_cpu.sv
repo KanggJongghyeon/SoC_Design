@@ -84,9 +84,11 @@ module top_cpu #(
     wire                                w_id_memread;                       // MemRead      Flag (ID)
     wire                                w_ex_memread;                       // MemRead      Flag (EX)
     wire                                w_mem_memread;                      // MemRead      Flag (MEM)
+    wire [STRB_BIT - 1:0]               w_id_memrstrb;                      // MemRead Strobe (ID)
     wire                                w_id_memwrite;                      // MemWrite     Flag (ID)
     wire                                w_ex_memwrite;                      // MemWrite     Flag (EX)
     wire                                w_mem_memwrite;                     // MemWrite     Flag (MEM)
+    wire [STRB_BIT - 1:0]               w_id_memwstrb;                      // MemWrite Strobe (ID)
     wire [2:0]                          w_id_branch;                        // Branch       Flag (ID)
     wire [2:0]                          w_ex_branch;                        // Branch       Flag (EX)
     wire [1:0]                          w_id_jump;                          // Jump         Flag (ID)
@@ -232,6 +234,7 @@ module top_cpu #(
     /* Control Unit */
     ctr_unit #(
         .DATA_BIT       (DATA_BIT),
+        .STRB_BIT       (STRB_BIT),
         .OPCODE_BIT     (OPCODE_BIT),
         .REG_BIT        (REG_BIT)
     ) u_control_unit (
@@ -243,7 +246,9 @@ module top_cpu #(
         .o_memtoreg     (w_id_memtoreg),
         .o_regwrite     (w_id_regwrite),
         .o_memread      (w_id_memread),
+        .o_memrstrb     (w_id_memrstrb),
         .o_memwrite     (w_id_memwrite),
+        .o_memwstrb     (w_id_memwstrb),
         .o_branch       (w_id_branch),
         .o_aluop        (w_id_aluop),
         .o_jump         (w_id_jump),
@@ -260,10 +265,12 @@ module top_cpu #(
         .clk            (clk),
         .rst_n          (rst_n),
         .i_regwrite     (w_wb_regwrite),
+        .i_unsigned     (),
         .i_rd_reg1      (w_id_dec_rs),
         .i_rd_reg2      (w_id_dec_rt),
         .i_wr_reg       (w_wb_regdst_jal_mux_reg),
         .i_wr_data      (w_wb_memtoreg_mux_data),
+        .i_wr_strb      (),
         .o_rd_data1     (w_id_reg_rdata1),
         .o_rd_data2     (w_id_reg_rdata2)
     );

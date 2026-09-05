@@ -6,6 +6,7 @@
 `timescale 1ns / 1ps
 module ctr_unit #(
     parameter DATA_BIT  = 16,
+    parameter STRB_BIT  = 2,
     parameter OPCODE_BIT= 4,
     parameter REG_BIT   = 5
     )(
@@ -17,7 +18,9 @@ module ctr_unit #(
     output wire                     o_memtoreg,
     output wire                     o_regwrite,
     output wire                     o_memread,
+    output wire [STRB_BIT - 1:0]    o_memrstrb,
     output wire                     o_memwrite,
+    output wire [STRB_BIT - 1:0]    o_memwstrb,
     output wire [2:0]               o_branch,   
     output wire [3:0]               o_aluop,
     output wire [1:0]               o_jump,     // {00 : none, 01 : j,   10 : jr, jral,     11 : jal}
@@ -26,10 +29,14 @@ module ctr_unit #(
     input  wire                     i_arbiter_gnt
     );
 
-    reg         r_regdst, r_alusrc, r_memtoreg, r_regwrite, r_memread, r_memwrite, r_sign_extend;
-    reg [1:0]   r_jump;
-    reg [2:0]   r_branch;
-    reg [3:0]   r_aluop;
+    reg                 r_regdst,   r_alusrc, 
+    reg                 r_memtoreg, r_regwrite; 
+    reg                 r_memread,  r_memwrite;
+    reg [STRB_BIT - 1:0]r_memrstrb, r_memwstrb;
+    reg [1:0]           r_jump;
+    reg [2:0]           r_branch;
+    reg [3:0]           r_aluop;
+    reg                 r_sign_extend;
 
     /*
     Sign-Extend Rule
@@ -43,7 +50,9 @@ module ctr_unit #(
                 r_alusrc        = 1'b0;
                 r_memtoreg      = 1'b0;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_RTYPE;
                 r_sign_extend   = 1'b0; // don't care
@@ -68,7 +77,9 @@ module ctr_unit #(
                 r_alusrc        = 1'b0; // don't care
                 r_memtoreg      = 1'b0;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_aluop         = `ALUOP_BZ;
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
@@ -117,7 +128,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = 3'b000;   // don't care  
                 r_jump          = `JUMP_J;
@@ -129,7 +142,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = 3'b000;   // don't care
                 r_jump          = `JUMP_JAL;
@@ -141,7 +156,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_BEQ;
                 r_aluop         = `ALUOP_SUB;
                 r_jump          = `JUMP_NONE;
@@ -153,7 +170,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b0;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_BNE;
                 r_aluop         = `ALUOP_SUB;
                 r_jump          = `JUMP_NONE;
@@ -165,7 +184,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = `JUMP_NONE;
@@ -177,7 +198,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = `JUMP_NONE;
@@ -189,7 +212,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_SLTI;
                 r_jump          = `JUMP_NONE;
@@ -201,7 +226,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_SLTI;
                 r_jump          = `JUMP_NONE;
@@ -213,7 +240,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ANDI;
                 r_jump          = `JUMP_NONE;
@@ -225,7 +254,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ORI;
                 r_jump          = `JUMP_NONE;
@@ -237,7 +268,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_XORI;
                 r_jump          = `JUMP_NONE;
@@ -249,7 +282,9 @@ module ctr_unit #(
                 r_memtoreg      = 1'b0;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b0;
+                r_memrstrb      = {STRB_BIT{1'b0}};
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_LUI;
                 r_jump          = `JUMP_NONE;
@@ -261,27 +296,45 @@ module ctr_unit #(
                 r_memtoreg      = 1'b1;
                 r_regwrite      = 1'b1;
                 r_memread       = 1'b1;
+                r_memrstrb      = STRB_BIT'(1);
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             `OP_LH      : begin // 6'd33
+                r_regdst        = 1'b0;
+                r_alusrc        = 1'b1;
+                r_memtoreg      = 1'b1;
+                r_regwrite      = 1'b1;
+                r_memread       = 1'b1;
+                r_memrstrb      = STRB_BIT'(3);
+                r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
+                r_branch        = `BRANCH_NONE;
+                r_aluop         = `ALUOP_ADD;
+                r_jump          = `JUMP_NONE;
+                r_sign_extend   = 1'b1;
+           
             `OP_LW      : begin // 6'd35
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b1;
                 r_regwrite      = 1'b1;
                 r_memwrite      = 1'b0;
+                r_memwstrb      = {STRB_BIT{1'b0}};
                 r_branch        = `BRANCH_NONE;
                 r_aluop         = `ALUOP_ADD;
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
                 if (i_arbiter_gnt) begin
                     r_memread   = 1'b1;
+                    r_memrstrb  = STRB_BIT'(15);
                 end
                 else begin
                     r_memread   = 1'b0;
+                    r_memrstrb  = {STRB_BIT{1'b0}};
                 end
             end
             `OP_LBU     : begin // 6'd36
@@ -325,7 +378,9 @@ module ctr_unit #(
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
     assign o_memread        = r_memread;
+    assign o_memrstrb       = r_memrstrb;
     assign o_memwrite       = r_memwrite;
+    assign o_memwstrb       = r_memwstrb;
     assign o_branch         = r_branch;
     assign o_aluop          = r_aluop;
     assign o_jump           = r_jump;
