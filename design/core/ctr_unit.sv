@@ -135,7 +135,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_JAL;
                 r_sign_extend   = 1'b1;
             end
-            `OP_BEQ   : begin   // 6'd4
+            `OP_BEQ     : begin // 6'd4
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b0;
                 r_memtoreg      = 1'b0;
@@ -147,7 +147,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_BNE   : begin   // 6'd5
+            `OP_BNE     : begin // 6'd5
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b0;
                 r_memtoreg      = 1'b0;
@@ -159,7 +159,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_ADDI  : begin   // 6'd8
+            `OP_ADDI    : begin // 6'd8
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -171,7 +171,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_ADDIU : begin   // 6'd9
+            `OP_ADDIU   : begin // 6'd9
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -183,7 +183,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_SLTI  : begin   // 6'd10
+            `OP_SLTI    : begin // 6'd10
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -195,7 +195,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_SLTIU : begin   // 6'd11
+            `OP_SLTIU   : begin // 6'd11
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -207,7 +207,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1;
             end
-            `OP_ANDI  : begin   // 6'd12
+            `OP_ANDI    : begin // 6'd12
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -219,7 +219,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
-            `OP_ORI   : begin   // 6'd13
+            `OP_ORI     : begin // 6'd13
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -243,7 +243,7 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b0;
             end
-            `OP_LUI   : begin   // 6'd15
+            `OP_LUI     : begin // 6'd15
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
@@ -255,7 +255,19 @@ module ctr_unit #(
                 r_jump          = `JUMP_NONE;
                 r_sign_extend   = 1'b1; // don't care
             end
-            `OP_LW    : begin   // 6'd35
+            `OP_LB      : begin // 6'd32
+                r_regdst        = 1'b0;
+                r_alusrc        = 1'b1;
+                r_memtoreg      = 1'b1;
+                r_regwrite      = 1'b1;
+                r_memread       = 1'b1;
+                r_memwrite      = 1'b0;
+                r_branch        = `BRANCH_NONE;
+                r_aluop         = `ALUOP_ADD;
+                r_jump          = `JUMP_NONE;
+                r_sign_extend   = 1'b1;
+            `OP_LH      : begin // 6'd33
+            `OP_LW      : begin // 6'd35
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b1;
@@ -272,7 +284,11 @@ module ctr_unit #(
                     r_memread   = 1'b0;
                 end
             end
-            `OP_SW    : begin   // 6'd43
+            `OP_LBU     : begin // 6'd36
+            `OP_LHU     : begin // 6'd37
+            `OP_SB      : begin // 6'd40
+            `OP_SH      : begin // 6'd41
+            `OP_SW      : begin // 6'd43
                 r_regdst        = 1'b0;
                 r_alusrc        = 1'b1;
                 r_memtoreg      = 1'b0;
