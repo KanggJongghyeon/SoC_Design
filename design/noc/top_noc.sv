@@ -3,6 +3,7 @@
 module top_noc #(
     parameter AXI5_ADDR_BIT = 32,
     parameter AXI5_DATA_BIT = 32,
+    parameter AXI5_STRB_BIT = 4,
     parameter AXI5_ID_BIT   = 12
     )(
     input   wire                            clk,
@@ -12,6 +13,7 @@ module top_noc #(
     input   wire                            i_cpu_wren,
     input   wire    [AXI5_ADDR_BIT - 1:0]   i_cpu_addr,
     input   wire    [AXI5_DATA_BIT - 1:0]   i_cpu_data,
+    input   wire    [AXI5_STRB_BIT - 1:0]   i_cpu_strb,
     output  wire    [AXI5_DATA_BIT - 1:0]   o_cpu_data
     // DMA AXI Interface
     //AXI5.SLAVE                              AXI_DMA
@@ -51,7 +53,8 @@ module top_noc #(
     // CPU AXI Master
     cpu_axi_master #(
         .ADDR_BIT       (AXI5_ADDR_BIT),
-        .DATA_BIT       (AXI5_DATA_BIT)
+        .DATA_BIT       (AXI5_DATA_BIT),
+        .STRB_BIT       (AXI_CPU.STRB_BIT)
     ) u_cpu_axi_master (
         .clk            (clk),
         .rst_n          (rst_n),
@@ -59,6 +62,7 @@ module top_noc #(
         .i_cpu_wren     (i_cpu_wren),
         .i_cpu_addr     (i_cpu_addr),
         .i_cpu_data     (i_cpu_data),
+        .i_cpu_strb     (i_cpu_strb),
         .o_cpu_data     (o_cpu_data),
         //.i_cpu_aw_gnt   (w_cpu_aw_gnt),
         //.i_cpu_w_gnt    (w_cpu_w_gnt),

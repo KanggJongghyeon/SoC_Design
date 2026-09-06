@@ -2,7 +2,8 @@
 `timescale 1ns / 1ps
 module cpu_axi_master #(
     parameter ADDR_BIT  = 32,
-    parameter DATA_BIT  = 32
+    parameter DATA_BIT  = 32,
+    parameter STRB_BIT  = 4
     )(
     input   wire                        clk,
     input   wire                        rst_n,
@@ -10,8 +11,9 @@ module cpu_axi_master #(
     input   wire                        i_cpu_en,
     input   wire                        i_cpu_wren,
     input   wire    [ADDR_BIT - 1:0]    i_cpu_addr,
-    input   wire    [DATA_BIT - 1:0]    i_cpu_data, // Store(sw)
-    output  wire    [DATA_BIT - 1:0]    o_cpu_data, // Load (lw)
+    input   wire    [DATA_BIT - 1:0]    i_cpu_data, // Store
+    input   wire    [STRB_BIT - 1:0]    i_cpu_strb,
+    output  wire    [DATA_BIT - 1:0]    o_cpu_data, // Load
     // axi if
     AXI5.MASTER                         AXI
     );
