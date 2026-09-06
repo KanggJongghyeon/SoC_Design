@@ -1,3 +1,7 @@
+# root
+vivado.jou
+vivado.log
+
 # Vivado project folders
 soc_design/
 #soc_design/SoC_Design.cache/
