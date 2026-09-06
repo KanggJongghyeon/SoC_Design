@@ -57,7 +57,7 @@ module load_stall_unit #(
         output  wire                    o_load_stall
     );
 
-    assign o_load_stall = (i_ex_memread == 1'b1) && (i_ex_wr_reg != {REG_BIT{1'b0}}) && ((i_ex_wr_reg == i_id_rs) || ((i_ex_wr_reg == i_id_rt) && (i_ex_wr_reg != i_id_rt)));
+    assign o_load_stall = (i_ex_memread == 1'b1) && (i_ex_wr_reg != {REG_BIT{1'b0}}) && ((i_ex_wr_reg == i_id_rs) || ((i_ex_wr_reg == i_id_rt) && (i_id_wr_reg != i_id_rt)));
 
 endmodule
 //////////////////////////////////////////
