@@ -80,7 +80,8 @@ endmodule
 module id_ex #(
     parameter REG_BIT   = 4,
     parameter ADDR_BIT  = 8,
-    parameter DATA_BIT  = 32
+    parameter DATA_BIT  = 32,
+    parameter STRB_BIT  = 4
     )(
     input   wire                        clk,
     input   wire                        rst_n,
@@ -88,18 +89,22 @@ module id_ex #(
     input   wire    [ADDR_BIT - 1:0]    i_pc_addr, 
     input   wire    [REG_BIT - 1:0]     i_rs,           
     input   wire    [REG_BIT - 1:0]     i_rt,           
-    input   wire    [REG_BIT - 1:0]     i_rd,           
+    input   wire    [REG_BIT - 1:0]     i_rd,    
+    input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire    [5:0]               i_funct,        
     input   wire    [DATA_BIT - 1:0]    i_jump_addr,    
-    input   wire                        i_regdst,       
     input   wire                        i_alusrc,       
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,     
-    input   wire                        i_memread,      
+    input   wire                        i_memread,
+    input   wire    [STRB_BIT - 1:0]    i_memrstrb,
+    input   wire                        i_load_unsigned,
     input   wire                        i_memwrite,     
+    input   wire    [STRB_BIT - 1:0]    i_memwstrb,
     input   wire    [2:0]               i_branch,       
     input   wire    [3:0]               i_aluop,        
-    input   wire    [1:0]               i_jump,         
+    input   wire    [1:0]               i_jump,
+    input   wire                        i_arbiter_req,
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_sign_extend,  
@@ -116,20 +121,28 @@ module id_ex #(
     output  wire    [REG_BIT - 1:0]     o_rs,           
     output  wire    [REG_BIT - 1:0]     o_rt,           
     output  wire    [REG_BIT - 1:0]     o_rd,   
-    output  wire                        o_regdst,       
+    input   wire    [REG_BIT - 1:0]     o_wr_reg,
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
-    output  wire                        o_memread,      
-    output  wire                        o_memwrite      
+    output  wire                        o_memread,   
+    output  wire    [STRB_BIT - 1:0]    o_memrstrb,
+    output  wire                        o_load_unsigned,
+    output  wire                        o_memwrite,      
+    output  wire    [STRB_BIT - 1:0]    o_memwstrb,
+    output  wire                        o_arbiter_req
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
+    reg [REG_BIT - 1:0]     r_wr_reg;
     reg [3:0]               r_aluop;
-    reg                     r_regdst,       r_regwrite;
+    reg                     r_regwrite;
     reg                     r_alusrc,       r_memtoreg;
     reg                     r_memread,      r_memwrite;
+    reg [STRB_BIT - 1:0]    r_memrstrb,     r_memwstrb;
+    reg                     r_load_unsigned;
     reg [2:0]               r_branch;
     reg [1:0]               r_jump;      
+    reg                     r_arbiter_req;
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [5:0]               r_funct;
     reg [DATA_BIT - 1:0]    r_reg_rdata1,   r_reg_rdata2;
@@ -141,15 +154,19 @@ module id_ex #(
             r_rs            <= {REG_BIT{1'b0}};
             r_rt            <= {REG_BIT{1'b0}};
             r_rd            <= {REG_BIT{1'b0}};
-            r_regdst        <= 1'b0;
+            r_wr_reg        <= {REG_BIT{1'b0}};
             r_alusrc        <= 1'b0;
             r_memtoreg      <= 1'b0;
             r_regwrite      <= 1'b0;
             r_memread       <= 1'b0;
+            r_memrstrb      <= {STRB_BIT{1'b0}};
+            r_load_unsigned <= 1'b0;
             r_memwrite      <= 1'b0;
+            r_memwstrb      <= {STRB_BIT{1'b0}};
             r_branch        <= `BRANCH_NONE;
             r_aluop         <= 4'h0;
             r_jump          <= 2'b00;
+            r_arbiter_req   <= 1'b0;
             r_pc_addr       <= {(ADDR_BIT){1'b0}};
             r_funct         <= 6'b000000;
             r_reg_rdata1    <= {(DATA_BIT){1'b0}};
@@ -161,10 +178,12 @@ module id_ex #(
             r_rs            <= i_rs;
             r_rt            <= i_rt;
             r_rd            <= i_rd;
-            r_regdst        <= i_regdst;
+            r_wr_reg        <= i_wr_reg;
             r_alusrc        <= i_alusrc;
             r_memtoreg      <= i_memtoreg;
             r_memread       <= i_memread;
+            r_memrstrb      <= i_memrstrb;
+            r_load_unsigned <= i_load_unsigned;
             r_aluop         <= i_aluop;
             r_pc_addr       <= i_pc_addr;
             r_funct         <= i_funct;
@@ -173,16 +192,20 @@ module id_ex #(
             r_sign_extend   <= i_sign_extend;
             r_jump_addr     <= i_jump_addr;
             if (i_flush == 1'b1) begin
-                r_regwrite  <= 1'b0;
-                r_memwrite  <= 1'b0;
-                r_branch    <= `BRANCH_NONE;
-                r_jump      <= 2'b00;
+                r_regwrite      <= 1'b0;
+                r_memwrite      <= 1'b0;
+                r_memwstrb      <= {STRB_BIT{1'b0}};
+                r_branch        <= `BRANCH_NONE;
+                r_jump          <= 2'b00;
+                r_arbiter_req   <= 1'b0;
             end
             else begin
-                r_regwrite  <= i_regwrite;
-                r_memwrite  <= i_memwrite;
-                r_branch    <= i_branch;
-                r_jump      <= i_jump;
+                r_regwrite      <= i_regwrite;
+                r_memwrite      <= i_memwrite;
+                r_memwstrb      <= i_memwstrb;
+                r_branch        <= i_branch;
+                r_jump          <= i_jump;
+                r_arbiter_req   <= i_arbiter_req;
             end
         end
     end
@@ -190,15 +213,19 @@ module id_ex #(
     assign o_rs             = r_rs;
     assign o_rt             = r_rt;
     assign o_rd             = r_rd;
-    assign o_regdst         = r_regdst;
+    assign o_wr_reg         = r_wr_reg;
     assign o_alusrc         = r_alusrc;
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
     assign o_memread        = r_memread;
+    assign o_memrstrb       = r_memrstrb;
+    assign o_load_unsigned  = r_load_unsigned;
     assign o_memwrite       = r_memwrite;
+    assign o_memwstrb       = r_memwstrb;
     assign o_branch         = r_branch;
     assign o_aluop          = r_aluop;
     assign o_jump           = r_jump;
+    assign o_arbiter_req    = r_arbiter_req;
     assign o_pc_addr        = r_pc_addr;
     assign o_funct          = r_funct;
     assign o_reg_rdata1     = r_reg_rdata1;
@@ -214,7 +241,8 @@ endmodule
 module ex_mem #(
     parameter REG_BIT   = 4,
     parameter ADDR_BIT  = 8,
-    parameter DATA_BIT  = 16
+    parameter DATA_BIT  = 16,
+    parameter STRB_BIT  = 2
     )(
     input   wire                        clk,
     input   wire                        rst_n,
@@ -224,8 +252,12 @@ module ex_mem #(
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,     
     input   wire                        i_memread,      
+    input   wire    [STRB_BIT - 1:0]    i_memrstrb,
+    input   wire                        i_load_unsigned,
     input   wire                        i_memwrite,
+    input   wire    [STRB_BIT - 1:0]    i_memwstrb,
     input   wire    [1:0]               i_jump,
+    input   wire                        i_arbiter_req,
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_alu_out,  
     input   wire                        i_fw_ctr_wdata_2c,
@@ -235,9 +267,13 @@ module ex_mem #(
     output  wire    [REG_BIT - 1:0]     o_wr_reg,
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
-    output  wire                        o_memread,      
+    output  wire                        o_memread,   
+    output  wire    [STRB_BIT - 1:0]    o_memrstrb,
+    output  wire                        o_load_unsigned,
     output  wire                        o_memwrite,
+    output  wire    [STRB_BIT - 1:0]    o_memwstrb,
     output  wire    [1:0]               o_jump,
+    output  wire                        o_arbiter_req,
     output  wire    [DATA_BIT - 1:0]    o_alu_out,      
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,
     output  wire                        o_fw_ctr_wdata_2c,
@@ -249,7 +285,10 @@ module ex_mem #(
     reg [REG_BIT - 1:0]     r_wr_reg;
     reg                     r_memtoreg,     r_regwrite;
     reg                     r_memread,      r_memwrite;
+    reg [STRB_BIT - 1:0]    r_memrstrb,     r_memwstrb;
+    reg                     r_load_unsigned;
     reg [1:0]               r_jump;
+    reg                     r_arbiter_req;
     reg [DATA_BIT - 1:0]    r_alu_out;
     reg [DATA_BIT - 1:0]    r_reg_rdata2;
     reg                     r_fw_ctr_wdata_2c;
@@ -263,8 +302,12 @@ module ex_mem #(
             r_memtoreg          <= 1'b0;
             r_regwrite          <= 1'b0;
             r_memread           <= 1'b0;
+            r_memrstrb          <= {STRB_BIT{1'b0}};
+            r_load_unsigned     <= 1'b0;
             r_memwrite          <= 1'b0;
+            r_memwstrb          <= {STRB_BIT{1'b0}};
             r_jump              <= 2'b00;
+            r_arbiter_req       <= 1'b0;
             r_alu_out           <= {(DATA_BIT){1'b0}};
             r_reg_rdata2        <= {(DATA_BIT){1'b0}};
             r_fw_ctr_wdata_2c   <= 1'b0;
@@ -277,8 +320,12 @@ module ex_mem #(
             r_memtoreg          <= i_memtoreg;
             r_regwrite          <= i_regwrite;
             r_memread           <= i_memread;
+            r_memrstrb          <= i_memrstrb;
+            r_load_unsigned     <= i_load_unsigned;
             r_memwrite          <= i_memwrite;
+            r_memwstrb          <= i_memwstrb;
             r_jump              <= i_jump;
+            r_arbiter_req       <= i_arbiter_req;
             r_alu_out           <= i_alu_out;
             r_reg_rdata2        <= i_reg_rdata2;
             r_fw_ctr_wdata_2c   <= i_fw_ctr_wdata_2c;
@@ -292,8 +339,12 @@ module ex_mem #(
     assign o_memtoreg           = r_memtoreg;
     assign o_regwrite           = r_regwrite;
     assign o_memread            = r_memread;
+    assign o_memrstrb           = r_memrstrb;
+    assign o_load_unsigned      = r_load_unsigned;
     assign o_memwrite           = r_memwrite;
+    assign o_memwstrb           = r_memwstrb;
     assign o_jump               = r_jump;
+    assign o_arbiter_req        = r_arbiter_req;
     assign o_alu_out            = r_alu_out;
     assign o_reg_rdata2         = r_reg_rdata2;
     assign o_fw_ctr_wdata_2c    = r_fw_ctr_wdata_2c;
@@ -307,7 +358,8 @@ endmodule
 module mem_wb #(
     parameter REG_BIT   = 4,
     parameter ADDR_BIT  = 8,
-    parameter DATA_BIT  = 32
+    parameter DATA_BIT  = 32,
+    parameter STRB_BIT  = 4
     )(
     input   wire                        clk,
     input   wire                        rst_n,
@@ -315,19 +367,25 @@ module mem_wb #(
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire                        i_memtoreg,     
     input   wire                        i_regwrite,
+    input   wire    [STRB_BIT - 1:0]    i_memrstrb,
+    input   wire                        i_load_unsigned,
     input   wire    [1:0]               i_jump,
     input   wire    [DATA_BIT - 1:0]    i_alu_out,
     output  wire    [ADDR_BIT - 1:0]    o_pc_addr,
-    output  wire    [REG_BIT - 1:0]     o_wr_reg,           
-    output  wire                        o_memtoreg,     
+    output  wire    [REG_BIT - 1:0]     o_wr_reg,         
+    output  wire                        o_memtoreg,
     output  wire                        o_regwrite,
+    output  wire    [STRB_BIT - 1:0]    o_memrstrb,
+    output  wire                        o_load_unsigned,
     output  wire    [1:0]               o_jump,
     output  wire    [DATA_BIT - 1:0]    o_alu_out       
     );
     
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [REG_BIT - 1:0]     r_wr_reg;
-    reg                     r_memtoreg,     r_regwrite;
+    reg                     r_memtoreg, r_regwrite;
+    reg [STRB_BIT - 1:0]    r_memrstrb;
+    reg                     r_load_unsigned;
     reg [1:0]               r_jump;
     reg [DATA_BIT - 1:0]    r_alu_out;
 
@@ -337,6 +395,8 @@ module mem_wb #(
             r_wr_reg        <= {REG_BIT{1'b0}};
             r_memtoreg      <= 1'b0;
             r_regwrite      <= 1'b0;
+            r_memrstrb      <= {STRB_BIT{1'b0}};
+            r_load_unsigned <= 1'b0;
             r_jump          <= 2'b00;
             r_alu_out       <= {(DATA_BIT){1'b0}};
         end
@@ -345,6 +405,8 @@ module mem_wb #(
             r_wr_reg        <= i_wr_reg;
             r_memtoreg      <= i_memtoreg;
             r_regwrite      <= i_regwrite;
+            r_memrstrb      <= i_memrstrb;
+            r_load_unsigned <= i_load_unsigned;
             r_jump          <= i_jump;
             r_alu_out       <= i_alu_out;
         end
@@ -354,6 +416,8 @@ module mem_wb #(
     assign o_wr_reg         = r_wr_reg;
     assign o_memtoreg       = r_memtoreg;
     assign o_regwrite       = r_regwrite;
+    assign o_memrstrb       = r_memrstrb;
+    assign o_load_unsigned  = r_load_unsigned;
     assign o_jump           = r_jump;
     assign o_alu_out        = r_alu_out;
 

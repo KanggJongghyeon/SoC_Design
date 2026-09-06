@@ -8,12 +8,10 @@ module registers #(
     input  wire                  clk,
     input  wire                  rst_n,
     input  wire                  i_regwrite,
-    input  wire                  i_unsigned,
     input  wire [REG_BIT  - 1:0] i_rd_reg1,
     input  wire [REG_BIT  - 1:0] i_rd_reg2,
     input  wire [REG_BIT  - 1:0] i_wr_reg,
     input  wire [DATA_BIT - 1:0] i_wr_data,
-    input  wire [STRB_BIT - 1:0] i_wr_strb,
     output wire [DATA_BIT - 1:0] o_rd_data1,
     output wire [DATA_BIT - 1:0] o_rd_data2
     );
@@ -31,27 +29,7 @@ module registers #(
         end
         else begin
             if (i_regwrite == 1'b1) begin
-                if (i_wr_strb == {STRB_BIT{1'b1}}) begin    // LW
-                    register[i_wr_reg] <= i_wr_data;
-                end
-                else if (i_wr_strb == STRB_BIT'(3)) begin
-                    if (i_unsigned == 1'b1) begin           // LHU
-                        register[i_wr_reg][DATA_BIT/2+:DATA_BIT/2]  <= {(DATA_BIT/2){1'b0}};
-                    end
-                    else begin                              // LH
-                        register[i_wr_reg][DATA_BIT/2+:DATA_BIT/2]  <= {(DATA_BIT/2){1'b1}};
-                    end
-                    register[i_wr_reg][0+:DATA_BIT/2]   <= i_wr_data[DATA_BIT/2 - 1:0];
-                end
-                else if (i_wr_strb == STRB_BIT'(1)) begin
-                    if (i_unsigned == 1'b1) begin           // LBU
-                        register[i_wr_reg][`BYTE_SIZE+:(DATA_BIT-`BYTE_SIZE)]   <= {(DATA_BIT-`BYTE_SIZE){1'b0}};
-                    end
-                    else begin                              // LB
-                        register[i_wr_reg][`BYTE_SIZE+:(DATA_BIT-`BYTE_SIZE)]   <= {(DATA_BIT-`BYTE_SIZE){1'b0}};
-                    end
-                    register[i_wr_reg][0+:`BYTE_SIZE]   <= i_wr_data[`BYTE_SIZE - 1:0];
-                end
+                register[i_wr_reg] <= i_wr_data;
             end
         end
     end
