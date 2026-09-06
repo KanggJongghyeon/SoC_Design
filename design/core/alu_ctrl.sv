@@ -1,6 +1,6 @@
 `include "instruction.svh"
 `timescale 1ns / 1ps
-module alu_ctr #(
+module alu_ctrl #(
     parameter DATA_BIT = 32
     )(
     input  wire [5:0] i_funct,

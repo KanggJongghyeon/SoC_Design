@@ -162,6 +162,7 @@ module tb_top_noc();
     top_noc #(
         .AXI5_ADDR_BIT      (`ADDR_BIT),
         .AXI5_DATA_BIT      (`DATA_BIT),
+        .AXI5_STRB_BIT      (`STRB_BIT),
         .AXI5_ID_BIT        (AXI5_ID_BIT)
     ) u_top_noc (
         .clk                (clk),
