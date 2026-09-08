@@ -45,3 +45,7 @@ Ubuntu 환경에서 개발된 C 소스 파일을 저장한 폴더입니다.
 ## .\verification
 해당 폴더는 AI(Chat GPT)가 자동으로 생성한 검증용 도구로 버전 업그레이드가 진행 중에 있습니다.
 하위 폴더의 실행 프로그램을 생성하면 GUI를 이용해 Vivado Waveform의 결과와 실제 명령어 기반의 레지스터맵 및 메모리맵 결과와 비교할 수 있습니다.
+
+## `Note`
+HDL 검증용 프로그램(ex. Xilinx Vivado)이 있어야지만 Waveform을 확인할 수 있습니다.
+꼭 Ubuntu 환경에서 C코드를 작업할 필요는 없습니다. MIPS Cross Compiler를 Windows 환경에서 설치가 가능하다면 Windows 환경에서 C 코드를 작성하는 것도 무방합니다.
