@@ -102,7 +102,7 @@ module top_cpu #(
     wire [1:0]                          w_id_jump;                          // Jump         Flag (ID)
     wire [1:0]                          w_ex_ctr_jump;                      // Jump         Flag (EX)
     wire [1:0]                          w_mem_jump;                         // Jump         Flag (MEM)
-    wire [1:0]                          w_wb_ctr_jump;                      // Jump         Flag (MEM)
+    wire [1:0]                          w_wb_jump;                          // Jump         Flag (MEM)
     wire                                w_id_sign_extend;                   // SignExtend   Flag (ID)
     wire                                w_id_arbiter_req;                   // Arbiter Request (ID)
     wire                                w_ex_arbiter_req;                   // Arbiter Request (EX)
@@ -129,7 +129,13 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_ex_hi;                            // HIGH Register in MUL/DIV Unit
     wire [DATA_BIT - 1:0]               w_ex_lo;                            // LOW  Register in MUL/DIV Unit
     wire [ADDR_BIT - 1:0]               w_ex_branch_mux_addr;               // PC ADDR + 4 or Branch ADDR
-    wire                                w_ex_ctr_branch;                    // Control Input of Branch MUX
+    wire                                w_ex_beq_taken;                     // Branch Equal Taken Flag 
+    wire                                w_ex_bne_taken;                     // Branch Not Euqal Taken Flag
+    wire                                w_ex_blt_taken;                     // Branch Less Than Taken Flag
+    wire                                w_ex_bge_taken;                     // Branch Grater Equal Taken Flag
+    wire                                w_ex_ctr_branch_taken;              // Total Branch Taken Flag (EX)
+    wire                                w_mem_branch_taken;                 // Total Branch Taken Flag (MEM)
+    wire                                w_wb_branch_taken;                  // Total Branch Taken Flag (WB)
     wire [DATA_BIT - 1:0]               w_i_mem_data;                       // I-MEM DATA
     wire [ADDR_BIT - 1:0]               w_if_pc_mux_addr;                   // I-MEM RADDR (Next) (Not Applied Load Stall)
     wire [ADDR_BIT - 1:0]               w_if_pc_stall_mux_addr;             // I-MEM RADDR (Next)
@@ -148,6 +154,8 @@ module top_cpu #(
     wire                                w_ex_ctr_flush;                     // Instruction Flush Sinal
     wire [DATA_BIT - 1:0]               w_wb_d_mem_data;                    // D-MEM RDATA (WB) 
     wire                                w_ctr_load_stall;                   // Load Stall Flag Signal
+    wire                                w_ex_link_ret_addr_kill;            // BLT/BGEZAL Not Taken Flag Signal
+    wire                                w_wb_ctr_link_ret_addr;             // Link $ra memtoreg Flag Signal
 
 ////////////////////////////////////////
 // IF (Instruction Fetch from Memory) //
@@ -385,7 +393,7 @@ module top_cpu #(
     mux21 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_branch_mux (
-        .i_ctr          (w_ex_ctr_branch),
+        .i_ctr          (w_ex_ctr_branch_taken),
         .i_i0           (w_ex_pc_addr),
         .i_i1           (w_ex_branch_addr[ADDR_BIT - 1:0]),
         .o_o            (w_ex_branch_mux_addr)
@@ -490,6 +498,7 @@ module top_cpu #(
     ) u_ex_mem_bridge (
         .clk                (clk),
         .rst_n              (rst_n),
+        .i_link_ra_kill     (w_ex_link_ret_addr_kill),
         .i_pc_addr          (w_ex_pc_addr),
         .i_rt               (w_ex_dec_rt),
         .i_wr_reg           (w_ex_regdst_mux_reg),
@@ -506,6 +515,7 @@ module top_cpu #(
         .i_alu_out          (w_ex_alu_out),
         .i_fw_ctr_wdata_2c  (w_ex_fw_ctr_wdata_2c),
         .i_wdata_fw_mux_data(w_ex_wdata_fw_mux_data_2c),
+        .i_branch_taken     (w_ex_ctr_branch_taken),
         .o_pc_addr          (w_mem_pc_addr),
         .o_rt               (w_mem_dec_rt),
         .o_wr_reg           (w_mem_regdst_mux_reg),
@@ -521,7 +531,8 @@ module top_cpu #(
         .o_alu_out          (w_mem_alu_out),
         .o_reg_rdata2       (w_mem_reg_rdata2),
         .o_fw_ctr_wdata_2c  (w_mem_fw_ctr_wdata_2c),
-        .o_wdata_fw_mux_data(w_mem_wdata_fw_mux_data_2c)
+        .o_wdata_fw_mux_data(w_mem_wdata_fw_mux_data_2c),
+        .o_branch_taken     (w_mem_branch_taken)
     );
 
 /////////////////////////////////
@@ -556,14 +567,16 @@ module top_cpu #(
         .i_load_unsigned(w_mem_load_unsigned),
         .i_jump         (w_mem_jump),
         .i_alu_out      (w_mem_alu_out),
+        .i_branch_taken (w_mem_branch_taken),
         .o_pc_addr      (w_wb_pc_addr),
         .o_wr_reg       (w_wb_regdst_mux_reg),
         .o_memtoreg     (w_wb_ctr_memtoreg),
         .o_regwrite     (w_wb_regwrite),
         .o_memrstrb     (w_wb_memrstrb),
         .o_load_unsigned(w_wb_load_unsigned),
-        .o_jump         (w_wb_ctr_jump),
-        .o_alu_out      (w_wb_alu_out)
+        .o_jump         (w_wb_jump),
+        .o_alu_out      (w_wb_alu_out),
+        .o_branch_taken (w_wb_branch_taken)
     );
 
 ////////////////////////////////////////
@@ -573,7 +586,7 @@ module top_cpu #(
     mux21 #(
         .DATA_BIT       (REG_BIT)
     ) u_regdst_jal_mux (
-        .i_ctr          ((w_wb_ctr_jump == 2'b11)),
+        .i_ctr          (w_wb_ctr_link_ret_addr), 
         .i_i0           (w_wb_regdst_mux_reg),
         .i_i1           ({REG_BIT{1'b1}}),          // $ra
         .o_o            (w_wb_regdst_jal_mux_reg)
@@ -594,10 +607,10 @@ module top_cpu #(
     mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_memtoreg_mux (
-        .i_ctr          ({w_wb_ctr_memtoreg, (w_wb_ctr_jump == `JUMP_JAL)}),
+        .i_ctr          ({w_wb_ctr_memtoreg, w_wb_ctr_link_ret_addr}),
         .i_i00          (w_wb_alu_out),
         .i_i01          (w_wb_pc_addr),
-        .i_i11          (w_wb_pc_addr),    // NEVER Happend
+        .i_i11          (w_wb_pc_addr/*{DATA_BIT{1'b0}}*/),    // Never Happend
         .i_i10          (w_wb_d_mem_data),
         .o_o            (w_wb_memtoreg_mux_data)
     );
@@ -645,11 +658,18 @@ module top_cpu #(
         .o_load_stall   (w_ctr_load_stall)
     );
 
+
     /* Assign wire */
     assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};
     assign w_ex_sign_extend_branch_addr = w_ex_shift_left2_sign_extend_const[DATA_BIT - 1:0];
-    assign w_ex_ctr_branch              = ((w_ex_branch == `BRANCH_BEQ) && (w_ex_alu_zero == 1'b1)) || ((w_ex_branch == `BRANCH_BNE) && (w_ex_alu_zero == 1'b0)) || ((w_ex_branch == `BRANCH_BLT) && (w_ex_alu_negative == 1'b1)) || ((w_ex_branch == `BRANCH_BGE) && (w_ex_alu_negative == 1'b0));
-    assign w_ex_ctr_flush               = (w_ex_ctr_branch == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
+    assign w_ex_beq_taken               = (w_ex_branch == `BRANCH_BEQ) && (w_ex_alu_zero == 1'b1);
+    assign w_ex_bne_taken               = (w_ex_branch == `BRANCH_BNE) && (w_ex_alu_zero != 1'b1);
+    assign w_ex_blt_taken               = (w_ex_branch == `BRANCH_BLT) && (w_ex_alu_negative == 1'b1);
+    assign w_ex_bge_taken               = (w_ex_branch == `BRANCH_BGE) && (w_ex_alu_negative != 1'b1);
+    assign w_ex_ctr_branch_taken        = (w_ex_beq_taken || w_ex_bne_taken || w_ex_blt_taken || w_ex_bge_taken); 
+    assign w_ex_ctr_flush               = (w_ex_ctr_branch_taken == 1'b1) || (w_ex_ctr_jump != `JUMP_NONE);
+    assign w_ex_link_ret_addr_kill      = (((w_ex_branch == `BRANCH_BLT) && (w_ex_alu_negative != 1'b1)) || (w_ex_branch == `BRANCH_BGE) && (w_ex_alu_negative == 1'b1));
+    assign w_wb_ctr_link_ret_addr       = (w_wb_jump == `JUMP_JAL) || (w_wb_jump == `JUMP_JR_AL) || w_wb_branch_taken;
 
     assign o_i_mem_en                   = w_if_i_mem_en;
     assign o_i_mem_addr                 = w_if_i_mem_addr;

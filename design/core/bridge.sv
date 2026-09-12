@@ -246,6 +246,7 @@ module ex_mem #(
     )(
     input   wire                        clk,
     input   wire                        rst_n,
+    input   wire                        i_link_ra_kill,
     input   wire    [ADDR_BIT - 1:0]    i_pc_addr,
     input   wire    [REG_BIT - 1:0]     i_rt,           
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
@@ -262,6 +263,7 @@ module ex_mem #(
     input   wire    [DATA_BIT - 1:0]    i_alu_out,  
     input   wire                        i_fw_ctr_wdata_2c,
     input   wire    [DATA_BIT - 1:0]    i_wdata_fw_mux_data,
+    input   wire                        i_branch_taken,
     output  wire    [ADDR_BIT - 1:0]    o_pc_addr,
     output  wire    [REG_BIT - 1:0]     o_rt,           
     output  wire    [REG_BIT - 1:0]     o_wr_reg,
@@ -277,7 +279,8 @@ module ex_mem #(
     output  wire    [DATA_BIT - 1:0]    o_alu_out,      
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,
     output  wire                        o_fw_ctr_wdata_2c,
-    output  wire    [DATA_BIT - 1:0]    o_wdata_fw_mux_data
+    output  wire    [DATA_BIT - 1:0]    o_wdata_fw_mux_data,
+    output  wire                        o_branch_taken
     );
 
     reg [ADDR_BIT - 1:0]    r_pc_addr;
@@ -293,6 +296,7 @@ module ex_mem #(
     reg [DATA_BIT - 1:0]    r_reg_rdata2;
     reg                     r_fw_ctr_wdata_2c;
     reg [DATA_BIT - 1:0]    r_wdata_fw_mux_data;
+    reg                     r_branch_taken;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
@@ -312,13 +316,13 @@ module ex_mem #(
             r_reg_rdata2        <= {(DATA_BIT){1'b0}};
             r_fw_ctr_wdata_2c   <= 1'b0;
             r_wdata_fw_mux_data <= {(DATA_BIT){1'b0}};
+            r_branch_taken      <= 1'b0;
         end
         else begin
             r_pc_addr           <= i_pc_addr;
             r_rt                <= i_rt;
             r_wr_reg            <= i_wr_reg;
             r_memtoreg          <= i_memtoreg;
-            r_regwrite          <= i_regwrite;
             r_memread           <= i_memread;
             r_memrstrb          <= i_memrstrb;
             r_load_unsigned     <= i_load_unsigned;
@@ -330,6 +334,13 @@ module ex_mem #(
             r_reg_rdata2        <= i_reg_rdata2;
             r_fw_ctr_wdata_2c   <= i_fw_ctr_wdata_2c;
             r_wdata_fw_mux_data <= i_wdata_fw_mux_data;
+            r_branch_taken      <= i_branch_taken;
+            if (i_link_ra_kill == 1'b1) begin
+                r_regwrite      <= 1'b0;
+            end
+            else begin
+                r_regwrite      <= i_regwrite;
+            end
         end
     end
 
@@ -349,6 +360,7 @@ module ex_mem #(
     assign o_reg_rdata2         = r_reg_rdata2;
     assign o_fw_ctr_wdata_2c    = r_fw_ctr_wdata_2c;
     assign o_wdata_fw_mux_data  = r_wdata_fw_mux_data;
+    assign o_branch_taken       = r_branch_taken;
 
 endmodule
 
@@ -371,6 +383,7 @@ module mem_wb #(
     input   wire                        i_load_unsigned,
     input   wire    [1:0]               i_jump,
     input   wire    [DATA_BIT - 1:0]    i_alu_out,
+    input   wire                        i_branch_taken,
     output  wire    [ADDR_BIT - 1:0]    o_pc_addr,
     output  wire    [REG_BIT - 1:0]     o_wr_reg,         
     output  wire                        o_memtoreg,
@@ -378,7 +391,8 @@ module mem_wb #(
     output  wire    [STRB_BIT - 1:0]    o_memrstrb,
     output  wire                        o_load_unsigned,
     output  wire    [1:0]               o_jump,
-    output  wire    [DATA_BIT - 1:0]    o_alu_out       
+    output  wire    [DATA_BIT - 1:0]    o_alu_out,
+    output  wire                        o_branch_taken
     );
     
     reg [ADDR_BIT - 1:0]    r_pc_addr;
@@ -388,6 +402,7 @@ module mem_wb #(
     reg                     r_load_unsigned;
     reg [1:0]               r_jump;
     reg [DATA_BIT - 1:0]    r_alu_out;
+    reg                     r_branch_taken;
 
     always @ (posedge clk or negedge rst_n) begin
         if (~rst_n) begin
@@ -399,6 +414,7 @@ module mem_wb #(
             r_load_unsigned <= 1'b0;
             r_jump          <= 2'b00;
             r_alu_out       <= {(DATA_BIT){1'b0}};
+            r_branch_taken  <= 1'b0;
         end
         else begin
             r_pc_addr       <= i_pc_addr;
@@ -409,6 +425,7 @@ module mem_wb #(
             r_load_unsigned <= i_load_unsigned;
             r_jump          <= i_jump;
             r_alu_out       <= i_alu_out;
+            r_branch_taken  <= i_branch_taken;
         end
     end
 
@@ -420,5 +437,6 @@ module mem_wb #(
     assign o_load_unsigned  = r_load_unsigned;
     assign o_jump           = r_jump;
     assign o_alu_out        = r_alu_out;
+    assign o_branch_taken   = r_branch_taken;
 
 endmodule
