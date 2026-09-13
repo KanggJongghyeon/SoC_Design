@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 interface AXI5 #(
     parameter ADDR_BIT  = 32,
     parameter DATA_BIT  = 32,

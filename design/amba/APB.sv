@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 interface APB3 ();
 
     wire [31:0] PADDR;

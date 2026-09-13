@@ -54,7 +54,7 @@ module top_noc #(
     cpu_axi_master #(
         .ADDR_BIT       (AXI5_ADDR_BIT),
         .DATA_BIT       (AXI5_DATA_BIT),
-        .STRB_BIT       (AXI_CPU.STRB_BIT)
+        .STRB_BIT       (AXI5_STRB_BIT)
     ) u_cpu_axi_master (
         .clk            (clk),
         .rst_n          (rst_n),
