@@ -62,7 +62,6 @@ module top_cpu #(
     wire [REG_BIT - 1:0]                w_ex_dec_rt;                        // Decoded rt Register (EX)
     wire [REG_BIT - 1:0]                w_mem_dec_rt;                       // Decoded rt Register (MEM)
     wire [REG_BIT - 1:0]                w_id_dec_rd;                        // Decoded rd Register (ID)
-    wire [REG_BIT - 1:0]                w_ex_dec_rd;                        // Decoded rd Register (EX)
     wire [4:0]                          w_id_dec_shamt;                     // Decoded Shamt
     wire [5:0]                          w_id_dec_funct;                     // Decoded FUNCT CODE (ID)
     wire [5:0]                          w_ex_dec_funct;                     // Decoded FUNCT CODE (EX)
@@ -136,7 +135,7 @@ module top_cpu #(
     wire                                w_ex_ctr_branch_taken;              // Total Branch Taken Flag (EX)
     wire                                w_mem_branch_taken;                 // Total Branch Taken Flag (MEM)
     wire                                w_wb_branch_taken;                  // Total Branch Taken Flag (WB)
-    wire [DATA_BIT - 1:0]               w_i_mem_data;                       // I-MEM DATA
+    wire [DATA_BIT - 1:0]               w_id_i_mem_data;                    // I-MEM DATA (ID)
     wire [ADDR_BIT - 1:0]               w_if_pc_mux_addr;                   // I-MEM RADDR (Next) (Not Applied Load Stall)
     wire [ADDR_BIT - 1:0]               w_if_pc_stall_mux_addr;             // I-MEM RADDR (Next)
     wire                                w_fw_ctr_alu_a_1c;                  // ALU ForwardA Output (1 Cycle)
@@ -219,7 +218,7 @@ module top_cpu #(
         .i_stall        (w_ctr_load_stall),
         .i_i_mem_data   (i_i_mem_data),
         .i_pc_addr      (w_if_pc_addr/*w_if_add4_addr*/),
-        .o_i_mem_data   (w_i_mem_data),
+        .o_i_mem_data   (w_id_i_mem_data),
         .o_pc_addr      (w_id_pc_addr)
     );
 
@@ -241,7 +240,7 @@ module top_cpu #(
         .OPCODE_BIT     (OPCODE_BIT),
         .REG_BIT        (REG_BIT)
     ) u_inst_decoder (
-        .i_data         (w_i_mem_data/*i_i_mem_data*/),
+        .i_data         (w_id_i_mem_data/*i_i_mem_data*/),
         .o_opcode       (w_id_dec_opcode),
         .o_rs           (w_id_dec_rs),
         .o_rt           (w_id_dec_rt),
@@ -327,7 +326,6 @@ module top_cpu #(
         .i_pc_addr      (w_id_pc_addr),
         .i_rs           (w_id_dec_rs),
         .i_rt           (w_id_dec_rt),
-        .i_rd           (w_id_dec_rd),
         .i_wr_reg       (w_id_regdst_mux_reg),
         .i_funct        (w_id_dec_funct),
         .i_jump_addr    (w_id_jump_addr),
@@ -358,10 +356,9 @@ module top_cpu #(
         .o_pc_addr      (w_ex_pc_addr),
         .o_rs           (w_ex_dec_rs),
         .o_rt           (w_ex_dec_rt),
-        .o_rd           (w_ex_dec_rd),
         .o_wr_reg       (w_ex_regdst_mux_reg),
         .o_memtoreg     (w_ex_memtoreg),
-        .o_regwrite     (w_ex_ctr_regwrite),
+        .o_regwrite     (w_ex_regwrite),
         .o_memread      (w_ex_memread),
         .o_memrstrb     (w_ex_memrstrb),
         .o_load_unsigned(w_ex_load_unsigned),
@@ -503,7 +500,7 @@ module top_cpu #(
         .i_rt               (w_ex_dec_rt),
         .i_wr_reg           (w_ex_regdst_mux_reg),
         .i_memtoreg         (w_ex_memtoreg),
-        .i_regwrite         (w_ex_ctr_regwrite),
+        .i_regwrite         (w_ex_regwrite),
         .i_memread          (w_ex_memread),
         .i_memrstrb         (w_ex_memrstrb),
         .i_load_unsigned    (w_ex_load_unsigned),

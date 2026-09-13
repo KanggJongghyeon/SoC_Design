@@ -89,7 +89,6 @@ module id_ex #(
     input   wire    [ADDR_BIT - 1:0]    i_pc_addr, 
     input   wire    [REG_BIT - 1:0]     i_rs,           
     input   wire    [REG_BIT - 1:0]     i_rt,           
-    input   wire    [REG_BIT - 1:0]     i_rd,    
     input   wire    [REG_BIT - 1:0]     i_wr_reg,
     input   wire    [5:0]               i_funct,        
     input   wire    [DATA_BIT - 1:0]    i_jump_addr,    
@@ -120,7 +119,6 @@ module id_ex #(
     output  wire    [ADDR_BIT - 1:0]    o_pc_addr, 
     output  wire    [REG_BIT - 1:0]     o_rs,           
     output  wire    [REG_BIT - 1:0]     o_rt,           
-    output  wire    [REG_BIT - 1:0]     o_rd,   
     input   wire    [REG_BIT - 1:0]     o_wr_reg,
     output  wire                        o_memtoreg,     
     output  wire                        o_regwrite,     
@@ -132,7 +130,7 @@ module id_ex #(
     output  wire                        o_arbiter_req
     );
    
-    reg [REG_BIT - 1:0]     r_rs,           r_rt,       r_rd;
+    reg [REG_BIT - 1:0]     r_rs,           r_rt;
     reg [REG_BIT - 1:0]     r_wr_reg;
     reg [3:0]               r_aluop;
     reg                     r_regwrite;
@@ -153,7 +151,6 @@ module id_ex #(
         if (~rst_n) begin
             r_rs            <= {REG_BIT{1'b0}};
             r_rt            <= {REG_BIT{1'b0}};
-            r_rd            <= {REG_BIT{1'b0}};
             r_wr_reg        <= {REG_BIT{1'b0}};
             r_alusrc        <= 1'b0;
             r_memtoreg      <= 1'b0;
@@ -177,7 +174,6 @@ module id_ex #(
         else begin
             r_rs            <= i_rs;
             r_rt            <= i_rt;
-            r_rd            <= i_rd;
             r_wr_reg        <= i_wr_reg;
             r_alusrc        <= i_alusrc;
             r_memtoreg      <= i_memtoreg;
@@ -212,7 +208,6 @@ module id_ex #(
 
     assign o_rs             = r_rs;
     assign o_rt             = r_rt;
-    assign o_rd             = r_rd;
     assign o_wr_reg         = r_wr_reg;
     assign o_alusrc         = r_alusrc;
     assign o_memtoreg       = r_memtoreg;
