@@ -34,8 +34,8 @@ void getRtRs(char* iLineData, eOpcodeType iOpcodeType, eRegimm iRegimm, unsigned
 // Store Imm(16-BIT) Data
 void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction);
 
-// Store JADDR(26-BIT) Data
-void getJaddr(char* iLineData, unsigned int* oInstruction);
+// Store Jump Data
+void getJumpInstruction(char* iLineData, unsigned int* oInstruction);
 
 // Make Text File
 void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput);

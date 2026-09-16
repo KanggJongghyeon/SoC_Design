@@ -396,6 +396,16 @@ module top_cpu #(
         .o_o            (w_ex_branch_mux_addr)
     );
     
+    /* Jump Register Forward Mux */
+    mux21 #(
+        .DATA_BIT       (DATA_BIT)
+    ) u_jump_register_forward_mux (
+        .i_ctr          (/*TBD1*/),
+        .i_i0           (w_ex_reg_rdata1),
+        .i_i1           (w_mem_alu_out),
+        .o_o            (/*TBD2*/)
+    )
+
     /* I-MEM RADDR Decision MUX (Jump MUX) */
     mux41 #(
         .DATA_BIT       (ADDR_BIT)
@@ -404,7 +414,7 @@ module top_cpu #(
         .i_i00          (w_ex_branch_mux_addr),             // branch
         .i_i01          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // j
         .i_i11          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // jal
-        .i_i10          (w_ex_reg_rdata1),                  // jr, jral
+        .i_i10          (/*TBD2*/w_ex_reg_rdata1),          // jr, jral ====> Hazard
         .o_o            (w_ex_jump_mux_addr)
     );
 
@@ -655,6 +665,7 @@ module top_cpu #(
         .o_load_stall   (w_ctr_load_stall)
     );
 
+    /* Jump Forwarding Unit */
 
     /* Assign wire */
     assign w_id_jump_addr               = {w_id_pc_addr[ADDR_BIT - 1:ADDR_BIT - 4], w_id_shift_left2_dec_jaddr};

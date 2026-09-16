@@ -94,12 +94,12 @@ void getOpcodeAndTypeAndFunct(char* iOpcodeStr, unsigned int* oInstruction, eOpc
     else if (0 == strcmp(iOpcodeStr, "jr\0"))
     {
         *oInstruction   = (unsigned int)FUNCT_JR;
-        *oOpcodeType    = TYPE_R;
+        *oOpcodeType    = TYPE_J;
     }
     else if (0 == strcmp(iOpcodeStr, "jalr\0"))
     {
         *oInstruction   = (unsigned int)FUNCT_JALR;
-        *oOpcodeType    = TYPE_R;
+        *oOpcodeType    = TYPE_J;
     }
     else if (0 == strcmp(iOpcodeStr, "mfhi\0"))
     {
@@ -845,34 +845,102 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
     //printf("DEBUG : immData : %08x\n", immData);
 }
 
-/////////////////////////////////
-// Store Jump Address (26-BIT) //
-/////////////////////////////////
-void getJaddr(char* iLineData, unsigned int* oInstruction)
+/////////////////////
+// Store Jump Data //
+/////////////////////
+void getJumpInstruction(char* iLineData, unsigned int* oInstruction)
 {
     //@ 1. Init Local Variable
     char            charCount               = 0;
     char            jaddrCount              = 0;
     char            jaddrStr[JADDR_STR_LEN] = {0};
     unsigned int    jaddrData               = 0;
+    bool            rdExistence             = false;            
+    char            rdCount                 = 0;
+    char            rsCount                 = 0;
+    char            rdStr[REG_STR_LEN]      = {0};
+    char            rsStr[REG_STR_LEN]      = {0};
+    unsigned int    rdNumber                = (unsigned int)R_NONE;
+    unsigned int    rsNumber                = (unsigned int)R_NONE;
+
     //@ 2. Skip OPCODE Part
     while (' ' != iLineData[charCount])
     {
         charCount++;
     }
     charCount++;
-    //@ 3. Get Jump Address String Value
-    while ('\0' != iLineData[charCount])
+    
+    //@ 3. Check Line Data's Type
+    //@ 3a. If Line Data is R-Type Jump Instruction:
+    if ('$' == iLineData[charCount])
     {
-        jaddrStr[jaddrCount] = iLineData[charCount];
-        charCount++;
-        jaddrCount++;
+        //@ 3a1. Check Existence of rd Register
+        for (unsigned short charIndex = 0; charIndex < REG_STR_LEN; charIndex++)
+        {
+            if (',' == iLineData[charCount + charIndex])
+            {
+                rdExistence = true;
+            }
+        }
+        //@ 3a1a. If rd Register Exists:
+        if (true == rdExistence)
+        {
+            //@ 3a1a1. Get rd Register String Value
+            while (',' != iLineData[charCount])
+            {
+                rdStr[rdCount] = iLineData[charCount];
+                charCount++;
+                rdCount++;
+            }
+            rdStr[rdCount]  = '\0';
+            //@ 3a1a2. Convert rd Register String to Integer
+            rdNumber        = getRegNumber(&rdStr[0]) << 11;
+            charCount = charCount + 2;
+            //@ 3a1a3. Get rs Register String Value
+            while ('\0' != iLineData[charCount])
+            {
+                rsStr[rsCount] = iLineData[charCount];
+                charCount++;
+                rsCount++;
+            }
+            rsStr[rsCount] = '\0';
+        }
+        //@ 3a1b. In All Other Cases:
+        else
+        {
+            //@ 3a1b1. Set rd to $ra
+            rdNumber    = (unsigned int)R_RA << 11;
+            //@ 3a1b2. Get rs Register String Value
+            while ('\0' != iLineData[charCount])
+            {
+                rsStr[rsCount] = iLineData[charCount];
+                charCount++;
+                rsCount++;
+            }
+            rsStr[rsCount]  = '\0';
+        }
+        //@ 3a2. Convert rs Register String to Integer
+        rsNumber        = getRegNumber(&rsStr[0]) << 21;
+        //@ 3a3. Add rs and rd Number to Instruction
+        *oInstruction   = *oInstruction | rdNumber;
+        *oInstruction   = *oInstruction | rsNumber;
     }
-    jaddrStr[jaddrCount]    = '\0';
-    //@ 4. Convert Jump Address Data String to Unsigned Integer
-    jaddrData               = (unsigned int)atoi(jaddrStr);
-    //@ 5. Add Jump Address to Instruction
-    *oInstruction   = *oInstruction | jaddrData;
+    //@ 3b. In All Other Cases:
+    else
+    {
+        //@ 3b1. Get Jump Address String Value
+        while ('\0' != iLineData[charCount])
+        {
+            jaddrStr[jaddrCount] = iLineData[charCount];
+            charCount++;
+            jaddrCount++;
+        }
+        jaddrStr[jaddrCount]= '\0';
+        //@ 3b2. Convert Jump Address Data String to Unsigned Integer
+        jaddrData           = (unsigned int)atoi(jaddrStr);
+        //@ 3b3. Add Jump Address to Instruction
+        *oInstruction   = *oInstruction | jaddrData;
+    }
 }
 
 ////////////////////
@@ -995,7 +1063,7 @@ void convert(eInput iInput)
                 //@ 3a3a. For the TYPE_NONE:
                 case TYPE_NONE:
                     //@ 3a3a1. Print ERROR
-                    printf("[ERROR] Could Not Find OPCODE Type, (Line %d)", line);
+                    printf("[ERROR] Could Not Find OPCODE Type, (Line %d)", (line + 1));
                     printf(" : %s\n", assembly[line]);
                     break;
                 //@ 3a3b. For the TYPE_R:
@@ -1027,7 +1095,7 @@ void convert(eInput iInput)
                 //@ 3a3e. For the TYPE_J:
                 case TYPE_J:
                     //@ 3a3e1. TBD
-                    getJaddr(assembly[line], &instruction[line]);
+                    getJumpInstruction(assembly[line], &instruction[line]);
                     break;
                 //@ 3a3f. For the TYPE_REGIMM:
                 case TYPE_REGIMM:
