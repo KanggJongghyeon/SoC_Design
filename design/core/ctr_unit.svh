@@ -1,5 +1,5 @@
-`ifndef CTR_UNIT_H
-`define CTR_UNIT_H
+`ifndef CTR_UNIT_SVH
+`define CTR_UNIT_SVH
 
 // Control Unit Output for Branch
 `define BRANCH_NONE 3'b000
@@ -14,4 +14,4 @@
 `define JUMP_JR_AL  2'b10 // R-Type
 `define JUMP_JAL    2'b11 // I-Type
 
-`endif  // CTR_UNIT_H
+`endif  // CTR_UNIT_SVH

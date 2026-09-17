@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "ctr_unit.svh"
 /////////////////////////
 // ALU Forwarding Unit //
 /////////////////////////
@@ -38,8 +39,8 @@ module wdata_forwarding_unit #(
     output  wire                    o_1c_forward
     );
     
-    assign o_2c_forward = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_ex_rt);
     assign o_1c_forward = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_mem_rt);
+    assign o_2c_forward = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_ex_rt);
 
 endmodule
 
@@ -49,17 +50,37 @@ endmodule
 module load_stall_unit #(
     parameter REG_BIT = 2
     )(
-        input   wire                    i_ex_memread,
-        input   wire    [REG_BIT - 1:0] i_id_wr_reg,
-        input   wire    [REG_BIT - 1:0] i_ex_wr_reg,
-        input   wire    [REG_BIT - 1:0] i_id_rs,
-        input   wire    [REG_BIT - 1:0] i_id_rt,
-        output  wire                    o_load_stall
+    input   wire                    i_ex_memread,
+    input   wire    [REG_BIT - 1:0] i_id_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_ex_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_id_rs,
+    input   wire    [REG_BIT - 1:0] i_id_rt,
+    output  wire                    o_load_stall
     );
 
     assign o_load_stall = (i_ex_memread == 1'b1) && (i_ex_wr_reg != {REG_BIT{1'b0}}) && ((i_ex_wr_reg == i_id_rs) || ((i_ex_wr_reg == i_id_rt) && (i_id_wr_reg != i_id_rt)));
 
 endmodule
-//////////////////////////////////////////
-// Path : .\RTL\core\forwarding_unit.sv //
-//////////////////////////////////////////
+
+//////////////////////////
+// Jump Forwarding Unit //
+//////////////////////////
+module jump_forwarding_unit #(
+    parameter REG_BIT = 2
+    )(
+    input   wire    [1:0]           i_ex_jump,
+    input   wire    [REG_BIT - 1]   i_mem_wr_reg,
+    input   wire    [REG_BIT - 1]   i_wb_wr_reg,
+    input   wire    [REG_BIT - 1]   i_ex_rs,
+    output  wire                    o_1c_forward,
+    output  wire                    o_2c_forward
+    );
+
+    assign o_1c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_mem_wr_reg == i_ex_rs);
+    assign o_2c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_wb_wr_reg == i_ex_rs);
+
+endmodule
+
+/////////////////////////////////////////////
+// Path : .\design\core\forwarding_unit.sv //
+/////////////////////////////////////////////
