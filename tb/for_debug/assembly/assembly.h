@@ -14,7 +14,7 @@ static unsigned int instruction[MAX_LINE];      // hex      <= assembly
 static eOpcodeType  opcodeType[MAX_LINE];       // OPCODE Type per Line
 
 // Load Assembly File
-bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char* oCount);
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned short* oCount);
 
 // Get Opcode Command
 void getOpcodeStr(char* iLineData, char* oOpcodeStr);
@@ -38,7 +38,7 @@ void getImm(char* iLineData, eOpcodeType iOpcodeType, unsigned int* oInstruction
 void getJumpInstruction(char* iLineData, unsigned int* oInstruction);
 
 // Make Text File
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput);
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned short iCount, eInput iInput);
 
 // Assembly main
 void convert(eInput iInput);

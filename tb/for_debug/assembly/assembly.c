@@ -9,7 +9,7 @@ static eOpcodeType  opcodeType[MAX_LINE]        = {TYPE_NONE};  // OPCODE TYPE S
 ////////////////////////
 // Load Assembly File //
 ////////////////////////
-bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned char* oCount)
+bool getAssembly(const char* iFileName, char oAssembly[][MAX_LEN], unsigned short* oCount)
 {
     bool fError = false;
     FILE *fp    = fopen(iFileName, "r");
@@ -946,7 +946,7 @@ void getJumpInstruction(char* iLineData, unsigned int* oInstruction)
 ////////////////////
 // Make Text File //
 ////////////////////
-void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned char iCount, eInput iInput)
+void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned short iCount, eInput iInput)
 {
     FILE*           fp = fopen(oFileName, "w");
     if (NULL == fp)
@@ -978,7 +978,7 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned 
     }
     else
     {
-        for (char count = 0; count < iCount; count++)
+        for (unsigned short count = 0; count < iCount; count++)
         {
             fprintf(fp, "%08x\n", iInstruction[count]);
         }
@@ -993,7 +993,7 @@ void setHexTextFile(const char* oFileName, unsigned int* iInstruction, unsigned 
 void convert(eInput iInput)
 {
     //@ 1. Init Local Variable
-    unsigned char   lineCount           = 0;            // Text File Line Counter
+    unsigned short  lineCount           = 0;            // Text File Line Counter
     bool            error               = false;        // File Open Error Flag
     eRegimm         regimm[MAX_LINE]    = {REGIMM_NONE};// for TYPE_REGIMM
     //@ 2.  Check User Input
@@ -1036,7 +1036,7 @@ void convert(eInput iInput)
     //@ 3a. If File Open Flag is not Error:
     if (false == error)
     {
-        for (unsigned char line = 0; line < lineCount; line++)
+        for (unsigned short line = 0; line < lineCount; line++)
         {
             //@ 3a1. Call getOpcodeStr(), and Get OPCODE String Value
             char opcodeStr[OPCODE_STR_LEN] = {0};   // OPCODE Command
