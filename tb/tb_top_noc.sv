@@ -128,7 +128,7 @@ module tb_top_noc();
         .ADDR_BIT           (`ADDR_BIT),
         .DATA_BIT           (`DATA_BIT),
         .STRB_BIT           (`STRB_BIT)
-    ) u_cpu_top (
+    ) u_top_cpu (
         .clk                (clk),
         .rst_n              (rst_n),
         .i_i_mem_data       (w_i_mem_rdata),
