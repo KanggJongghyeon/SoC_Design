@@ -677,6 +677,8 @@ module top_cpu #(
     jump_forwarding_unit #(
         .REG_BIT        (REG_BIT)
     ) u_jump_forwarding_unit (
+        .i_mem_regwrite (w_mem_regwrite),
+        .i_wb_regwrite  (w_wb_regwrite),
         .i_ex_jump      (w_ex_ctr_jump),
         .i_mem_wr_reg   (w_mem_regdst_mux_reg),
         .i_wb_wr_reg    (w_wb_regdst_mux_reg),
