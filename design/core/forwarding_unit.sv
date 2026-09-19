@@ -69,15 +69,15 @@ module jump_forwarding_unit #(
     parameter REG_BIT = 2
     )(
     input   wire    [1:0]           i_ex_jump,
-    input   wire    [REG_BIT - 1]   i_mem_wr_reg,
-    input   wire    [REG_BIT - 1]   i_wb_wr_reg,
-    input   wire    [REG_BIT - 1]   i_ex_rs,
+    input   wire    [REG_BIT - 1:0] i_mem_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_wb_wr_reg,
+    input   wire    [REG_BIT - 1:0] i_ex_rs,
     output  wire                    o_1c_forward,
     output  wire                    o_2c_forward
     );
 
-    assign o_1c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_mem_wr_reg == i_ex_rs);
-    assign o_2c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_wb_wr_reg == i_ex_rs);
+    assign o_1c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_mem_wr_reg != {REG_BIT{1'b0}}) && (i_mem_wr_reg == i_ex_rs);
+    assign o_2c_forward = (i_ex_jump == `JUMP_JR_AL) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_ex_rs);
 
 endmodule
 

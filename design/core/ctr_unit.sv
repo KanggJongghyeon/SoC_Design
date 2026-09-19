@@ -67,7 +67,7 @@ module ctr_unit #(
                     r_jump          = `JUMP_JR_AL;
                 end
                 else if (i_funct == `FUNCT_JALR) begin
-                    r_regdst        = 1'b0;
+                    r_regdst        = 1'b1;
                     r_regwrite      = 1'b1;
                     r_jump          = `JUMP_JR_AL;
                 end

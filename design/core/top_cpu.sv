@@ -34,6 +34,7 @@ module top_cpu #(
         localparam REG_BIT      = 5;
     `endif  // XILINX_CPU_32BIT (Vivado Define Option)
 
+
     //////////
     // wire //
     //////////
@@ -117,7 +118,7 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_id_reg_rdata2;                    // Registers RDATA2 (ID)
     wire [DATA_BIT - 1:0]               w_ex_reg_rdata2;                    // Registers RDATA2 (EX)
     wire [DATA_BIT - 1:0]               w_mem_reg_rdata2;                   // Registers RDATA2 (MEM)
-    wire [DATA_BIT - 1:0]               w_wb_memtoreg_mux_data;             // ALU Output or D-MEM RDATA ([Warning] Hazard)
+    wire [DATA_BIT - 1:0]               w_wb_memtoreg_mux_data;             // ALU Output or D-MEM RDATA
     wire [DATA_BIT - 1:0]               w_ex_alusrc_mux_data;               // Registers RDATA2 or Sign-Extend Constant
     wire [DATA_BIT - 1:0]               w_ex_alu_out;                       // ALU Output (EX)
     wire [DATA_BIT - 1:0]               w_mem_alu_out;                      // ALU Output (MEM)
@@ -152,9 +153,12 @@ module top_cpu #(
     wire [DATA_BIT - 1:0]               w_mem_wdata_fw_mux_data_2c;         // WDATA Forward MUX Data (2 Cycle) (MEM) 
     wire                                w_ex_ctr_flush;                     // Instruction Flush Sinal
     wire [DATA_BIT - 1:0]               w_wb_d_mem_data;                    // D-MEM RDATA (WB) 
-    wire                                w_ctr_load_stall;                   // Load Stall Flag Signal
+    wire                                w_load_stall_ctr;                   // Load Stall Flag Signal
     wire                                w_ex_link_ret_addr_kill;            // BLT/BGEZAL Not Taken Flag Signal
     wire                                w_wb_ctr_link_ret_addr;             // Link $ra memtoreg Flag Signal
+    wire                                w_fw_ctr_jump_1c;                   // Jump Forward Output (1 Cycle)
+    wire                                w_fw_ctr_jump_2c;                   // Jump Forward Output (2 Cycle)
+    wire [DATA_BIT - 1:0]               w_jump_register_forward_mux_data;   // Jump Forward MUX Data
 
 ////////////////////////////////////////
 // IF (Instruction Fetch from Memory) //
@@ -173,7 +177,7 @@ module top_cpu #(
     mux21 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_pc_stall_mux (
-        .i_ctr          (w_ctr_load_stall),
+        .i_ctr          (w_load_stall_ctr),
         .i_i0           (w_if_pc_mux_addr),
         .i_i1           (w_if_pc_addr),
         .o_o            (w_if_pc_stall_mux_addr)
@@ -183,7 +187,7 @@ module top_cpu #(
     mux21 #(
         .DATA_BIT       (ADDR_BIT)
     ) u_i_mem_addr_mux (
-        .i_ctr          (w_ctr_load_stall),
+        .i_ctr          (w_load_stall_ctr),
         .i_i0           (w_if_pc_addr),
         .i_i1           (w_id_pc_addr),
         .o_o            (w_if_i_mem_addr)
@@ -215,7 +219,7 @@ module top_cpu #(
         .clk            (clk),
         .rst_n          (rst_n),
         .i_flush        (w_ex_ctr_flush),
-        .i_stall        (w_ctr_load_stall),
+        .i_stall        (w_load_stall_ctr),
         .i_i_mem_data   (i_i_mem_data),
         .i_pc_addr      (w_if_pc_addr/*w_if_add4_addr*/),
         .o_i_mem_data   (w_id_i_mem_data),
@@ -322,7 +326,7 @@ module top_cpu #(
     ) u_id_ex_bridge (
         .clk            (clk),
         .rst_n          (rst_n),
-        .i_flush        (w_ex_ctr_flush | w_ctr_load_stall),
+        .i_flush        (w_ex_ctr_flush | w_load_stall_ctr),
         .i_pc_addr      (w_id_pc_addr),
         .i_rs           (w_id_dec_rs),
         .i_rt           (w_id_dec_rt),
@@ -400,13 +404,13 @@ module top_cpu #(
     mux41 #(
         .DATA_BIT       (DATA_BIT)
     ) u_jump_register_forward_mux (
-        .i_ctr          (/*TBD1*/),
+        .i_ctr          ({w_fw_ctr_jump_2c, w_fw_ctr_jump_1c}),
         .i_i00          (w_ex_reg_rdata1),
         .i_i01          (w_mem_alu_out),
         .i_i11          (w_mem_alu_out),
-        .i_i10          (w_wb_alu_out),
-        .o_o            (/*TBD2*/)
-    )
+        .i_i10          (w_wb_memtoreg_mux_data),
+        .o_o            (w_jump_register_forward_mux_data)
+    );
 
     /* I-MEM RADDR Decision MUX (Jump MUX) */
     mux41 #(
@@ -416,7 +420,7 @@ module top_cpu #(
         .i_i00          (w_ex_branch_mux_addr),             // branch
         .i_i01          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // j
         .i_i11          (w_ex_jump_addr[ADDR_BIT - 1:0]),   // jal
-        .i_i10          (/*TBD2*/w_ex_reg_rdata1),          // jr, jral ====> Hazard
+        .i_i10          (w_jump_register_forward_mux_data), // jr, jral ====> Hazard
         .o_o            (w_ex_jump_mux_addr)
     );
 
@@ -592,12 +596,14 @@ module top_cpu #(
 // WB (Write Result Back to Register) //
 ////////////////////////////////////////
     /* WR Register Decision MUX (for jal) */
-    mux21 #(
+    mux41 #(
         .DATA_BIT       (REG_BIT)
     ) u_regdst_jal_mux (
-        .i_ctr          (w_wb_ctr_link_ret_addr), 
-        .i_i0           (w_wb_regdst_mux_reg),
-        .i_i1           ({REG_BIT{1'b1}}),          // $ra
+        .i_ctr          ({w_wb_ctr_link_ret_addr, (w_wb_jump == `JUMP_JR_AL)}), 
+        .i_i00          (w_wb_regdst_mux_reg),
+        .i_i01          (w_wb_regdst_mux_reg),  // Not Happend
+        .i_i11          (w_wb_regdst_mux_reg),
+        .i_i10          ({REG_BIT{1'b1}}),      // $ra
         .o_o            (w_wb_regdst_jal_mux_reg)
     );  
     
@@ -664,7 +670,7 @@ module top_cpu #(
         .i_ex_wr_reg    (w_ex_regdst_mux_reg),
         .i_id_rs        (w_id_dec_rs),
         .i_id_rt        (w_id_dec_rt),
-        .o_load_stall   (w_ctr_load_stall)
+        .o_load_stall   (w_load_stall_ctr)
     );
 
     /* Jump Forwarding Unit */
@@ -673,10 +679,10 @@ module top_cpu #(
     ) u_jump_forwarding_unit (
         .i_ex_jump      (w_ex_ctr_jump),
         .i_mem_wr_reg   (w_mem_regdst_mux_reg),
-        .i_wb_wr_reg    (w_wb_regdst_mux_reg)
+        .i_wb_wr_reg    (w_wb_regdst_mux_reg),
         .i_ex_rs        (w_ex_dec_rs),
-        .o_1c_forward   (/*TBD3*/),
-        .o_2c_forwad    (/*TBD4*/)
+        .o_1c_forward   (w_fw_ctr_jump_1c),
+        .o_2c_forward   (w_fw_ctr_jump_2c)
     );
 
     /* Assign wire */
