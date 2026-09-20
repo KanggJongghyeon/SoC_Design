@@ -46,7 +46,10 @@ soc_design/
 design/**/*.mem
 design/**/*.txt
 design/top.sv
-design/peripheral/
+design/peripheral/cmu/
+design/peripheral/cpu_cmu_arbiter/
+design/peripheral/ahb_ctrl.sv
+design/peripheral/sfr_table.svh
 
 # for_ubuntu
 for_ubuntu/**/objMips/
