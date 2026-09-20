@@ -20,10 +20,10 @@ int main()
     printf("1. AUX MEMORY WRITE TEST ...\n");
     clock_t StartTick = clock();
     
-    int8_t win64AuxMem[10000 * 4] = {0};
+    int8_t win64AuxMem[1000 * 4] = {0};
     #endif  // NMIPS    
                     
-    for (uint16_t i = 0U; i < 10000U; i = i + 4U)
+    for (uint16_t i = 0U; i < 1000U; i = i + 4U)
     {
         #ifndef NMIPS
         *(volatile int32_t*)(MMIO_AUX_MEM + i) = 0x00000000 + (int32_t)i;
@@ -57,8 +57,8 @@ int main()
     printf("DMA TEST COMPLETE [%llu]\n", dmaTestTime);
     printf("\n");
     printf("|-----------All Test Finish-----------|\n");
-    printf("| AUX MEM WRITE TEST Time : %llu tick \n");
-    printf("| DMA           TEST Time : %llu tick \n");
+    printf("| AUX MEM WRITE TEST Time : %llu tick |\n");
+    printf("| DMA           TEST Time : %llu tick |\n");
     printf("|-------------------------------------|\n");
     #endif  // NMIPS
     
