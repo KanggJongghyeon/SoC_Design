@@ -558,7 +558,7 @@ module top_cpu #(
         .i_ctr          ({w_fw_ctr_wdata_1c, w_mem_fw_ctr_wdata_2c}),
         .i_i00          (w_mem_reg_rdata2),
         .i_i01          (w_mem_wdata_fw_mux_data_2c),
-        .i_i11          (w_mem_wdata_fw_mux_data_2c/* don't care */),
+        .i_i11          (w_wb_alu_out/*w_mem_wdata_fw_mux_data_2c*//* don't care */),
         .i_i10          (w_wb_alu_out),
         .o_o            (w_mem_wdata_fw_mux_data)
     );
@@ -654,6 +654,8 @@ module top_cpu #(
         .REG_BIT        (REG_BIT)
     ) u_wdata_forwarding_unit (
         .i_wb_regwrite  (w_wb_regwrite),
+        .i_ex_memwrite  (w_ex_memwrite),
+        .i_mem_memwrite (w_mem_memwrite),
         .i_wb_wr_reg    (w_wb_regdst_mux_reg),
         .i_ex_rt        (w_ex_dec_rt),
         .i_mem_rt       (w_mem_dec_rt),

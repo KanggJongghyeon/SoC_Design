@@ -32,6 +32,8 @@ module wdata_forwarding_unit #(
     parameter   REG_BIT = 2
     )(
     input   wire                    i_wb_regwrite,
+    input   wire                    i_ex_memwrite,
+    input   wire                    i_mem_memwrite,
     input   wire    [REG_BIT - 1:0] i_wb_wr_reg,
     input   wire    [REG_BIT - 1:0] i_ex_rt,
     input   wire    [REG_BIT - 1:0] i_mem_rt,
@@ -39,8 +41,8 @@ module wdata_forwarding_unit #(
     output  wire                    o_1c_forward
     );
     
-    assign o_1c_forward = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_mem_rt);
-    assign o_2c_forward = (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_ex_rt);
+    assign o_1c_forward = (i_mem_memwrite == 1'b1) && (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_mem_rt);
+    assign o_2c_forward = (i_ex_memwrite  == 1'b1) && (i_wb_regwrite == 1'b1) && (i_wb_wr_reg != {REG_BIT{1'b0}}) && (i_wb_wr_reg == i_ex_rt);
 
 endmodule
 
