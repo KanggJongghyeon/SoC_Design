@@ -1,9 +1,10 @@
 `timescale 1ns / 1ps
 interface AXI5 #(
-    parameter ADDR_BIT  = 32,
-    parameter DATA_BIT  = 32,
-    parameter ID_BIT    = 12
-    );
+    parameter ADDR_BIT  = 32,   // Must 1 ~ 64  Bit                                                     ,
+    parameter DATA_BIT  = 32,   // DATA_BIT = {8, 16, 32, 64, 128, 256, 512, 1024} Bit,
+    parameter ID_W_BIT  = 12,   // Must 0 ~ 32 Bit
+    parameter ID_R_BIT  = 12,   // Must 0 ~ 32 Bit
+    );                      
 
     localparam STRB_BIT = DATA_BIT / 8;
 
@@ -18,7 +19,7 @@ interface AXI5 #(
     // AW Channel   (WRITE ADDRESS)
     wire                    AWVALID;
     wire                    AWREADY;
-    wire [ID_BIT   - 1:0]   AWID;
+    wire [ID_W_BIT - 1:0]   AWID;
     wire [ADDR_BIT - 1:0]   AWADDR;
     wire [7:0]              AWLEN;  
     wire [2:0]              AWSIZE; 
@@ -34,13 +35,13 @@ interface AXI5 #(
     // B Channel    (WRITE RESPONSE)
     wire                    BVALID;
     wire                    BREADY;
-    wire [ID_BIT   - 1:0]   BID;
+    wire [ID_W_BIT - 1:0]   BID;
     wire [1:0]              BRESP;
 
     // AR Channel   (READ ADDRESS)
     wire                    ARVALID;
     wire                    ARREADY;
-    wire [ID_BIT   - 1:0]   ARID;
+    wire [ID_R_BIT - 1:0]   ARID;
     wire [ADDR_BIT - 1:0]   ARADDR;
     wire [7:0]              ARLEN;   
     wire [2:0]              ARSIZE; 
@@ -49,7 +50,7 @@ interface AXI5 #(
     // R Channel (READ and READ RESPONSE)
     wire                    RVALID;
     wire                    RREADY;
-    wire [ID_BIT   - 1:0]   RID;
+    wire [ID_R_BIT - 1:0]   RID;
     wire [DATA_BIT - 1:0]   RDATA;
     wire                    RLAST;
     wire [1:0]              RRESP;
