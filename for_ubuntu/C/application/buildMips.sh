@@ -16,8 +16,8 @@ mips-linux-gnu-as -o objMips/dma.o objMips/dma.s
 mips-linux-gnu-gcc -mips32 objMips/application.o objMips/dma.o -o objMips/applicationMips.elf
 
 # Extract Total MIPS Assembly and Memory File
-mips-linux-gnu-objdump -d objMips/applicationMips.elf > objMips/totalApplication.s
-mips-linux-gnu-objdump -d objMips/applicationMips.elf | awk '/^[ \t]*[0-9a-f]+:/{print $2}' > objMips/application.mem
+mips-linux-gnu-objdump -d -z objMips/applicationMips.elf > objMips/totalApplication.s
+mips-linux-gnu-objdump -d -z objMips/applicationMips.elf | awk '/^[ \t]*[0-9a-f]+:/{print $2}' > objMips/application.mem
 echo "Complete Generate MIPS Memory File"
 
 # Extract ELF Information
