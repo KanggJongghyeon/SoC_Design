@@ -32,7 +32,7 @@ module cpu_axi_master #(
     wire                                w_buf_waddr_empty,      w_buf_wdata_empty,      w_buf_raddr_empty;      // Buffer Empty
     // for AXI Master Output                            
     reg                         r_awvalid,  r_n_awvalid;// AWVALID
-    reg     [AXI.ID_BIT - 1:0]  r_awid,     r_n_awid;   // AWID
+    reg     [AXI.ID_W_BIT - 1:0]r_awid,     r_n_awid;   // AWID
     reg     [ADDR_BIT - 1:0]    r_awaddr,   r_n_awaddr; // AWADDR
     reg     [7:0]               r_awlen;                // AWLEN
     reg     [2:0]               r_awsize,   r_n_awsize; // AWSIZE
@@ -43,7 +43,7 @@ module cpu_axi_master #(
     reg                         r_wlast,    r_n_wlast;  // WLAST
     reg                         r_bready;               // BREADY
     reg                         r_arvalid,  r_n_arvalid;// ARVALID
-    reg     [AXI.ID_BIT - 1:0]  r_arid,     r_n_arid;   // ARID
+    reg     [AXI.ID_R_BIT - 1:0]r_arid,     r_n_arid;   // ARID
     reg     [ADDR_BIT - 1:0]    r_araddr,   r_n_araddr; // ARADDR
     reg     [7:0]               r_arlen;                // ARLEN
     reg     [2:0]               r_arsize,   r_n_arsize; // ARSIZE
@@ -103,7 +103,7 @@ module cpu_axi_master #(
             r_aw_state          <= `S_AXI_IDLE;
             r_buf_waddr_pop_addr<= {BUF_ADDR_BIT{1'b0}};
             r_awvalid           <= 1'b0;
-            r_awid              <= {AXI.ID_BIT{1'b0}}; 
+            r_awid              <= {AXI.ID_W_BIT{1'b0}}; 
             r_awaddr            <= {ADDR_BIT{1'b0}};
             r_awsize            <= 3'b000; 
         end
@@ -122,7 +122,7 @@ module cpu_axi_master #(
             r_n_aw_state            = `S_AXI_IDLE;
             r_n_buf_waddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
             r_n_awvalid             = 1'b0;
-            r_n_awid                = {AXI.ID_BIT{1'b0}}; 
+            r_n_awid                = {AXI.ID_W_BIT{1'b0}}; 
             r_n_awaddr              = {ADDR_BIT{1'b0}};
             r_n_awsize              = 3'b000; 
         end
@@ -160,7 +160,7 @@ module cpu_axi_master #(
                             r_n_aw_state            = `S_AXI_IDLE;
                             r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
                             r_n_awvalid             = 1'b0;
-                            r_n_awid                = {AXI.ID_BIT{1'b0}};
+                            r_n_awid                = {AXI.ID_W_BIT{1'b0}};
                             r_n_awaddr              = {ADDR_BIT{1'b0}};
                             r_n_awsize              = 3'b000;
                         end
@@ -196,7 +196,7 @@ module cpu_axi_master #(
                     r_n_aw_state            = `S_AXI_IDLE;
                     r_n_buf_waddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
                     r_n_awvalid             = 1'b0;
-                    r_n_awid                = {AXI.ID_BIT{1'b0}}; 
+                    r_n_awid                = {AXI.ID_W_BIT{1'b0}}; 
                     r_n_awaddr              = {ADDR_BIT{1'b0}};
                     r_n_awsize              = 3'b000; 
                 end
@@ -334,7 +334,7 @@ module cpu_axi_master #(
             r_ar_state          <= `S_AXI_IDLE;
             r_buf_raddr_pop_addr<= {BUF_ADDR_BIT{1'b0}};
             r_arvalid           <= 1'b0;
-            r_arid              <= {AXI.ID_BIT{1'b0}};
+            r_arid              <= {AXI.ID_R_BIT{1'b0}};
             r_araddr            <= {ADDR_BIT{1'b0}};
             r_arsize            <= 3'b000;
         end
@@ -353,7 +353,7 @@ module cpu_axi_master #(
             r_n_ar_state            = `S_AXI_IDLE;
             r_n_buf_raddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
             r_n_arvalid             = 1'b0;
-            r_n_arid                = {AXI.ID_BIT{1'b0}};
+            r_n_arid                = {AXI.ID_R_BIT{1'b0}};
             r_n_araddr              = {ADDR_BIT{1'b0}};
             r_n_arsize              = 3'b000;
         end
@@ -391,7 +391,7 @@ module cpu_axi_master #(
                             r_n_ar_state            = `S_AXI_IDLE;
                             r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
                             r_n_arvalid             = 1'b0;
-                            r_n_arid                = {AXI.ID_BIT{1'b0}};
+                            r_n_arid                = {AXI.ID_R_BIT{1'b0}};
                             r_n_araddr              = {ADDR_BIT{1'b0}};
                             r_n_arsize              = 3'b000;
                         end
@@ -427,7 +427,7 @@ module cpu_axi_master #(
                     r_n_ar_state            = `S_AXI_IDLE;
                     r_n_buf_raddr_pop_addr  = {BUF_ADDR_BIT{1'b0}};
                     r_n_arvalid             = 1'b0;
-                    r_n_arid                = {AXI.ID_BIT{1'b0}}; 
+                    r_n_arid                = {AXI.ID_R_BIT{1'b0}}; 
                     r_n_araddr              = {ADDR_BIT{1'b0}};
                     r_n_arsize              = 3'b000; 
                 end

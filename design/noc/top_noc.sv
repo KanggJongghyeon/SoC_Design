@@ -31,7 +31,8 @@ module top_noc #(
     AXI5 #(
         .ADDR_BIT       (AXI5_ADDR_BIT),
         .DATA_BIT       (AXI5_DATA_BIT),
-        .ID_BIT         (AXI5_ID_BIT)
+        .ID_W_BIT       (AXI5_ID_BIT),
+        .ID_R_BIT       (AXI5_ID_BIT)
     ) AXI_CPU           ();
 
     //// NoC AXI Interface
@@ -45,7 +46,8 @@ module top_noc #(
     AXI5 #(
         .ADDR_BIT       (AXI5_ADDR_BIT),
         .DATA_BIT       (AXI5_DATA_BIT),
-        .ID_BIT         (AXI5_ID_BIT)
+        .ID_W_BIT       (AXI5_ID_BIT),
+        .ID_R_BIT       (AXI5_ID_BIT)
     ) AXI_AXI2APB       ();
     
     // AXI2APB APB Interface

@@ -31,17 +31,17 @@ module noc #(
     
     // for AXI NoC Output
     reg                             r_noc_bvalid;
-    reg [AXI_NOC.ID_BIT - 1:0]      r_noc_bid;
+    reg [AXI_NOC.ID_W_BIT - 1:0]    r_noc_bid;
     reg [1:0]                       r_noc_bresp;
     reg                             r_noc_rvalid;
-    reg [AXI_NOC.ID_BIT - 1:0]      r_noc_rid;
+    reg [AXI_NOC.ID_R_BIT - 1:0]    r_noc_rid;
     reg [DATA_BIT - 1:0]            r_noc_rdata;
     reg                             r_noc_rlast;
     reg [1:0]                       r_noc_rresp;
     
     // for AXI AXI2APB Output
     reg                             r_axi2apb_awvalid;
-    reg [AXI_AXI2APB.ID_BIT - 1:0]  r_axi2apb_awid;
+    reg [AXI_AXI2APB.ID_W_BIT - 1:0]r_axi2apb_awid;
     reg [ADDR_BIT - 1:0]            r_axi2apb_awaddr;
     reg [7:0]                       r_axi2apb_awlen;
     reg [2:0]                       r_axi2apb_awsize;
@@ -51,7 +51,7 @@ module noc #(
     reg [AXI_AXI2APB.STRB_BIT - 1:0]r_axi2apb_wstrb;
     reg                             r_axi2apb_wlast;
     reg                             r_axi2apb_arvalid;
-    reg [AXI_AXI2APB.ID_BIT - 1:0]  r_axi2apb_arid;
+    reg [AXI_AXI2APB.ID_R_BIT - 1:0]r_axi2apb_arid;
     reg [ADDR_BIT - 1:0]            r_axi2apb_araddr;
     reg [7:0]                       r_axi2apb_arlen;
     reg [2:0]                       r_axi2apb_arsize;
@@ -65,8 +65,8 @@ module noc #(
     `endif // XILINX_NOC_DEBUG
     
     // for Previous AxID Store
-    reg [AXI_NOC.ID_BIT - 1:0]      r_x1_awid;
-    reg [AXI_NOC.ID_BIT - 1:0]      r_x2_awid;
+    reg [AXI_NOC.ID_W_BIT - 1:0]    r_x1_awid;
+    reg [AXI_NOC.ID_W_BIT - 1:0]    r_x2_awid;
     
     // for Loop Variable
     integer                         buf_idx;
@@ -102,8 +102,8 @@ module noc #(
     // Store Previous AWID
     always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
-            r_x1_awid   <= {AXI_NOC.ID_BIT{1'b0}};
-            r_x2_awid   <= {AXI_NOC.ID_BIT{1'b0}};
+            r_x1_awid   <= {AXI_NOC.ID_W_BIT{1'b0}};
+            r_x2_awid   <= {AXI_NOC.ID_W_BIT{1'b0}};
         end
         else begin
             r_x1_awid   <= AXI_NOC.AWID;
@@ -120,7 +120,7 @@ module noc #(
             end
             `endif // XILINX_NOC_DEBUG
             r_axi2apb_awvalid       <= 1'b0;
-            r_axi2apb_awid          <= {AXI_AXI2APB.ID_BIT{1'b0}};
+            r_axi2apb_awid          <= {AXI_AXI2APB.ID_W_BIT{1'b0}};
             r_axi2apb_awaddr        <= {ADDR_BIT{1'b0}};
             r_axi2apb_awlen         <= `SINGLE_BURST;
             r_axi2apb_awsize        <= 3'b000;
@@ -167,7 +167,7 @@ module noc #(
             `endif // XILINX_NOC_DEBUG
             r_axi2apb_wvalid        <= 1'b0;
             r_axi2apb_wdata         <= {DATA_BIT{1'b0}};
-            r_axi2apb_wstrb         <= {AXI_AXI2APB.ID_BIT{1'b0}};
+            r_axi2apb_wstrb         <= {AXI_AXI2APB.ID_W_BIT{1'b0}};
             r_axi2apb_wlast         <= 1'b0;
         end
         else begin
@@ -203,7 +203,7 @@ module noc #(
    always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
             r_noc_bvalid    <= 1'b0;
-            r_noc_bid       <= {AXI_NOC.ID_BIT{1'b0}};
+            r_noc_bid       <= {AXI_NOC.ID_W_BIT{1'b0}};
             r_noc_bresp     <= `XRESP_OKAY;
         end
         else begin
@@ -213,7 +213,7 @@ module noc #(
             end
             else begin
                 r_noc_bvalid<= 1'b0;
-                r_noc_bid   <= {AXI_NOC.ID_BIT{1'b0}};
+                r_noc_bid   <= {AXI_NOC.ID_W_BIT{1'b0}};
             end
         end
    end
@@ -227,7 +227,7 @@ module noc #(
             end
             `endif // XILINX_NOC_DEBUG
             r_axi2apb_arvalid       <= 1'b0;
-            r_axi2apb_arid          <= {AXI_AXI2APB.ID_BIT{1'b0}};
+            r_axi2apb_arid          <= {AXI_AXI2APB.ID_R_BIT{1'b0}};
             r_axi2apb_araddr        <= {ADDR_BIT{1'b0}};
             r_axi2apb_arlen         <= `SINGLE_BURST;
             r_axi2apb_arsize        <= 3'b000;
@@ -268,7 +268,7 @@ module noc #(
     always @ (posedge ACLK or negedge ARESET_N) begin
         if (~ARESET_N) begin
             r_noc_rvalid    <= 1'b0;
-            r_noc_rid       <= {AXI_NOC.ID_BIT{1'b0}};
+            r_noc_rid       <= {AXI_NOC.ID_R_BIT{1'b0}};
             r_noc_rdata     <= {DATA_BIT{1'b0}};
             r_noc_rlast     <= 1'b0;
             r_noc_rresp     <= `XRESP_OKAY;
@@ -287,7 +287,7 @@ module noc #(
             end
             else begin
                 r_noc_rvalid<= 1'b0;
-                r_noc_rid   <= {AXI_NOC.ID_BIT{1'b0}};
+                r_noc_rid   <= {AXI_NOC.ID_R_BIT{1'b0}};
                 r_noc_rdata <= {DATA_BIT{1'b0}};
                 r_noc_rlast <= 1'b0;
             end
