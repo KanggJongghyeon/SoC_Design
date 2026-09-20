@@ -46,19 +46,15 @@ module async_fifo #(
         end
     end
 
-    genvar w, r;
+    genvar ptr_index;
 
     assign w_wptr_g[PTR_BIT - 1] = r_wptr_b[PTR_BIT - 1];
-    
-    generate
-        for (w = PTR_BIT - 2; w > 0; w = w - 1) begin
-            assign w_wptr_g[w] = r_wptr_b[w + 1] ^ r_wptr_b[w];
-        end
-    endgenerate
+    assign w_rptr_g[PTR_BIT - 1] = r_rptr_b[PTR_BIT - 1];
 
     generate
-        for (r = PTR_BIT - 2; r > 0; r = r - 1) begin
-            assign w_wptr_g[r] = r_wptr_b[r + 1] ^ r_wptr_b[r];
+        for (w = PTR_BIT - 2; w > 0; w = w - 1) begin
+            assign w_wptr_g[ptr_index]  = r_wptr_b[ptr_index + 1] ^ r_wptr_b[ptr_index];
+            assign w_rptr_g[ptr_index]  = r_rptr_b[ptr_index + 1] ^ r_rptr_b[ptr_index];
         end
     endgenerate
 
