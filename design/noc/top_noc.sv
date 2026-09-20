@@ -48,6 +48,7 @@ module top_noc #(
         .ID_BIT         (AXI5_ID_BIT)
     ) AXI_AXI2APB       ();
     
+    // AXI2APB APB Interface
     APB3 APB_AXI2APB (); 
 
     // CPU AXI Master

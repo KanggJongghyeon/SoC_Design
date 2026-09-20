@@ -21,12 +21,14 @@ module noc #(
     wire                            w_axi2apb_wren;
     wire                            w_cache_mem_wren;
     wire                            w_main_mem_wren;
+    wire                            w_aux_mem_wren;
     wire                            w_boot_rom_rden;
     wire                            w_axi2ahb_rden;
     wire                            w_axi2apb_rden;
     wire                            w_cache_mem_rden;
     wire                            w_main_mem_rden;
-
+    wire                            w_aux_mem_rden;
+    
     // for AXI NoC Output
     reg                             r_noc_bvalid;
     reg [AXI_NOC.ID_BIT - 1:0]      r_noc_bid;
@@ -79,7 +81,8 @@ module noc #(
         .o_axi2ahb_en   (w_axi2ahb_wren),
         .o_axi2apb_en   (w_axi2apb_wren),
         .o_cache_mem_en (w_cache_mem_wren),
-        .o_main_mem_en  (w_main_mem_wren)
+        .o_main_mem_en  (w_main_mem_wren),
+        .o_aux_mem_en   (w_aux_mem_wren)
     );
 
     // RADDR DECODER
@@ -92,7 +95,8 @@ module noc #(
         .o_axi2ahb_en   (w_axi2ahb_rden),
         .o_axi2apb_en   (w_axi2apb_rden),
         .o_cache_mem_en (w_cache_mem_rden),
-        .o_main_mem_en  (w_main_mem_rden)
+        .o_main_mem_en  (w_main_mem_rden),
+        .o_aux_mem_en   (w_aux_mem_rden)
     );
 
     // Store Previous AWID
@@ -209,6 +213,7 @@ module noc #(
             end
             else begin
                 r_noc_bvalid<= 1'b0;
+                r_noc_bid   <= {AXI_NOC.ID_BIT{1'b0}};
             end
         end
    end
@@ -282,6 +287,9 @@ module noc #(
             end
             else begin
                 r_noc_rvalid<= 1'b0;
+                r_noc_rid   <= {AXI_NOC.ID_BIT{1'b0}};
+                r_noc_rdata <= {DATA_BIT{1'b0}};
+                r_noc_rlast <= 1'b0;
             end
         end
     end
@@ -298,6 +306,7 @@ module noc #(
     assign AXI_NOC.RDATA        = r_noc_rdata;
     assign AXI_NOC.RLAST        = r_noc_rlast;
     assign AXI_NOC.RRESP        = r_noc_rresp;
+
     // AXI_AXI2APB Output
     assign AXI_AXI2APB.AWVALID  = r_axi2apb_awvalid;
     assign AXI_AXI2APB.AWID     = r_axi2apb_awid;
