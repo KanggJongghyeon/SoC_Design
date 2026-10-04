@@ -3,7 +3,7 @@ interface AXI5 #(
     parameter ADDR_BIT  = 32,   // Must 1 ~ 64  Bit                                                     ,
     parameter DATA_BIT  = 32,   // DATA_BIT = {8, 16, 32, 64, 128, 256, 512, 1024} Bit,
     parameter ID_W_BIT  = 12,   // Must 0 ~ 32 Bit
-    parameter ID_R_BIT  = 12,   // Must 0 ~ 32 Bit
+    parameter ID_R_BIT  = 12    // Must 0 ~ 32 Bit
     );                      
 
     localparam STRB_BIT = DATA_BIT / 8;

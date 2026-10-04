@@ -11,8 +11,8 @@ module async_fifo #(
     input  wire                     i_popen,
     input  wire [DATA_BIT - 1:0]    i_pushdata,
     output wire [DATA_BIT - 1:0]    o_popdata,
-    output wire                     o_empty,
-    output wire                     o_full
+    output wire                     o_full,
+    output wire                     o_empty
     );
 
     reg  [DATA_BIT - 1:0] r_popdata;
@@ -52,14 +52,14 @@ module async_fifo #(
     assign w_rptr_g[PTR_BIT - 1] = r_rptr_b[PTR_BIT - 1];
 
     generate
-        for (w = PTR_BIT - 2; w > 0; w = w - 1) begin
+        for (ptr_index = PTR_BIT - 2; ptr_index > 0; ptr_index = ptr_index - 1) begin
             assign w_wptr_g[ptr_index]  = r_wptr_b[ptr_index + 1] ^ r_wptr_b[ptr_index];
             assign w_rptr_g[ptr_index]  = r_rptr_b[ptr_index + 1] ^ r_rptr_b[ptr_index];
         end
     endgenerate
 
     always @ (posedge pop_clk or negedge pop_rst_n) begin // CDC for empty situation
-        if (~rst_n) begin
+        if (~pop_rst_n) begin
             r_wptr_g_cdc_e <= 5'b00000;
             r_rptr_g_cdc_e <= 5'b00000;
         end
@@ -70,7 +70,7 @@ module async_fifo #(
     end
 
     always @ (posedge push_clk or negedge push_rst_n) begin // CDC for full situation
-        if (~rst_n) begin
+        if (~push_rst_n) begin
             r_wptr_g_cdc_f <= 3'b00000;
             r_rptr_g_cdc_f <= 3'b00000;
         end
@@ -105,8 +105,8 @@ module async_fifo #(
     end
                     
     assign o_popdata= r_popdata;
-    assign o_empty  = (r_wptr_g_cdc_e == r_rptr_g_cdc_e);
     assign o_full   = ((r_wptr_g_cdc_f[PTR_BIT - 1] != r_rptr_g_cdc_f[PTR_BIT - 1]) && (r_wptr_g_cdc_f[PTR_BIT - 2] != r_rptr_g_cdc_f[PTR_BIT - 2]) && (r_wptr_g_cdc_f[PTR_BIT - 3:0] == r_rptr_g_cdc_f[PTR_BIT - 3:0]));
+    assign o_empty  = (r_wptr_g_cdc_e == r_rptr_g_cdc_e);
 
 endmodule
 
@@ -120,8 +120,8 @@ module sync_fifo #(
     input  wire                     i_popen,
     input  wire [DATA_BIT - 1:0]    i_pushdata,
     output wire [DATA_BIT - 1:0]    o_popdata,
-    output wire                     o_empty,
-    output wire                     o_full
+    output wire                     o_full,
+    output wire                     o_empty
     );
 
     localparam PTR_BIT = $clog2(FIFO_SIZE) + 1;
@@ -136,10 +136,12 @@ module sync_fifo #(
         end
         else begin
             if (i_pushen) begin
-                r_wptr  <= r_wptr + {(PTR_BIT - 1){1'b0}, 1'b1};
+                //r_wptr  <= r_wptr + {{(PTR_BIT - 1){1'b0}}, 1'b1};
+                r_wptr  <= r_wptr + PTR_BIT'(1);
             end
             else if (i_popen) begin
-                r_rptr  <= r_rptr + {(PTR_BIT - 1){1'b0}, 1'b1};
+                //r_rptr  <= r_rptr + {{(PTR_BIT - 1){1'b0}}, 1'b1};
+                r_rptr  <= r_rptr + PTR_BIT'(1);
             end
         end
     end
@@ -171,8 +173,8 @@ module sync_fifo #(
     end
 
     assign o_popdata= r_popdata;
-    assign o_empty  = (r_wptr == r_rptr);
     assign o_full   = (r_wptr[PTR_BIT - 1] != r_rptr[PTR_BIT - 1]) && (r_wptr[PTR_BIT - 2:0] == r_rptr[PTR_BIT - 2:0]);
+    assign o_empty  = (r_wptr == r_rptr);
 
 endmodule
 

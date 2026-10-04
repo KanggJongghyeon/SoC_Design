@@ -68,6 +68,9 @@ module noc #(
     reg [AXI_NOC.ID_W_BIT - 1:0]    r_x1_awid;
     reg [AXI_NOC.ID_W_BIT - 1:0]    r_x2_awid;
     
+    reg [5:0]                       r_slave_wr_flag;    // {aux, main, cache, axi2apb, axi2ahb, boot_rom}
+    reg [5:0]                       r_slave_rd_flag;    // {aux, main, cache, axi2apb, axi2ahb, boot_rom}
+
     // for Loop Variable
     integer                         buf_idx;
     
@@ -98,6 +101,16 @@ module noc #(
         .o_main_mem_en  (w_main_mem_rden),
         .o_aux_mem_en   (w_aux_mem_rden)
     );
+
+//    always @ (posedge ACLK or negedge ARESET_N) begin
+//        if (~ARESET_N) begin
+//            r_slave_wr_flag <= 6'b000000;
+//            r_slave_rd_flag <= 6'b000000;
+//        end
+//        else begin
+//            r_slave_wr_flag <= {w_}
+//        end
+//    end
 
     // Store Previous AWID
     always @ (posedge ACLK or negedge ARESET_N) begin
@@ -154,6 +167,14 @@ module noc #(
                 //end
                 `endif // XILINX_NOC_SINGLE_MASTER
             end
+            else begin
+                r_axi2apb_awvalid   <= 1'b0;
+                r_axi2apb_awid      <= {AXI_AXI2APB.ID_W_BIT{1'b0}};
+                r_axi2apb_awaddr    <= {ADDR_BIT{1'b0}};
+                r_axi2apb_awlen     <= `SINGLE_BURST;
+                r_axi2apb_awsize    <= 3'b000;
+                r_axi2apb_awburst   <= `AXBURST_FIXED;
+            end
         end
     end
 
@@ -187,6 +208,12 @@ module noc #(
                     r_axi2apb_wdata     <= AXI_NOC.WDATA;
                     r_axi2apb_wstrb     <= AXI_NOC.WSTRB;
                     r_axi2apb_wlast     <= AXI_NOC.WLAST;
+                end
+                else begin
+                    r_axi2apb_wvalid    <= 1'b0;
+                    r_axi2apb_wdata     <= {DATA_BIT{1'b0}};
+                    r_axi2apb_wstrb     <= {AXI_AXI2APB.ID_W_BIT{1'b0}};
+                    r_axi2apb_wlast     <= 1'b0;
                 end
                 //else if (w_cache_mem_wren == 1'b1) begin
 
@@ -253,6 +280,14 @@ module noc #(
                     r_axi2apb_arsize    <= AXI_NOC.ARSIZE;
                     r_axi2apb_arburst   <= AXI_NOC.ARBURST;
                 end
+                else begin
+                    r_axi2apb_arvalid   <= 1'b0;
+                    r_axi2apb_arid      <= {AXI_AXI2APB.ID_R_BIT{1'b0}};
+                    r_axi2apb_araddr    <= {ADDR_BIT{1'b0}};
+                    r_axi2apb_arlen     <= `SINGLE_BURST;
+                    r_axi2apb_arsize    <= 3'b000;
+                    r_axi2apb_arburst   <= `AXBURST_FIXED;
+                end
                 //else if (w_cache_mem_wren == 1'b1) begin
 
                 //end
@@ -295,7 +330,7 @@ module noc #(
     end
    
     // AXI_NoC Output
-    assign AXI_NOC.AWREADY      = 1'b1;
+    assign AXI_NOC.AWREADY      = AXI_AXI2APB.AWREADY/*1'b1*/;
     assign AXI_NOC.WREADY       = 1'b1;
     assign AXI_NOC.BVALID       = r_noc_bvalid;
     assign AXI_NOC.BID          = r_noc_bid;

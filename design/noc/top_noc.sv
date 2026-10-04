@@ -14,12 +14,14 @@ module top_noc #(
     input   wire    [AXI5_ADDR_BIT - 1:0]   i_cpu_addr,
     input   wire    [AXI5_DATA_BIT - 1:0]   i_cpu_data,
     input   wire    [AXI5_STRB_BIT - 1:0]   i_cpu_strb,
-    output  wire    [AXI5_DATA_BIT - 1:0]   o_cpu_data
+    output  wire    [AXI5_DATA_BIT - 1:0]   o_cpu_data,
     // DMA AXI Interface
     //AXI5.SLAVE                              AXI_DMA
     //output  wire                            o_dma_aw_gnt,
     //output  wire                            o_dma_w_gnt,
     //output  wire                            o_dma_ar_gnt
+    // AXI2APB AXI Interface
+    AXI5.MASTER                             AXI_AXI2APB
     );
 
     //// Arbiter Handshake Bit
@@ -43,15 +45,15 @@ module top_noc #(
     //) AXI_NOC           ();
     
     // AXI2APB AXI Interface
-    AXI5 #(
-        .ADDR_BIT       (AXI5_ADDR_BIT),
-        .DATA_BIT       (AXI5_DATA_BIT),
-        .ID_W_BIT       (AXI5_ID_BIT),
-        .ID_R_BIT       (AXI5_ID_BIT)
-    ) AXI_AXI2APB       ();
+    //AXI5 #(
+    //    .ADDR_BIT       (AXI5_ADDR_BIT),
+    //    .DATA_BIT       (AXI5_DATA_BIT),
+    //    .ID_W_BIT       (AXI5_ID_BIT),
+    //    .ID_R_BIT       (AXI5_ID_BIT)
+    //) AXI_AXI2APB       ();
     
     // AXI2APB APB Interface
-    APB3 APB_AXI2APB (); 
+    //APB3 APB_AXI2APB (); 
 
     // CPU AXI Master
     cpu_axi_master #(
