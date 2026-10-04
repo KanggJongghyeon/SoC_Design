@@ -212,7 +212,7 @@ module noc #(
                 else begin
                     r_axi2apb_wvalid    <= 1'b0;
                     r_axi2apb_wdata     <= {DATA_BIT{1'b0}};
-                    r_axi2apb_wstrb     <= {AXI_AXI2APB.ID_W_BIT{1'b0}};
+                    r_axi2apb_wstrb     <= {AXI_AXI2APB.STRB_BIT{1'b0}};
                     r_axi2apb_wlast     <= 1'b0;
                 end
                 //else if (w_cache_mem_wren == 1'b1) begin

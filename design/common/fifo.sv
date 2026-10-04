@@ -52,7 +52,7 @@ module async_fifo #(
     assign w_rptr_g[PTR_BIT - 1] = r_rptr_b[PTR_BIT - 1];
 
     generate
-        for (ptr_index = PTR_BIT - 2; ptr_index > 0; ptr_index = ptr_index - 1) begin
+        for (ptr_index = 0; ptr_index < PTR_BIT - 1; ptr_index = ptr_index + 1) begin
             assign w_wptr_g[ptr_index]  = r_wptr_b[ptr_index + 1] ^ r_wptr_b[ptr_index];
             assign w_rptr_g[ptr_index]  = r_rptr_b[ptr_index + 1] ^ r_rptr_b[ptr_index];
         end

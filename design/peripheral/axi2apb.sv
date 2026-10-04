@@ -54,20 +54,22 @@ module axi2apb (
             r_bresp         <= `XRESP_OKAY;
         end
         else begin
-            if (AXI.AWVALID == 1'b1) begin
-                r_wr_id                 <= AXI.AWID;
-                r_wr_tx_pushdata[63:32] <= AXI.AWADDR;
-            end
-            else if (AXI.WVALID == 1'b1) begin
-                r_wr_tx_pushen          <= 1'b1;
-                r_wr_tx_pushdata[31:0]  <= AXI.WDATA;
-                r_bvalid                <= 1'b1;
-                r_bid                   <= r_wr_id;
-            end
-            else begin
-                r_wr_tx_pushen  <= 1'b0;
-                r_bvalid        <= 1'b0;
-                r_bid           <= {AXI.ID_W_BIT{1'b0}};
+            if (i_wr_tx_full == 1'b0) begin
+                if (AXI.AWVALID == 1'b1) begin
+                    r_wr_id                 <= AXI.AWID;
+                    r_wr_tx_pushdata[63:32] <= AXI.AWADDR;
+                end
+                else if (AXI.WVALID == 1'b1) begin
+                    r_wr_tx_pushen          <= 1'b1;
+                    r_wr_tx_pushdata[31:0]  <= AXI.WDATA;
+                    r_bvalid                <= 1'b1;
+                    r_bid                   <= r_wr_id;
+                end
+                else begin
+                    r_wr_tx_pushen  <= 1'b0;
+                    r_bvalid        <= 1'b0;
+                    r_bid           <= {AXI.ID_W_BIT{1'b0}};
+                end
             end
         end
     end
@@ -78,15 +80,17 @@ module axi2apb (
             r_rd_tx_pushdata<= 32'h00000000;
             r_rd_id         <= {AXI.ID_R_BIT{1'b0}};
         end
-        else begin              
-            if (AXI.ARVALID == 1'b1) begin
-                r_rd_tx_pushen  <= 1'b1;
-                r_rd_tx_pushdata<= AXI.ARADDR;
-                r_rd_id         <= AXI.ARID;
-            end
-            else begin
-                r_rd_tx_pushen  <= 1'b0;
-                r_rd_tx_pushdata<= 32'h00000000;
+        else begin
+            if (i_rd_tx_full == 1'b1) begin 
+                if (AXI.ARVALID == 1'b1) begin
+                    r_rd_tx_pushen  <= 1'b1;
+                    r_rd_tx_pushdata<= AXI.ARADDR;
+                    r_rd_id         <= AXI.ARID;
+                end
+                else begin
+                    r_rd_tx_pushen  <= 1'b0;
+                    r_rd_tx_pushdata<= 32'h00000000;
+                end
             end
         end
     end

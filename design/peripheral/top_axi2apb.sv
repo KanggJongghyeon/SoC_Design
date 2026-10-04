@@ -67,13 +67,13 @@ module top_axi2apb (
     );
 
     async_fifo #(
-        .DATA_BIT           (64),
+        .DATA_BIT           (32),
         .FIFO_SIZE          (8)
-    ) u_wr_rx_async_fifo (
+    ) u_rd_rx_async_fifo (
         .push_clk           (PCLK),
         .push_rst_n         (PRESET_N),
-        .pop_clk            (PCLK),
-        .pop_rst_n          (PRESET_N),
+        .pop_clk            (ACLK),
+        .pop_rst_n          (ARESET_N),
         .i_pushen           (),
         .i_popen            (w_rd_rx_popen),
         .i_pushdata         (),
