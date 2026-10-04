@@ -3,7 +3,7 @@
 `include "tb_typedef.svh"
 `include "tb_funct.svh"
 
-module tb_top_noc(); 
+module tb_top_soc(); 
     
     // Local Pramter
     localparam  AXI5_ID_BIT = 12;
@@ -157,7 +157,7 @@ module tb_top_noc();
         .i_strb             (w_d_mem_wstrb),
         .o_data             (w_d_mem_rdata)
     );
-    
+
     AXI5 #(
         .ADDR_BIT           (`ADDR_BIT),
         .DATA_BIT           (`DATA_BIT),
@@ -183,6 +183,14 @@ module tb_top_noc();
         //.AXI_CPU          (),
         //.AXI_DMA          (),
         .AXI_AXI2APB        (AXI_NOC_AXI2APB)
+    );
+
+    top_axi2apb u_top_axi2apb (
+        .ACLK               (clk),
+        .ARESET_N           (rst_n),
+        .PCLK               (clk),
+        .PRESET_N           (rst_n),
+        .AXI_NOC            (AXI_NOC_AXI2APB)
     );
 
 endmodule

@@ -57,7 +57,6 @@ for_ubuntu/**/objWin64/
 for_ubuntu/C/**/buildWin64.bat
 
 # tb
-tb/tb_TOP.sv
 tb/**/*.txt
 tb/**/*.mem
 tb/old/
