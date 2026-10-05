@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "./../amba/AMBA.svh"
+`include "./../../amba/AMBA.svh"
 module axi2apb (
     input   wire            ACLK,
     input   wire            ARESET_N,

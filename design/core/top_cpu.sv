@@ -1,9 +1,10 @@
 `timescale 1ns / 1ps
 `include "ctr_unit.svh"
 module top_cpu #(
-    parameter ADDR_BIT  = 8,
-    parameter DATA_BIT  = 32,
-    parameter STRB_BIT  = 4
+    parameter ADDR_BIT      = 8,
+    parameter DATA_BIT      = 32,
+    parameter STRB_BIT      = 4,
+    parameter AXI5_ID_BIT   = 6
     )(
     input   wire                    clk,            // Global
     input   wire                    rst_n,          // Global
@@ -20,12 +21,14 @@ module top_cpu #(
     output  wire [STRB_BIT - 1:0]   o_d_mem_strb,   // to   D-MEM
     
     output  wire                    o_arbiter_req,  // to   Arbiter
-    input   wire                    i_arbiter_gnt   // from Arbiter
+    input   wire                    i_arbiter_gnt,  // from Arbiter
+
+    AXI5.MASTER                     AXI             // to   NoC
     );
 
-    /////////////////////
-    // Local Parameter //
-    /////////////////////
+/////////////////////
+// Local Parameter //
+/////////////////////
     `ifndef XILINX_CPU_32BIT
         localparam OPCODE_BIT   = 4;
         localparam REG_BIT      = 2;
@@ -34,10 +37,9 @@ module top_cpu #(
         localparam REG_BIT      = 5;
     `endif  // XILINX_CPU_32BIT (Vivado Define Option)
 
-
-    //////////
-    // wire //
-    //////////
+//////////
+// wire //
+//////////
     wire                                w_if_i_mem_en;                      // I-MEM  Enable
     wire [ADDR_BIT - 1:0]               w_if_i_mem_addr;                    // I-MEM  ADDR
     wire [ADDR_BIT - 1:0]               w_if_pc_addr;                       // PC     ADDR (IF)
@@ -687,6 +689,29 @@ module top_cpu #(
         .i_ex_rs        (w_ex_dec_rs),
         .o_1c_forward   (w_fw_ctr_jump_1c),
         .o_2c_forward   (w_fw_ctr_jump_2c)
+    );
+
+/////////////////////////////////////////////////////////
+// CPU Local Interface <=> AXI Master Interface Bridge //
+/////////////////////////////////////////////////////////
+    /* CPU AXI Master */
+    cpu_axi_master #(
+        .ADDR_BIT       (ADDR_BIT),
+        .DATA_BIT       (DATA_BIT),
+        .STRB_BIT       (STRB_BIT)
+    ) u_cpu_axi_master (
+        .clk            (clk),
+        .rst_n          (rst_n),
+        .i_cpu_en       (o_d_mem_en),
+        .i_cpu_wren     (o_d_mem_wren),
+        .i_cpu_addr     (o_d_mem_addr),
+        .i_cpu_data     (o_d_mem_data),
+        .i_cpu_strb     (o_d_mem_strb),
+        .o_cpu_data     (/*Fixed-Me*/),
+        //.i_cpu_aw_gnt   (w_cpu_aw_gnt),
+        //.i_cpu_w_gnt    (w_cpu_w_gnt),
+        //.i_cpu_ar_gnt   (w_cpu_ar_gnt),
+        .AXI            (AXI)
     );
 
     /* Assign wire */

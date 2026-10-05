@@ -4,8 +4,8 @@ module top_soc #(
     parameter ADDR_BIT  = 32,
     parameter DATA_BIT  = 32
     )(
-    input   wire                        clk,
-    input   wire                        rst_n,
+    input   wire                        clk,            // Global  
+    input   wire                        rst_n,          // Global
 
     input   wire                        i_i_mem_en,     // Go to I-MEM  
     input   wire                        i_i_mem_wren,   // Go to I-MEM
@@ -13,11 +13,15 @@ module top_soc #(
     input   wire    [DATA_BIT - 1:0]    i_i_mem_data    // Go to I-MEM
     );
 
-    // Loal Parameter
+////////////////////
+// Loal Parameter //
+////////////////////
     localparam STRB_BIT     = DATA_BIT / `BYTE_SIZE;// STRB Bit
     localparam AXI5_ID_BIT  = 12;                   // AXI5 ID Bit
 
-    // Wire
+//////////
+// Wire //
+//////////
     wire                    w_i_mem_en;     //  I-MEM ENABLE
     wire [ADDR_BIT - 1:0]   w_i_mem_addr;   //  I-MEM ADDR
     wire [DATA_BIT - 1:0]   w_i_mem_rdata;  //  I-MEM RDATA
@@ -29,7 +33,18 @@ module top_soc #(
     wire [DATA_BIT - 1:0]   w_d_mem_rdata;  //  D-MEM RDATA
     wire                    w_arbiter_req;  //  Arbiter Request
 
-    // AXI2APB Interface
+///////////////////
+// AXI Interface //
+///////////////////
+    /* AXI-NoC Interface */
+    AXI5 #(
+        .ADDR_BIT           (ADDR_BIT),
+        .DATA_BIT           (DATA_BIT),
+        .ID_W_BIT           (AXI5_ID_BIT),
+        .ID_R_BIT           (AXI5_ID_BIT)
+    ) AXI_CPU_NOC ();
+
+    /* NoC-AXI2APB Interface */
     AXI5 #(
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT),
@@ -37,7 +52,10 @@ module top_soc #(
         .ID_R_BIT           (AXI5_ID_BIT)
     ) AXI_NOC_AXI2APB ();
 
-    // I-MEM
+////////////////
+// Digital IP //
+////////////////
+    /* I-MEM */
     SDRAM #(
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT)
@@ -51,11 +69,12 @@ module top_soc #(
         .o_data             (w_i_mem_rdata)
     );
 
-    // CPU
+    /* CPU(Central Processing Unit) */
     top_cpu #(              
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT),
-        .STRB_BIT           (STRB_BIT)
+        .STRB_BIT           (STRB_BIT),
+        .AXI5_ID_BIT        (AXI5_ID_BIT)
     ) u_top_cpu (
         .clk                (clk),
         .rst_n              (rst_n),
@@ -69,10 +88,11 @@ module top_soc #(
         .o_d_mem_data       (w_d_mem_wdata),
         .o_d_mem_strb       (w_d_mem_wstrb),
         .o_arbiter_req      (w_arbiter_req),
-        .i_arbiter_gnt      (1'b1)
+        .i_arbiter_gnt      (1'b1),
+        .AXI                (AXI_CPU_NOC)
     );
 
-    // Network on Chip
+    /* NoC(Network on Chip) */
     top_noc #(
         .AXI5_ADDR_BIT      (ADDR_BIT),
         .AXI5_DATA_BIT      (DATA_BIT),
@@ -81,18 +101,14 @@ module top_soc #(
     ) u_top_noc (
         .clk                (clk),
         .rst_n              (rst_n),
-        .i_cpu_en           (w_d_mem_en),
-        .i_cpu_wren         (w_d_mem_wren),
-        .i_cpu_addr         (w_d_mem_addr),
-        .i_cpu_data         (w_d_mem_wdata),
-        .i_cpu_strb         (w_d_mem_wstrb),
-        .o_cpu_data         (),
-        //.AXI_CPU          (),
-        //.AXI_DMA          (),
+        .AXI_CPU            (AXI_CPU_NOC),
+        //.AXI_DMA            (),
+        //.AXI_BOOT_ROM       (),
+        //.AXI_AXI2AHB        (),
         .AXI_AXI2APB        (AXI_NOC_AXI2APB)
     );
 
-    // AXI2APB
+    /* AXI2APB */
     top_axi2apb u_top_axi2apb (
         .ACLK               (clk),
         .ARESET_N           (rst_n),
@@ -101,7 +117,7 @@ module top_soc #(
         .AXI_NOC            (AXI_NOC_AXI2APB)
     );
     
-    // D-MEM
+    /* D-MEM */
     SDRAM #(
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT)

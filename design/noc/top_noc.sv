@@ -6,76 +6,20 @@ module top_noc #(
     parameter AXI5_STRB_BIT = 4,
     parameter AXI5_ID_BIT   = 12
     )(
-    input   wire                            clk,
-    input   wire                            rst_n,
-    // CPU Local Interface
-    input   wire                            i_cpu_en,
-    input   wire                            i_cpu_wren,
-    input   wire    [AXI5_ADDR_BIT - 1:0]   i_cpu_addr,
-    input   wire    [AXI5_DATA_BIT - 1:0]   i_cpu_data,
-    input   wire    [AXI5_STRB_BIT - 1:0]   i_cpu_strb,
-    output  wire    [AXI5_DATA_BIT - 1:0]   o_cpu_data,
-    // DMA AXI Interface
-    //AXI5.SLAVE                              AXI_DMA
-    //output  wire                            o_dma_aw_gnt,
-    //output  wire                            o_dma_w_gnt,
-    //output  wire                            o_dma_ar_gnt
-    // AXI2APB AXI Interface
-    AXI5.MASTER                             AXI_AXI2APB
+    input   wire    clk,        // Global  
+    input   wire    rst_n,      // Global
+    
+    AXI5.SLAVE      AXI_CPU,    // CPU AXI Interface
+   
+//    AXI5.SLAVE      AXI_DMA,    // DMA AXI Interface
+
+    AXI5.MASTER     AXI_AXI2APB // AXI2APB AXI Interface
     );
 
-    //// Arbiter Handshake Bit
-    //wire    w_cpu_aw_gnt,   w_aw_master;
-    //wire    w_cpu_w_gnt,    w_w_master;
-    //wire    w_cpu_ar_gnt,   w_ar_master;
-
-    // CPU AXI Interface
-    AXI5 #(
-        .ADDR_BIT       (AXI5_ADDR_BIT),
-        .DATA_BIT       (AXI5_DATA_BIT),
-        .ID_W_BIT       (AXI5_ID_BIT),
-        .ID_R_BIT       (AXI5_ID_BIT)
-    ) AXI_CPU           ();
-
-    //// NoC AXI Interface
-    //AXI5 #(
-    //    .ADDR_BIT       (AXI5_ADDR_BIT),
-    //    .DATA_BIT       (AXI5_DATA_BIT),
-    //    .ID_BIT         (AXI5_ID_BIT)
-    //) AXI_NOC           ();
-    
-    // AXI2APB AXI Interface
-    //AXI5 #(
-    //    .ADDR_BIT       (AXI5_ADDR_BIT),
-    //    .DATA_BIT       (AXI5_DATA_BIT),
-    //    .ID_W_BIT       (AXI5_ID_BIT),
-    //    .ID_R_BIT       (AXI5_ID_BIT)
-    //) AXI_AXI2APB       ();
-    
-    // AXI2APB APB Interface
-    //APB3 APB_AXI2APB (); 
-
-    // CPU AXI Master
-    cpu_axi_master #(
-        .ADDR_BIT       (AXI5_ADDR_BIT),
-        .DATA_BIT       (AXI5_DATA_BIT),
-        .STRB_BIT       (AXI5_STRB_BIT)
-    ) u_cpu_axi_master (
-        .clk            (clk),
-        .rst_n          (rst_n),
-        .i_cpu_en       (i_cpu_en),
-        .i_cpu_wren     (i_cpu_wren),
-        .i_cpu_addr     (i_cpu_addr),
-        .i_cpu_data     (i_cpu_data),
-        .i_cpu_strb     (i_cpu_strb),
-        .o_cpu_data     (o_cpu_data),
-        //.i_cpu_aw_gnt   (w_cpu_aw_gnt),
-        //.i_cpu_w_gnt    (w_cpu_w_gnt),
-        //.i_cpu_ar_gnt   (w_cpu_ar_gnt),
-        .AXI            (AXI_CPU)
-    );
-
-    // Network on Chip
+////////////////
+// Digital IP //
+////////////////
+    /* Network on Chip */
     noc #(
         .ADDR_BIT       (AXI5_ADDR_BIT),
         .DATA_BIT       (AXI5_DATA_BIT)
