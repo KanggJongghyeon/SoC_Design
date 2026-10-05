@@ -81,7 +81,7 @@ module axi2apb (
             r_rd_id         <= {AXI.ID_R_BIT{1'b0}};
         end
         else begin
-            if (i_rd_tx_full == 1'b1) begin 
+            if (i_rd_tx_full == 1'b0) begin 
                 if (AXI.ARVALID == 1'b1) begin
                     r_rd_tx_pushen  <= 1'b1;
                     r_rd_tx_pushdata<= AXI.ARADDR;
