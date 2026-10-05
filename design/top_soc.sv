@@ -22,21 +22,24 @@ module top_soc #(
 //////////
 // Wire //
 //////////
-    wire                    w_i_mem_en;     //  I-MEM ENABLE
-    wire [ADDR_BIT - 1:0]   w_i_mem_addr;   //  I-MEM ADDR
-    wire [DATA_BIT - 1:0]   w_i_mem_rdata;  //  I-MEM RDATA
-    wire                    w_d_mem_en;     //  D-MEM ENABLE
-    wire                    w_d_mem_wren;   //  D-MEM WR ENABLE
-    wire [ADDR_BIT - 1:0]   w_d_mem_addr;   //  D-MEM ADDR
-    wire [DATA_BIT - 1:0]   w_d_mem_wdata;  //  D-MEM WDATA
-    wire [STRB_BIT - 1:0]   w_d_mem_wstrb;  //  D-MEM WSTRB
-    wire [DATA_BIT - 1:0]   w_d_mem_rdata;  //  D-MEM RDATA
-    wire                    w_arbiter_req;  //  Arbiter Request
-
-///////////////////
-// AXI Interface //
-///////////////////
-    /* AXI-NoC Interface */
+    wire                    w_i_mem_en;             //  I-MEM ENABLE
+    wire [ADDR_BIT - 1:0]   w_i_mem_addr;           //  I-MEM ADDR
+    wire [DATA_BIT - 1:0]   w_i_mem_rdata;          //  I-MEM RDATA
+    wire                    w_d_mem_en;             //  D-MEM ENABLE
+    wire                    w_d_mem_wren;           //  D-MEM WR ENABLE
+    wire [ADDR_BIT - 1:0]   w_d_mem_addr;           //  D-MEM ADDR
+    wire [DATA_BIT - 1:0]   w_d_mem_wdata;          //  D-MEM WDATA
+    wire [STRB_BIT - 1:0]   w_d_mem_wstrb;          //  D-MEM WSTRB
+    wire [DATA_BIT - 1:0]   w_d_mem_rdata;          //  D-MEM RDATA
+    wire                    w_cpu_arbiter_wr_gnt;   // CPU WR Grant Signal
+    wire                    w_cpu_arbiter_rd_gnt;   // CPU RD Grant Signal
+    wire                    w_dma_arbiter_wr_gnt;   // DMA WR Grant Signal
+    wire                    w_dma_arbiter_rd_gnt;   // DMA RD Grant Signal
+    
+///////////////////////////////////
+// Advanced eXtensible Interface //
+///////////////////////////////////
+    /* CPU-NoC AXI */
     AXI5 #(
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT),
@@ -44,7 +47,15 @@ module top_soc #(
         .ID_R_BIT           (AXI5_ID_BIT)
     ) AXI_CPU_NOC ();
 
-    /* NoC-AXI2APB Interface */
+    /* DMA-NoC AXI */
+    AXI5 #(
+        .ADDR_BIT           (ADDR_BIT),
+        .DATA_BIT           (DATA_BIT),
+        .ID_W_BIT           (AXI5_ID_BIT),
+        .ID_R_BIT           (AXI5_ID_BIT)
+    ) AXI_DMA_NOC ();
+
+    /* NoC-AXI2APB AXI */
     AXI5 #(
         .ADDR_BIT           (ADDR_BIT),
         .DATA_BIT           (DATA_BIT),
@@ -87,25 +98,27 @@ module top_soc #(
         .o_d_mem_addr       (w_d_mem_addr),
         .o_d_mem_data       (w_d_mem_wdata),
         .o_d_mem_strb       (w_d_mem_wstrb),
-        .o_arbiter_req      (w_arbiter_req),
-        .i_arbiter_gnt      (1'b1),
+        .i_arbiter_wr_gnt   (w_cpu_arbiter_wr_gnt),
+        .i_arbiter_rd_gnt   (w_cpu_arbiter_rd_gnt),
         .AXI                (AXI_CPU_NOC)
     );
 
     /* NoC(Network on Chip) */
     top_noc #(
-        .AXI5_ADDR_BIT      (ADDR_BIT),
-        .AXI5_DATA_BIT      (DATA_BIT),
-        .AXI5_STRB_BIT      (STRB_BIT),
-        .AXI5_ID_BIT        (AXI5_ID_BIT)
+        .AXI5_ADDR_BIT          (ADDR_BIT),
+        .AXI5_DATA_BIT          (DATA_BIT),
+        .AXI5_STRB_BIT          (STRB_BIT),
+        .AXI5_ID_BIT            (AXI5_ID_BIT)
     ) u_top_noc (
-        .clk                (clk),
-        .rst_n              (rst_n),
-        .AXI_CPU            (AXI_CPU_NOC),
-        //.AXI_DMA            (),
-        //.AXI_BOOT_ROM       (),
-        //.AXI_AXI2AHB        (),
-        .AXI_AXI2APB        (AXI_NOC_AXI2APB)
+        .ACLK                   (clk),
+        .ARESET_N               (rst_n),
+        .AXI_CPU                (AXI_CPU_NOC),
+        .AXI_DMA                (AXI_DMA_NOC),
+        .o_cpu_arbiter_wr_gnt   (w_cpu_arbiter_wr_gnt),
+        .o_dma_arbiter_wr_gnt   (w_dma_arbiter_wr_gnt),
+        .o_cpu_arbiter_rd_gnt   (w_cpu_arbiter_rd_gnt),
+        .o_dma_arbiter_rd_gnt   (w_dma_arbiter_rd_gnt),
+        .AXI_AXI2APB            (AXI_NOC_AXI2APB)
     );
 
     /* AXI2APB */

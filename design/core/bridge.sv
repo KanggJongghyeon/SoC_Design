@@ -103,7 +103,6 @@ module id_ex #(
     input   wire    [2:0]               i_branch,       
     input   wire    [3:0]               i_aluop,        
     input   wire    [1:0]               i_jump,
-    input   wire                        i_arbiter_req,
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata1,   
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_sign_extend,  
@@ -126,8 +125,7 @@ module id_ex #(
     output  wire    [STRB_BIT - 1:0]    o_memrstrb,
     output  wire                        o_load_unsigned,
     output  wire                        o_memwrite,      
-    output  wire    [STRB_BIT - 1:0]    o_memwstrb,
-    output  wire                        o_arbiter_req
+    output  wire    [STRB_BIT - 1:0]    o_memwstrb
     );
    
     reg [REG_BIT - 1:0]     r_rs,           r_rt;
@@ -140,7 +138,6 @@ module id_ex #(
     reg                     r_load_unsigned;
     reg [2:0]               r_branch;
     reg [1:0]               r_jump;      
-    reg                     r_arbiter_req;
     reg [ADDR_BIT - 1:0]    r_pc_addr;
     reg [5:0]               r_funct;
     reg [DATA_BIT - 1:0]    r_reg_rdata1,   r_reg_rdata2;
@@ -163,7 +160,6 @@ module id_ex #(
             r_branch        <= `BRANCH_NONE;
             r_aluop         <= 4'h0;
             r_jump          <= 2'b00;
-            r_arbiter_req   <= 1'b0;
             r_pc_addr       <= {(ADDR_BIT){1'b0}};
             r_funct         <= 6'b000000;
             r_reg_rdata1    <= {(DATA_BIT){1'b0}};
@@ -193,7 +189,6 @@ module id_ex #(
                 r_memwstrb      <= {STRB_BIT{1'b0}};
                 r_branch        <= `BRANCH_NONE;
                 r_jump          <= 2'b00;
-                r_arbiter_req   <= 1'b0;
             end
             else begin
                 r_regwrite      <= i_regwrite;
@@ -201,7 +196,6 @@ module id_ex #(
                 r_memwstrb      <= i_memwstrb;
                 r_branch        <= i_branch;
                 r_jump          <= i_jump;
-                r_arbiter_req   <= i_arbiter_req;
             end
         end
     end
@@ -220,7 +214,6 @@ module id_ex #(
     assign o_branch         = r_branch;
     assign o_aluop          = r_aluop;
     assign o_jump           = r_jump;
-    assign o_arbiter_req    = r_arbiter_req;
     assign o_pc_addr        = r_pc_addr;
     assign o_funct          = r_funct;
     assign o_reg_rdata1     = r_reg_rdata1;
@@ -253,7 +246,6 @@ module ex_mem #(
     input   wire                        i_memwrite,
     input   wire    [STRB_BIT - 1:0]    i_memwstrb,
     input   wire    [1:0]               i_jump,
-    input   wire                        i_arbiter_req,
     input   wire    [DATA_BIT - 1:0]    i_reg_rdata2,   
     input   wire    [DATA_BIT - 1:0]    i_alu_out,  
     input   wire                        i_fw_ctr_wdata_2c,
@@ -270,7 +262,6 @@ module ex_mem #(
     output  wire                        o_memwrite,
     output  wire    [STRB_BIT - 1:0]    o_memwstrb,
     output  wire    [1:0]               o_jump,
-    output  wire                        o_arbiter_req,
     output  wire    [DATA_BIT - 1:0]    o_alu_out,      
     output  wire    [DATA_BIT - 1:0]    o_reg_rdata2,
     output  wire                        o_fw_ctr_wdata_2c,
@@ -286,7 +277,6 @@ module ex_mem #(
     reg [STRB_BIT - 1:0]    r_memrstrb,     r_memwstrb;
     reg                     r_load_unsigned;
     reg [1:0]               r_jump;
-    reg                     r_arbiter_req;
     reg [DATA_BIT - 1:0]    r_alu_out;
     reg [DATA_BIT - 1:0]    r_reg_rdata2;
     reg                     r_fw_ctr_wdata_2c;
@@ -306,7 +296,6 @@ module ex_mem #(
             r_memwrite          <= 1'b0;
             r_memwstrb          <= {STRB_BIT{1'b0}};
             r_jump              <= 2'b00;
-            r_arbiter_req       <= 1'b0;
             r_alu_out           <= {(DATA_BIT){1'b0}};
             r_reg_rdata2        <= {(DATA_BIT){1'b0}};
             r_fw_ctr_wdata_2c   <= 1'b0;
@@ -324,7 +313,6 @@ module ex_mem #(
             r_memwrite          <= i_memwrite;
             r_memwstrb          <= i_memwstrb;
             r_jump              <= i_jump;
-            r_arbiter_req       <= i_arbiter_req;
             r_alu_out           <= i_alu_out;
             r_reg_rdata2        <= i_reg_rdata2;
             r_fw_ctr_wdata_2c   <= i_fw_ctr_wdata_2c;
@@ -350,7 +338,6 @@ module ex_mem #(
     assign o_memwrite           = r_memwrite;
     assign o_memwstrb           = r_memwstrb;
     assign o_jump               = r_jump;
-    assign o_arbiter_req        = r_arbiter_req;
     assign o_alu_out            = r_alu_out;
     assign o_reg_rdata2         = r_reg_rdata2;
     assign o_fw_ctr_wdata_2c    = r_fw_ctr_wdata_2c;

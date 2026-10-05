@@ -6,24 +6,24 @@ module top_cpu #(
     parameter STRB_BIT      = 4,
     parameter AXI5_ID_BIT   = 6
     )(
-    input   wire                    clk,            // Global
-    input   wire                    rst_n,          // Global
-    
-    input   wire [DATA_BIT - 1:0]   i_i_mem_data,   // from I-MEM
-    output  wire                    o_i_mem_en,     // to   I-MEM
-    output  wire [ADDR_BIT - 1:0]   o_i_mem_addr,   // to   I-MEM
-
-    input   wire [DATA_BIT - 1:0]   i_d_mem_data,   // from D-MEM
-    output  wire                    o_d_mem_en,     // to   D-MEM
-    output  wire                    o_d_mem_wren,   // to   D-MEM
-    output  wire [ADDR_BIT - 1:0]   o_d_mem_addr,   // to   D-MEM
-    output  wire [DATA_BIT - 1:0]   o_d_mem_data,   // to   D-MEM
-    output  wire [STRB_BIT - 1:0]   o_d_mem_strb,   // to   D-MEM
-    
-    output  wire                    o_arbiter_req,  // to   Arbiter
-    input   wire                    i_arbiter_gnt,  // from Arbiter
-
-    AXI5.MASTER                     AXI             // to   NoC
+    input   wire                    clk,                // Global
+    input   wire                    rst_n,              // Global
+    // (temp) I-MEM Interface
+    input   wire [DATA_BIT - 1:0]   i_i_mem_data,       // from I-MEM
+    output  wire                    o_i_mem_en,         // to   I-MEM
+    output  wire [ADDR_BIT - 1:0]   o_i_mem_addr,       // to   I-MEM
+    // (temp) D-MEM Interface
+    input   wire [DATA_BIT - 1:0]   i_d_mem_data,       // from D-MEM
+    output  wire                    o_d_mem_en,         // to   D-MEM
+    output  wire                    o_d_mem_wren,       // to   D-MEM
+    output  wire [ADDR_BIT - 1:0]   o_d_mem_addr,       // to   D-MEM
+    output  wire [DATA_BIT - 1:0]   o_d_mem_data,       // to   D-MEM
+    output  wire [STRB_BIT - 1:0]   o_d_mem_strb,       // to   D-MEM
+    // Arbiter Interface
+    input   wire                    i_arbiter_wr_gnt,  // from Arbiter
+    input   wire                    i_arbiter_rd_gnt,  // from Arbiter
+    // AXI Interface
+    AXI5.MASTER                     AXI                 // to   NoC
     );
 
 /////////////////////
@@ -106,9 +106,6 @@ module top_cpu #(
     wire [1:0]                          w_mem_jump;                         // Jump         Flag (MEM)
     wire [1:0]                          w_wb_jump;                          // Jump         Flag (MEM)
     wire                                w_id_sign_extend;                   // SignExtend   Flag (ID)
-    wire                                w_id_arbiter_req;                   // Arbiter Request (ID)
-    wire                                w_ex_arbiter_req;                   // Arbiter Request (EX)
-    wire                                w_mem_arbiter_req;                  // Arbiter Request (MEM)
     wire [3:0]                          w_ex_alu_ctr;                       // ALUOpB
     wire [REG_BIT - 1:0]                w_id_regdst_mux_reg;                // rt or rd Register (ID)
     wire [REG_BIT - 1:0]                w_ex_regdst_mux_reg;                // rt or rd Register (EX)
@@ -279,9 +276,7 @@ module top_cpu #(
         .o_branch       (w_id_branch),
         .o_aluop        (w_id_aluop),
         .o_jump         (w_id_jump),
-        .o_sign_extend  (w_id_sign_extend),
-        .o_arbiter_req  (w_id_arbiter_req),
-        .i_arbiter_gnt  (i_arbiter_gnt)
+        .o_sign_extend  (w_id_sign_extend)
     );
 
     /* Registers */
@@ -346,7 +341,6 @@ module top_cpu #(
         .i_branch       (w_id_branch),
         .i_aluop        (w_id_aluop),
         .i_jump         (w_id_jump),
-        .i_arbiter_req  (w_id_arbiter_req),
         .i_reg_rdata1   (w_id_reg_rdata1),
         .i_reg_rdata2   (w_id_reg_rdata2),
         .i_sign_extend  (w_id_sign_extend_const),
@@ -369,8 +363,7 @@ module top_cpu #(
         .o_memrstrb     (w_ex_memrstrb),
         .o_load_unsigned(w_ex_load_unsigned),
         .o_memwrite     (w_ex_memwrite),
-        .o_memwstrb     (w_ex_memwstrb),
-        .o_arbiter_req  (w_ex_arbiter_req)
+        .o_memwstrb     (w_ex_memwstrb)
     );
 
 //////////////////////////////////////////////
@@ -525,7 +518,6 @@ module top_cpu #(
         .i_memwrite         (w_ex_memwrite),
         .i_memwstrb         (w_ex_memwstrb),
         .i_jump             (w_ex_ctr_jump),
-        .i_arbiter_req      (w_ex_arbiter_req),
         .i_reg_rdata2       (w_ex_reg_rdata2),
         .i_alu_out          (w_ex_alu_out),
         .i_fw_ctr_wdata_2c  (w_ex_fw_ctr_wdata_2c),
@@ -542,7 +534,6 @@ module top_cpu #(
         .o_memwrite         (w_mem_memwrite),
         .o_memwstrb         (w_mem_memwstrb),
         .o_jump             (w_mem_jump),
-        .o_arbiter_req      (w_mem_arbiter_req),
         .o_alu_out          (w_mem_alu_out),
         .o_reg_rdata2       (w_mem_reg_rdata2),
         .o_fw_ctr_wdata_2c  (w_mem_fw_ctr_wdata_2c),
@@ -696,22 +687,21 @@ module top_cpu #(
 /////////////////////////////////////////////////////////
     /* CPU AXI Master */
     cpu_axi_master #(
-        .ADDR_BIT       (ADDR_BIT),
-        .DATA_BIT       (DATA_BIT),
-        .STRB_BIT       (STRB_BIT)
+        .ADDR_BIT               (ADDR_BIT),
+        .DATA_BIT               (DATA_BIT),
+        .STRB_BIT               (STRB_BIT)
     ) u_cpu_axi_master (
-        .clk            (clk),
-        .rst_n          (rst_n),
-        .i_cpu_en       (o_d_mem_en),
-        .i_cpu_wren     (o_d_mem_wren),
-        .i_cpu_addr     (o_d_mem_addr),
-        .i_cpu_data     (o_d_mem_data),
-        .i_cpu_strb     (o_d_mem_strb),
-        .o_cpu_data     (/*Fixed-Me*/),
-        //.i_cpu_aw_gnt   (w_cpu_aw_gnt),
-        //.i_cpu_w_gnt    (w_cpu_w_gnt),
-        //.i_cpu_ar_gnt   (w_cpu_ar_gnt),
-        .AXI            (AXI)
+        .clk                    (clk),
+        .rst_n                  (rst_n),
+        .i_cpu_local_d_mem_en   (o_d_mem_en),
+        .i_cpu_local_d_mem_wren (o_d_mem_wren),
+        .i_cpu_local_d_mem_addr (o_d_mem_addr),
+        .i_cpu_local_d_mem_data (o_d_mem_data),
+        .i_cpu_local_d_mem_strb (o_d_mem_strb),
+        .o_cpu_local_d_mem_data (/*Fixed-Me*/),
+        .i_arbiter_wr_gnt       (i_arbiter_wr_gnt),
+        .i_arbiter_rd_gnt       (i_arbiter_rd_gnt),
+        .AXI                    (AXI)
     );
 
     /* Assign wire */
@@ -733,6 +723,5 @@ module top_cpu #(
     assign o_d_mem_addr                 = w_mem_alu_out[ADDR_BIT - 1:0];
     assign o_d_mem_data                 = w_mem_wdata_fw_mux_data;
     assign o_d_mem_strb                 = w_mem_memwstrb;
-    assign o_arbiter_req                = w_mem_arbiter_req;
 
 endmodule

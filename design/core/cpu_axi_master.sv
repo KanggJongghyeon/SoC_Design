@@ -5,17 +5,20 @@ module cpu_axi_master #(
     parameter DATA_BIT  = 32,
     parameter STRB_BIT  = 4
     )(
-    input   wire                        clk,
-    input   wire                        rst_n,
-    // cpu if
-    input   wire                        i_cpu_en,
-    input   wire                        i_cpu_wren,
-    input   wire    [ADDR_BIT - 1:0]    i_cpu_addr,
-    input   wire    [DATA_BIT - 1:0]    i_cpu_data, // Store
-    input   wire    [STRB_BIT - 1:0]    i_cpu_strb,
-    output  wire    [DATA_BIT - 1:0]    o_cpu_data, // Load
-    // axi if
-    AXI5.MASTER                         AXI
+    input   wire                        clk,                    // Global  
+    input   wire                        rst_n,                  // Global
+    // CPU Loacl Interface
+    input   wire                        i_cpu_local_d_mem_en,   // D-MEM Enable 
+    input   wire                        i_cpu_local_d_mem_wren, // D-MEM Write Enable
+    input   wire    [ADDR_BIT - 1:0]    i_cpu_local_d_mem_addr, // D-MEM ADDR 
+    input   wire    [DATA_BIT - 1:0]    i_cpu_local_d_mem_data, // D-MEM WDATA
+    input   wire    [STRB_BIT - 1:0]    i_cpu_local_d_mem_strb, // D-MEM WSTRB
+    output  wire    [DATA_BIT - 1:0]    o_cpu_local_d_mem_data, // D-MEM RDATA
+    // Arbiter Interface
+    input   wire                        i_arbiter_wr_gnt,       // from Arbiter
+    input   wire                        i_arbiter_rd_gnt,       // from Arbiter
+    // AXI Interface
+    AXI5.MASTER                         AXI                     // to NoC
     );
 
     // Local Parameter
@@ -69,10 +72,10 @@ module cpu_axi_master #(
             r_buf_wdata_push_addr       <= {BUF_ADDR_BIT{1'b0}};
         end
         else begin
-            if ((i_cpu_en == 1'b1) && (i_cpu_wren == 1'b1)) begin
-                buf_cpu_waddr[r_buf_waddr_push_addr]                                    <= i_cpu_addr;
-                buf_cpu_wdata[r_buf_wdata_push_addr][DATA_BIT + STRB_BIT - 1:STRB_BIT]  <= i_cpu_data;
-                buf_cpu_wdata[r_buf_wdata_push_addr][STRB_BIT - 1:0]                    <= i_cpu_strb;
+            if ((i_cpu_local_d_mem_en == 1'b1) && (i_cpu_local_d_mem_wren == 1'b1)) begin
+                buf_cpu_waddr[r_buf_waddr_push_addr]                                    <= i_cpu_local_d_mem_addr;
+                buf_cpu_wdata[r_buf_wdata_push_addr][DATA_BIT + STRB_BIT - 1:STRB_BIT]  <= i_cpu_local_d_mem_data;
+                buf_cpu_wdata[r_buf_wdata_push_addr][STRB_BIT - 1:0]                    <= i_cpu_local_d_mem_strb;
                 r_buf_waddr_push_addr                                                   <= r_buf_waddr_push_addr + BUF_ADDR_BIT'(1);
                 r_buf_wdata_push_addr                                                   <= r_buf_wdata_push_addr + BUF_ADDR_BIT'(1);
             end
@@ -88,8 +91,8 @@ module cpu_axi_master #(
             r_buf_raddr_push_addr       <= {BUF_ADDR_BIT{1'b0}}; 
         end
         else begin
-            if ((i_cpu_en == 1'b1) && (i_cpu_wren != 1'b1)) begin
-                buf_cpu_raddr[r_buf_raddr_push_addr]<= i_cpu_addr;
+            if ((i_cpu_local_d_mem_en == 1'b1) && (i_cpu_local_d_mem_wren != 1'b1)) begin
+                buf_cpu_raddr[r_buf_raddr_push_addr]<= i_cpu_local_d_mem_addr;
                 r_buf_raddr_push_addr               <= r_buf_raddr_push_addr + BUF_ADDR_BIT'(1);
             end
         end
@@ -143,7 +146,7 @@ module cpu_axi_master #(
                         r_n_awvalid             = 1'b1;
                         r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
                         r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
-                        r_n_awsize              = 3'b010;
+                        r_n_awsize              = `AXSIZE_4BYTE;
                     end
                 end
                 `S_AXI_RUN  : begin
@@ -154,7 +157,7 @@ module cpu_axi_master #(
                             r_n_awvalid             = 1'b1;
                             r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
                             r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
-                            r_n_awsize              = 3'b010;
+                            r_n_awsize              = `AXSIZE_4BYTE;
                         end
                         else begin
                             r_n_aw_state            = `S_AXI_IDLE;
@@ -176,12 +179,22 @@ module cpu_axi_master #(
                 end
                 `S_AXI_WAIT : begin
                     if (AXI.AWREADY == 1'b1) begin
-                        r_n_aw_state            = `S_AXI_RUN;
-                        r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
-                        r_n_awvalid             = 1'b1;
-                        r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
-                        r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
-                        r_n_awsize              = 3'b010;
+                        if (w_buf_waddr_empty != 1'b1) begin
+                            r_n_aw_state            = `S_AXI_RUN;
+                            r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_awvalid             = 1'b1;
+                            r_n_awid                = {CPU_ID, 1'b1, r_buf_waddr_pop_addr};
+                            r_n_awaddr              = buf_cpu_waddr[r_buf_waddr_pop_addr];
+                            r_n_awsize              = `AXSIZE_4BYTE;
+                        end
+                        else begin
+                            r_n_aw_state            = `S_AXI_IDLE;
+                            r_n_buf_waddr_pop_addr  = r_buf_waddr_pop_addr;
+                            r_n_awvalid             = 1'b0;
+                            r_n_awid                = {AXI.ID_W_BIT{1'b0}};
+                            r_n_awaddr              = {ADDR_BIT{1'b0}};
+                            r_n_awsize              = 3'b000;
+                        end
                     end
                     else begin
                         r_n_aw_state            = `S_AXI_WAIT;
@@ -293,12 +306,22 @@ module cpu_axi_master #(
                 end
                 `S_AXI_WAIT : begin
                     if (AXI.WREADY == 1'b1) begin
-                        r_n_w_state             = `S_AXI_RUN;
-                        r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
-                        r_n_wvalid              = 1'b1;
-                        r_n_wdata               = buf_cpu_wdata[r_buf_wdata_pop_addr][DATA_BIT + AXI.STRB_BIT - 1:AXI.STRB_BIT];
-                        r_n_wstrb               = buf_cpu_wdata[r_buf_wdata_pop_addr][AXI.STRB_BIT - 1:0];
-                        r_n_wlast               = 1'b1;
+                        if ((w_buf_wdata_empty != 1'b1) && (r_buf_waddr_pop_addr != r_buf_wdata_pop_addr)) begin
+                            r_n_w_state             = `S_AXI_RUN;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_wvalid              = 1'b1;
+                            r_n_wdata               = buf_cpu_wdata[r_buf_wdata_pop_addr][DATA_BIT + AXI.STRB_BIT - 1:AXI.STRB_BIT];
+                            r_n_wstrb               = buf_cpu_wdata[r_buf_wdata_pop_addr][AXI.STRB_BIT - 1:0];
+                            r_n_wlast               = 1'b1;
+                        end
+                        else begin
+                            r_n_w_state             = `S_AXI_IDLE;
+                            r_n_buf_wdata_pop_addr  = r_buf_wdata_pop_addr;
+                            r_n_wvalid              = 1'b0;
+                            r_n_wdata               = {DATA_BIT{1'b0}};
+                            r_n_wstrb               = {AXI.STRB_BIT{1'b0}};
+                            r_n_wlast               = 1'b1;
+                        end
                     end
                     else begin
                         r_n_w_state             = `S_AXI_WAIT;
@@ -374,7 +397,7 @@ module cpu_axi_master #(
                         r_n_arvalid             = 1'b1;
                         r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
                         r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
-                        r_n_arsize              = 3'b010;
+                        r_n_arsize              = `AXSIZE_4BYTE;
                     end
                 end
                 `S_AXI_RUN  : begin
@@ -385,7 +408,7 @@ module cpu_axi_master #(
                             r_n_arvalid             = 1'b1;
                             r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
                             r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
-                            r_n_arsize              = 3'b010;
+                            r_n_arsize              = `AXSIZE_4BYTE;
                         end
                         else begin
                             r_n_ar_state            = `S_AXI_IDLE;
@@ -407,12 +430,22 @@ module cpu_axi_master #(
                 end
                 `S_AXI_WAIT : begin
                     if (AXI.ARREADY == 1'b1) begin
-                        r_n_ar_state            = `S_AXI_RUN;
-                        r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
-                        r_n_arvalid             = 1'b1;
-                        r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
-                        r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
-                        r_n_arsize              = 3'b010;
+                        if (w_buf_raddr_empty != 1'b1) begin
+                            r_n_ar_state            = `S_AXI_RUN;
+                            r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr + BUF_ADDR_BIT'(1);
+                            r_n_arvalid             = 1'b1;
+                            r_n_arid                = {CPU_ID, 1'b0, r_buf_raddr_pop_addr};
+                            r_n_araddr              = buf_cpu_raddr[r_buf_raddr_pop_addr];
+                            r_n_arsize              = `AXSIZE_4BYTE;
+                        end
+                        else begin
+                            r_n_ar_state            = `S_AXI_IDLE;
+                            r_n_buf_raddr_pop_addr  = r_buf_raddr_pop_addr;
+                            r_n_arvalid             = 1'b0;
+                            r_n_arid                = {AXI.ID_R_BIT{1'b0}};
+                            r_n_araddr              = {ADDR_BIT{1'b0}};
+                            r_n_arsize              = 3'b000;
+                        end
                     end
                     else begin
                         r_n_ar_state            = `S_AXI_WAIT;

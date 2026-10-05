@@ -58,12 +58,12 @@ module axi2apb_axi_slave (
                 if (AXI.AWVALID == 1'b1) begin
                     r_wr_id                 <= AXI.AWID;
                     r_wr_tx_pushdata[63:32] <= AXI.AWADDR;
-                end
-                else if (AXI.WVALID == 1'b1) begin
-                    r_wr_tx_pushen          <= 1'b1;
-                    r_wr_tx_pushdata[31:0]  <= AXI.WDATA;
-                    r_bvalid                <= 1'b1;
-                    r_bid                   <= r_wr_id;
+                    if (AXI.WVALID == 1'b1) begin
+                        r_wr_tx_pushen          <= 1'b1;
+                        r_wr_tx_pushdata[31:0]  <= AXI.WDATA;
+                        r_bvalid                <= 1'b1;
+                        r_bid                   <= r_wr_id;
+                    end
                 end
                 else begin
                     r_wr_tx_pushen  <= 1'b0;
