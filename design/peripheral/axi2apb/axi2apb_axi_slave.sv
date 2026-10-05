@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 `include "./../../amba/AMBA.svh"
-module axi2apb (
+module axi2apb_axi_slave (
     input   wire            ACLK,
     input   wire            ARESET_N,
     // NoC AXI

@@ -19,7 +19,7 @@ module top_axi2apb (
     wire    [31:0]  w_rd_rx_popdata;
     wire            w_rd_rx_empty;
 
-    axi2apb u_axi2apb (
+    axi2apb_axi_slave u_axi2apb_axi_slave (
         .ACLK               (ACLK),
         .ARESET_N           (ARESET_N),
         .AXI                (AXI_NOC),
